@@ -54,9 +54,10 @@ def verify_password(email, inputted_pass):
 
 def get_or_create_token(email):
     user = db.find_one({'email': email})
-    if user['auth_token']:
-        return user['auth_token']
-    else:
+    try:
+        token = user['auth_token']
+        return token
+    except KeyError:
         token = binascii.hexlify(os.urandom(20)).decode()
         db.find_one_and_update(
             {'email': email},
