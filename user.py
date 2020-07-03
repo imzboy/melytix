@@ -7,8 +7,9 @@ import binascii
 uri = os.environ.get('MONGODB_URI', None)
 collection = pymongo.MongoClient(uri)
 
-db = collection.get_default_database()
+client = pymongo.MongoClient(uri)
 
+db = client.heroku_t2hftlhq.users
 
 def get_by_email(email: str):
     user = db.find_one({'email': email})
