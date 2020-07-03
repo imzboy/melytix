@@ -4,11 +4,10 @@ from hashlib import pbkdf2_hmac
 import binascii
 
 # Connecting to Mogodb Atlas
-collection = pymongo.MongoClient(
-    'mongodb+srv://MaxTeslya:7887334Mna@melytixdata'
-    '-ryedw.mongodb.net/test?retryWrites=true&w=majority')
+uri = os.environ.get('MONGODB_URI', None)
+collection = pymongo.MongoClient(uri)
 
-db = collection.MelytixUsers.Users
+db = collection.get_default_database()
 
 
 def get_by_email(email: str):
