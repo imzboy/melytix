@@ -2,6 +2,7 @@ from flask import Flask, request
 
 from flask_restful import Resource, Api
 
+from flask_cors import CORS
 
 import user as User
 
@@ -10,6 +11,7 @@ app.secret_key = b"\x92K\x1a\x0e\x04\xcc\x05\xc8\x1c\xc4\x04\x98\xef'\x8e\x1bC\x
 
 api = Api(app)
 
+cors = CORS(app, resources={r"*": {"origins": ["http://localhost:8080", "https://kraftpy.github.io", "https://kraftpy.github.io/MelytixView"]}})
 
 class HelloView(Resource):
     def get(self):
