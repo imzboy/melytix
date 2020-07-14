@@ -9,6 +9,8 @@ import user as User
 app = Flask(__name__)
 app.secret_key = b"\x92K\x1a\x0e\x04\xcc\x05\xc8\x1c\xc4\x04\x98\xef'\x8e\x1bC\xd6\x18'}:\xc1\x14"
 
+app.config['CORS_HEADERS'] = 'Content-Type'
+
 api = Api(app)
 
 cors = CORS(app, resources={r"*": {"origins": '*'}})
@@ -48,6 +50,6 @@ class LoginView(Resource):
 
 
 # URLs declaring
-api.add_resource(HelloView, '/', methods=['GET'])
-api.add_resource(RegistrationView, '/registration/', methods=['POST'])
-api.add_resource(LoginView, '/login/', methods=['POST'])
+api.add_resource(HelloView, '/', methods=['GET', 'OPTIONS'])
+api.add_resource(RegistrationView, '/registration/', methods=['POST', 'OPTIONS'])
+api.add_resource(LoginView, '/login/', methods=['POST', 'OPTIONS'])
