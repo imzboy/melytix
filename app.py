@@ -24,6 +24,9 @@ class RegistrationView(Resource):
     """The registration endpoint.
        Takes credentials and creates a new user.
        Credentials : email, password"""
+    def options(self):
+        return {},200
+
 
     def post(self):
         email = request.json['email']
@@ -37,6 +40,9 @@ class RegistrationView(Resource):
 
 
 class LoginView(Resource):
+    def options(self):
+        return {},200
+
     def post(self):
         email = request.json['email']
         password = request.json['password']
@@ -51,5 +57,5 @@ class LoginView(Resource):
 
 # URLs declaring
 api.add_resource(HelloView, '/', methods=['GET', 'OPTIONS'])
-api.add_resource(RegistrationView, '/registration/', methods=['POST', 'OPTIONS'])
-api.add_resource(LoginView, '/login/', methods=['POST', 'OPTIONS'])
+api.add_resource(RegistrationView, '/registration', methods=['POST', 'OPTIONS'])
+api.add_resource(LoginView, '/login', methods=['POST', 'OPTIONS'])
