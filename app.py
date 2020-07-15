@@ -13,7 +13,7 @@ app.config['CORS_HEADERS'] = 'Content-Type'
 
 api = Api(app)
 
-cors = CORS(app, resources={r"*": {"origins": '*'}})
+cors = CORS(app)
 
 class HelloView(Resource):
     def get(self):
