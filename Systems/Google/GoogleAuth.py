@@ -1,6 +1,6 @@
 from flask import session, redirect, url_for, request
 
-from user import User
+import user as User
 
 from requests_oauthlib import OAuth2Session
 from requests.exceptions import HTTPError
