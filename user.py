@@ -35,6 +35,13 @@ def register(email: str, password: str) -> None:
     })
 
 
+def verify_token(token: str) -> bool:
+    user = db.find_one({'auth_token': token})
+    if user:
+        return True
+    return False
+
+
 def verify_password(email, inputted_pass):
     user = db.find_one({'email': email})
     if user:
@@ -85,7 +92,7 @@ def add_scopes(email: str, scope: list):
     )
 
 
-def insert_tokens(email: str, access_token: str, refresh_token: str):
+def insert_tokens(token: str, access_token: str, refresh_token: str):
     """Mongodb find adn update func for adding user tokens in db
 
     Args:
