@@ -7,6 +7,7 @@ from flask_cors import CORS
 import user as User
 
 from Systems.Google import GoogleAuth
+from Systems.Google.SearchConsole import get_site_list
 from Utils import GoogleUtils
 
 app = Flask(__name__)
@@ -66,14 +67,60 @@ class InsertGoogleTokensApiView(Resource):
     def put(self):
         if User.verify_token(request.json['token']):
 
-            google_tokens = request.json['google_token']
-            if User.insert_tokens(request.json['token'], google_tokens[0], google_tokens[1]):
-                return {'Status': 'success'}, 200
-            else:
-                return "User email not available or not verified by Google.", 403
+            access_tokens = request.json['access_token']
+            refresh_token = request.json['refresh_token']
+            User.insert_tokens(request.json['token'], access_token, refresh_token)
+
+            return {'Status': 'success'}, 200
 
         return {'Error': 'Wrong auth token'}, 403
 
+
+class GetVerifiedSitesList(Resource):
+
+    def options(self):
+        return {},200
+
+    def post(self):
+        try:
+            token = request.json['token']
+
+            if User.verify_token(token):
+                scopes = User.get_scopes(token)
+                if 'sc' in scopes:
+                    site_list = get_site_list(token)
+                    return {'site_list': site_list}, 200
+
+            return {'Error': 'Wrong auth token'}, 403
+
+        except KeyError:
+            return {'Error': 'no credentials provided'}, 403
+
+
+""" to be able to query all 3 systems and give all metrics to a dashboard need TODO:
+    ~Google Analytics:
+        1. make an api for retrieving select_data for viewid
+        2. make and api that posts the select_data from user to a viewid function
+
+    ~Search Console:
+        1. make an api to register a client site in db
+        2. make 1 api to query all servises
+
+    ~Youtube
+        1. Utils yt api respose prep_dash_metrics
+        Optional - complete YoutubeAnalytics.py"""
+
+class RetrivieveDashboardMetrics(Resource):
+    #  too soon
+    def options(self):
+        return {},200
+
+    def post(self):  # TODO: start date, end date
+        if User.verify_token(request.json['token']):
+            pass
+
+
+        return {'Error': 'Wrong auth token'}, 403
 
 # URLs declaring
 api.add_resource(HelloView, '/', methods=['GET', 'OPTIONS'])

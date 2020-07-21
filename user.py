@@ -76,15 +76,15 @@ def get_or_create_token(email):
         return token
 
 
-def add_scopes(email: str, scope: list):
+def add_scopes(token: str, scope: list):
     """adding scopes for google apis in the database for future usage
 
     Args:
-        email (str): the email that we use to find the user
+        token (str): the token that we use to find the user
         scope (list): the scopes that we are adding
     """
     db.find_one_and_update(
-        {'email': email},
+        {'auth_token': token},
         {'$set': {
             'SCOPE': scope
         }},
@@ -92,18 +92,35 @@ def add_scopes(email: str, scope: list):
     )
 
 
+def get_scopes(token: str):
+    SCOPES = db.find_one(
+        {'auth_token': token}
+    ).get('SCOPE', None)
+
+    if SCOPES:
+        return SCOPES
+
+
+def get_g_tokens(token: str):
+    tokens = db.find_one({
+        'auth_token': token
+    }).get('tokens', None)
+    if tokens:
+        return token['g_access_token'], token['g_refresh_token']
+
+
 def insert_tokens(token: str, access_token: str, refresh_token: str):
-    """Mongodb find adn update func for adding user tokens in db
+    """Mongodb find and update func for adding user tokens in db
 
     Args:
-        email: the email that we use to find the user
+        token: the token that we use to find the user
         access_token: the google access token
         refresh_token: the google refresh token"""
     db.find_one_and_update(
-        {'email': email},
+        {'auth_token': token},
         {'$set': {
             'tokens': {'g_access_token': access_token,
-                        'g_refresh_token': refresh_token}
+                       'g_refresh_token': refresh_token}
         }},
         upsert=False
     )
