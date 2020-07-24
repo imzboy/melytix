@@ -64,22 +64,12 @@ class InsertGoogleTokensApiView(Resource):
     def options(self):
         return {},200
 
-    def put(self):
+    def post(self):
         if User.verify_token(request.json['token']):
 
             code = request.json['code']
 
-            data = {
-                'code': code,
-                'client_id': GoogleAuth.CLIENT_ID,
-                'client_secret': GoogleAuth.CLIENT_SECRET,
-                'redirect_uri': 'https://kraftpy.github.io',
-                'grant_type': 'authorization_code'
-                   }
-
-            r = requests.post('https://oauth2.googleapis.com/token', data=data)
-
-            access_token, refresh_token = GoogleAuth.code_exhange(request.json['token'], code)
+            access_token, refresh_token = GoogleAuth.code_exchange(request.json['token'], code)
 
             User.insert_tokens(request.json['token'], access_token, refresh_token)
 
@@ -138,4 +128,4 @@ class RetrivieveDashboardMetrics(Resource):
 api.add_resource(HelloView, '/', methods=['GET', 'OPTIONS'])
 api.add_resource(RegistrationView, '/registration', methods=['POST', 'OPTIONS'])
 api.add_resource(LoginView, '/login', methods=['POST', 'OPTIONS'])
-api.add_resource(InsertGoogleTokensApiView , '/insert-tokens', methods=['PUT', 'OPTIONS'])
+api.add_resource(InsertGoogleTokensApiView , '/insert-tokens', methods=['POST', 'OPTIONS'])
