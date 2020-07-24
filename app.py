@@ -67,8 +67,20 @@ class InsertGoogleTokensApiView(Resource):
     def put(self):
         if User.verify_token(request.json['token']):
 
-            access_tokens = request.json['access_token']
-            refresh_token = request.json['refresh_token']
+            code = request.json['code']
+
+            data = {
+                'code': code,
+                'client_id': GoogleAuth.CLIENT_ID,
+                'client_secret': GoogleAuth.CLIENT_SECRET,
+                'redirect_uri': 'https://kraftpy.github.io',
+                'grant_type': 'authorization_code'
+                   }
+
+            r = requests.post('https://oauth2.googleapis.com/token', data=data)
+
+            access_token, refresh_token = GoogleAuth.code_exhange(request.json['token'], code)
+
             User.insert_tokens(request.json['token'], access_token, refresh_token)
 
             return {'Status': 'success'}, 200

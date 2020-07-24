@@ -1,7 +1,25 @@
 from user import get_g_tokens
+import requests
 
 CLIENT_ID = '380470694344-0a4vb8rvio43bje2dmbs5hk7l8ecdglm.apps.googleusercontent.com'
 CLIENT_SECRET = 'Z9rH11ECkJ_7ceMmij7JnTWM'
+
+
+def code_exchange(token: str, code: str):
+    data = {
+        'code': code,
+        'client_id': CLIENT_ID,
+        'client_secret': CLIENT_SECRET,
+        'redirect_uri': 'https://kraftpy.github.io',
+        'grant_type': 'authorization_code'
+        }
+
+    r = requests.post('https://oauth2.googleapis.com/token', data=data)
+
+    if r.status_code == '200':
+        return r.text['access_token'], r.text['refresh_token']
+    return {'Error': 'sthm went wrong'}
+
 
 def auth_credentials(token):
     access_token, refresh_token = User.get_g_tokens(token)
