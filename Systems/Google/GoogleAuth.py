@@ -10,7 +10,9 @@ def code_exchange(code: str):
         'code': code,
         'client_id': CLIENT_ID,
         'client_secret': CLIENT_SECRET,
-        'redirect_uri': 'https://kraftpy.github.io',
+        'redirect_uri': ['https://kraftpy.github.io',
+                         'http://localhost:8080',
+                         'http://127.0.0.1:8080'],
         'grant_type': 'authorization_code'
         }
 
