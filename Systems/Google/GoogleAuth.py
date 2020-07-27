@@ -19,6 +19,7 @@ def code_exchange(code: str):
     if r.status_code == 200:
         return r.text['access_token'], r.text['refresh_token']
 
+    print(r.text)
     return {'Error': 'google unreachable'}, 403
 
 
