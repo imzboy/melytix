@@ -69,7 +69,7 @@ class InsertGoogleTokensApiView(Resource):
 
             code = request.json['code']
 
-            access_token, refresh_token = GoogleAuth.code_exchange(request.json['token'], code)
+            access_token, refresh_token = GoogleAuth.code_exchange(code)
 
             User.insert_tokens(request.json['token'], access_token, refresh_token)
 
@@ -112,7 +112,7 @@ class GetVerifiedSitesList(Resource):
         1. Utils yt api respose prep_dash_metrics
         Optional - complete YoutubeAnalytics.py"""
 
-class RetrivieveDashboardMetrics(Resource):
+class RetrieveDashboardMetrics(Resource):
     #  too soon
     def options(self):
         return {},200

@@ -5,7 +5,7 @@ CLIENT_ID = '380470694344-0a4vb8rvio43bje2dmbs5hk7l8ecdglm.apps.googleuserconten
 CLIENT_SECRET = 'Z9rH11ECkJ_7ceMmij7JnTWM'
 
 
-def code_exchange(token: str, code: str):
+def code_exchange(code: str):
     data = {
         'code': code,
         'client_id': CLIENT_ID,
@@ -18,7 +18,8 @@ def code_exchange(token: str, code: str):
 
     if r.status_code == '200':
         return r.text['access_token'], r.text['refresh_token']
-    return {'Error': 'sthm went wrong'}
+
+    return {'Error': 'error'}
 
 
 def auth_credentials(token):
