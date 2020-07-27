@@ -59,23 +59,30 @@ class LoginView(Resource):
             return {'Error': 'wrong password'}
 
 
-class InsertGoogleTokensApiView(Resource):
+class GoogleAuthTokensApiView(Resource):
 
     def options(self):
         return {},200
 
     def post(self):
-        if User.verify_token(request.json['token']):
+        code = request.json['code']
 
-            code = request.json['code']
+        access_token, refresh_token = GoogleAuth.code_exchange(code)
+        if refresh_token == 403:
+            return access_token, refresh_token  # error mesage and error code
 
-            access_token, refresh_token = GoogleAuth.code_exchange(code)
+        email, picture = GoogleAuth.get_google_user_data(access_token)
 
-            User.insert_tokens(request.json['token'], access_token, refresh_token)
+        if picture == 403:
+            return email, picture  # error mesage and error code
 
-            return {'Status': 'success'}, 200
+        User.register_from_google(email, picture)
 
-        return {'Error': 'Wrong auth token'}, 403
+        token = User.get_or_create_token(email)
+
+        User.insert_tokens(token, access_token, refresh_token)
+
+        return {'email': email, 'picture': picture, 'auth_token': token}
 
 
 class GetVerifiedSitesList(Resource):
@@ -128,4 +135,4 @@ class RetrieveDashboardMetrics(Resource):
 api.add_resource(HelloView, '/', methods=['GET', 'OPTIONS'])
 api.add_resource(RegistrationView, '/registration', methods=['POST', 'OPTIONS'])
 api.add_resource(LoginView, '/login', methods=['POST', 'OPTIONS'])
-api.add_resource(InsertGoogleTokensApiView , '/insert-tokens', methods=['POST', 'OPTIONS'])
+api.add_resource(GoogleAuthTokensApiView , '/insert-tokens', methods=['POST', 'OPTIONS'])

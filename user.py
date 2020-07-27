@@ -31,9 +31,16 @@ def register(email: str, password: str) -> None:
     db.insert_one({
         'email': email,
         'password': password,
-        'salt': salt
+        'salt': salt,
+        'user_type': 'normal'
     })
 
+def register_from_google(email: str, picture: str):
+    db.insert_one({
+        'email': email,
+        'picture': picture,
+        'user_type': 'google_auth'
+    })
 
 def verify_token(token: str) -> bool:
     user = db.find_one({'auth_token': token})
@@ -90,15 +97,6 @@ def add_scopes(token: str, scope: list):
         }},
         upsert=False
     )
-
-
-def get_scopes(token: str):
-    SCOPES = db.find_one(
-        {'auth_token': token}
-    ).get('SCOPE', None)
-
-    if SCOPES:
-        return SCOPES
 
 
 def get_g_tokens(token: str):
