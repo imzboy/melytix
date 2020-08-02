@@ -20,7 +20,7 @@ def code_exchange(code: str):
         return r.text['access_token'], r.text['refresh_token']
 
     print(r.text)
-    return {'Error': 'google unreachable'}, 403
+    return {'Error': r.text}, 403
 
 
 
