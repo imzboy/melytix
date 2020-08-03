@@ -30,15 +30,13 @@ def get_google_user_data(g_token: str):
     }
     r = requests.get('https://www.googleapis.com/oauth2/v2/userinfo', data=data)
 
-    if r.status_code == 200:
-
+    try:
         if r.json()['verified_email']:
-
             return r.json()['email'], r.json()['picture']
-
         return {'Error': 'user email is not verified'}, 403
-
-    return {'Error': 'google unreachable'}, 403
+    except TypeError:
+        print(r.text)
+        return {'Error': r.text}, 403
 
 def auth_credentials(token):
     access_token, refresh_token = User.get_g_tokens(token)
