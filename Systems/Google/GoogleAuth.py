@@ -25,12 +25,10 @@ def code_exchange(code: str):
 
 
 def get_google_user_data(g_token: str):
-    data = {
-        'oauth_token': g_token
-    }
-    r = requests.get('https://www.googleapis.com/oauth2/v2/userinfo', data=data)
+    r = requests.get(f'https://www.googleapis.com/oauth2/v2/userinfo?oauth_token={g_token}')
 
     try:
+        print(r.json())
         if r.json()['verified_email']:
             return r.json()['email'], r.json()['picture']
         return {'Error': 'user email is not verified'}, 403
