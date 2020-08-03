@@ -17,7 +17,7 @@ def code_exchange(code: str):
     r = requests.post('https://oauth2.googleapis.com/token', data=data)
 
     try:
-        return r.text['access_token'], r.text['refresh_token']
+        return r.json().get('access_token'), r.json().get('refresh_token')
     except TypeError:
         print(r.text)
         return {'Error': r.text}, 403
