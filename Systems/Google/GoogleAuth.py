@@ -16,11 +16,11 @@ def code_exchange(code: str):
 
     r = requests.post('https://oauth2.googleapis.com/token', data=data)
 
-    if r.status_code == 200:
+    try:
         return r.text['access_token'], r.text['refresh_token']
-
-    print(r.text)
-    return {'Error': r.text}, 403
+    except TypeError:
+        print(r.text)
+        return {'Error': r.text}, 403
 
 
 
