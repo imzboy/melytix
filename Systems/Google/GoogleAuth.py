@@ -32,9 +32,9 @@ def get_google_user_data(g_token: str):
 
     if r.status_code == 200:
 
-        if r.text['verified_email']:
+        if r.json()['verified_email']:
 
-            return r.text['email'], r.text['picture']
+            return r.json()['email'], r.json()['picture']
 
         return {'Error': 'user email is not verified'}, 403
 
