@@ -1,4 +1,10 @@
 from user import get_g_tokens
+
+from requests_oauthlib import OAuth2Session
+from oauth2client import client as oauth_client
+import httplib2 as lib2
+from datetime import datetime, timedelta
+
 import requests
 
 CLIENT_ID = '380470694344-0a4vb8rvio43bje2dmbs5hk7l8ecdglm.apps.googleusercontent.com'
@@ -19,7 +25,6 @@ def code_exchange(code: str):
     try:
         return r.json().get('access_token'), r.json().get('refresh_token')
     except TypeError:
-        print(r.text)
         return {'Error': r.text}, 403
 
 
@@ -28,16 +33,15 @@ def get_google_user_data(g_token: str):
     r = requests.get(f'https://www.googleapis.com/oauth2/v2/userinfo?oauth_token={g_token}')
 
     try:
-        print(r.json())
         if r.json()['verified_email']:
             return r.json()['email'], r.json()['picture']
         return {'Error': 'user email is not verified'}, 403
     except TypeError:
-        print(r.text)
         return {'Error': r.text}, 403
 
+
 def auth_credentials(token):
-    access_token, refresh_token = User.get_g_tokens(token)
+    access_token, refresh_token = get_g_tokens(token)
 
     credentials = oauth_client.GoogleCredentials(
         access_token=access_token,

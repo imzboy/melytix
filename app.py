@@ -60,7 +60,7 @@ class LoginView(Resource):
 
 
 class GoogleAuthTokensApiView(Resource):
-
+    """This View is for google login"""
     def options(self):
         return {},200
 
