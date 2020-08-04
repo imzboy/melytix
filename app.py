@@ -159,7 +159,12 @@ class PutViewId(Resource):
         try:
             token = request.json['token']
             if User.verify_token(token):
-                User.insert_viewid(token, request.json['viewid'])
+                viewid = GoogleAnalytics.g_get_viewid(
+                    request.json['account'],
+                    request.json['web_property'],
+                    token
+                )
+                User.insert_viewid(token, viewid)
                 return {'Message': 'Success'}, 200
             return {'Error': 'Wrong auth token'}, 403
         except KeyError:

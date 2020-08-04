@@ -1,4 +1,4 @@
-from user import User
+import user as User
 
 from googleapiclient.discovery import build
 
@@ -83,8 +83,8 @@ def google_analytics_query(view_id, start_date, end_date):
 #     return data
 
 
-def g_get_viewid(account, web_property):
-    service = build(serviceName='analytics', version='v3', http=auth_credentials())
+def g_get_viewid(account, web_property, token):
+    service = build(serviceName='analytics', version='v3', http=auth_credentials(token))
     profiles = service.management().profiles().list(
         accountId=account,
         webPropertyId=web_property).execute()
