@@ -6,7 +6,7 @@ from flask_cors import CORS
 
 import user as User
 
-from Systems.Google import GoogleAuth
+from Systems.Google import GoogleAuth, GoogleAnalytics
 from Systems.Google.SearchConsole import get_site_list
 from Utils import GoogleUtils
 
@@ -106,6 +106,22 @@ class GetVerifiedSitesList(Resource):
             return {'Error': 'no credentials provided'}, 403
 
 
+class PutSiteUrlAPI(Resource):
+
+    def options(self):
+        return {},200
+
+    def post(self):
+        try:
+            token = request.json['token']
+            if User.verify_token(token):
+                User.insert_site_for_sc(token, request.json['site_url'])
+                return {'Message': 'Success'}, 200
+            return {'Error': 'Wrong auth token'}, 403
+        except KeyError:
+            return {'Error': 'no credentials provided'}, 403
+
+
 """ to be able to query all 3 systems and give all metrics to a dashboard need TODO:
     ~Google Analytics:
         1. make an api for retrieving select_data for viewid
@@ -119,6 +135,37 @@ class GetVerifiedSitesList(Resource):
         1. Utils yt api respose prep_dash_metrics
         Optional - complete YoutubeAnalytics.py"""
 
+class GetViewIdDropDown(Resource):
+
+    def options(self):
+        return {},200
+
+    def post(self):
+        try:
+            token = request.json['token']
+            if User.verify_token(token):
+                select_data = GoogleAnalytics.g_get_select_data(token)
+            return {'Error': 'Wrong auth token'}, 403
+        except KeyError:
+            return {'Error': 'no credentials provided'}, 403
+
+
+class PutViewId(Resource):
+
+    def options(self):
+        return {},200
+
+    def post(self):
+        try:
+            token = request.json['token']
+            if User.verify_token(token):
+                User.insert_viewid(token, request.json['viewid'])
+                return {'Message': 'Success'}, 200
+            return {'Error': 'Wrong auth token'}, 403
+        except KeyError:
+            return {'Error': 'no credentials provided'}, 403
+
+
 class RetrieveDashboardMetrics(Resource):
     #  too soon
     def options(self):
@@ -131,8 +178,22 @@ class RetrieveDashboardMetrics(Resource):
 
         return {'Error': 'Wrong auth token'}, 403
 
-# URLs declaring
+# URLs declaring --------------------------------
+
+# simple test
 api.add_resource(HelloView, '/', methods=['GET', 'OPTIONS'])
+
+#Login end points
 api.add_resource(RegistrationView, '/registration', methods=['POST', 'OPTIONS'])
 api.add_resource(LoginView, '/login', methods=['POST', 'OPTIONS'])
+
+#Google login
 api.add_resource(GoogleAuthTokensApiView , '/insert-tokens', methods=['POST', 'OPTIONS'])
+
+# google analytics
+api.add_resource(GetViewIdDropDown, '/get-select-data', methods=['POST', 'OPTIONS'])
+api.add_resource(PutViewId, '/insert-viewid', methods=['POST', 'OPTIONS'])
+
+# search console
+api.add_resource(GetVerifiedSitesList, '/get-sites-url', methods=['POST', 'OPTIONS'])
+api.add_resource(PutSiteUrlAPI, '/insert-sc-site', methods=['POST', 'OPTIONS'])

@@ -99,6 +99,26 @@ def add_scopes(token: str, scope: list):
     )
 
 
+def insert_viewid(token: str, viewid: str):
+    db.find_one_and_update(
+        {'auth_token': token},
+        {'$set': {
+            'viewid': viewid
+        }},
+        upsert=False
+    )
+
+
+def insert_site_for_sc(token: str, site_url: str):
+    db.find_one_and_update(
+        {'auth_token': token},
+        {'$set': {
+            'site_utl': site_url
+        }},
+        upsert=False
+    )
+
+
 def get_g_tokens(token: str):
     tokens = db.find_one({
         'auth_token': token

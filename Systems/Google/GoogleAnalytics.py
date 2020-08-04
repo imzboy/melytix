@@ -91,10 +91,10 @@ def g_get_viewid(account, web_property):
     return profiles.get('items')[0].get('id')
 
 
-def g_get_select_data():
+def g_get_select_data(token: str):
     """Gets the property and web property in dict
        for a view id choosing drop down"""
-    service = build(serviceName='analytics', version='v3', http=auth_credentials())
+    service = build(serviceName='analytics', version='v3', http=auth_credentials(token))
     # Get a list of all Google Analytics accounts for the authorized user.
     accounts_list = service.management().accounts().list().execute()
     if accounts_list.get('items'):
