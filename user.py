@@ -42,6 +42,7 @@ def register_from_google(email: str, picture: str):
         'user_type': 'google_auth'
     })
 
+
 def verify_token(token: str) -> bool:
     user = db.find_one({'auth_token': token})
     if user:
@@ -120,11 +121,11 @@ def insert_site_for_sc(token: str, site_url: str):
 
 
 def get_g_tokens(token: str):
-    tokens = db.find_one({
-        'auth_token': token
-    }).get('tokens', None)
+    tokens = db.find_one(
+        {'auth_token': token}
+        ).get('tokens', None)
     if tokens:
-        return token['g_access_token'], token['g_refresh_token']
+        return tokens['g_access_token'], tokens['g_refresh_token']
 
 
 def insert_tokens(token: str, access_token: str, refresh_token: str):

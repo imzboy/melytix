@@ -31,7 +31,6 @@ class RegistrationView(Resource):
     def options(self):
         return {},200
 
-
     def post(self):
         email = request.json['email']
         password = request.json['password']
@@ -145,6 +144,7 @@ class GetViewIdDropDown(Resource):
             token = request.json['token']
             if User.verify_token(token):
                 select_data = GoogleAnalytics.g_get_select_data(token)
+                return select_data, 200
             return {'Error': 'Wrong auth token'}, 403
         except KeyError:
             return {'Error': 'no credentials provided'}, 403
