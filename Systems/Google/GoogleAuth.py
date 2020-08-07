@@ -28,7 +28,6 @@ def code_exchange(code: str):
         return {'Error': r.text}, 403
 
 
-
 def get_google_user_data(g_token: str):
     r = requests.get(f'https://www.googleapis.com/oauth2/v2/userinfo?oauth_token={g_token}')
 
@@ -53,4 +52,4 @@ def auth_credentials(token):
         user_agent='Melytix-user-agent/1.0')
     # authorizing credentials (if token is expired it will refresh it)
     authorized = credentials.authorize(lib2.Http())
-    # return authorized
+    return authorized
