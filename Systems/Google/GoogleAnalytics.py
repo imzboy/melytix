@@ -1,5 +1,5 @@
 import user as User
-
+from googleapiclient.errors import HttpError
 from googleapiclient.discovery import build
 
 from Systems.Google.GoogleAuth import auth_credentials
@@ -96,20 +96,23 @@ def g_get_select_data(token: str):
        for a view id choosing drop down"""
     service = build(serviceName='analytics', version='v3', http=auth_credentials(token))
     # Get a list of all Google Analytics accounts for the authorized user.
-    accounts_list = service.management().accounts().list().execute()
-    if accounts_list.get('items'):
-        accounts = []
-        for x in range(accounts_list.get('totalResults')):
-            accounts.append({'name': accounts_list.get('items')[x].get('name'),
-                             'id': accounts_list.get('items')[x].get('id')})
-        # Get a list of all the properties for all accounts.
-        for x in accounts:
-            response = service.management().webproperties().list(accountId=x.get('id')).execute()
-            if response.get('items'):
-                webProperties = []
-                for k in range(response.get('totalResults')):
-                    webProperties.append(
-                        {'prop_name': response.get('items')[k].get('name'),
-                         'prop_id': response.get('items')[k].get('id')})
-                x['webProperties'] = webProperties
-        return accounts
+    try:
+        accounts_list = service.management().accounts().list().execute()
+        if accounts_list.get('items'):
+            accounts = []
+            for x in range(accounts_list.get('totalResults')):
+                accounts.append({'name': accounts_list.get('items')[x].get('name'),
+                                'id': accounts_list.get('items')[x].get('id')})
+            # Get a list of all the properties for all accounts.
+            for x in accounts:
+                response = service.management().webproperties().list(accountId=x.get('id')).execute()
+                if response.get('items'):
+                    webProperties = []
+                    for k in range(response.get('totalResults')):
+                        webProperties.append(
+                            {'prop_name': response.get('items')[k].get('name'),
+                            'prop_id': response.get('items')[k].get('id')})
+                    x['webProperties'] = webProperties
+            return accounts
+    except HttpError:
+        return {'error': 'User does not have any Google Analytics account.'}
