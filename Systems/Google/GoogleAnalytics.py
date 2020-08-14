@@ -6,9 +6,9 @@ from Systems.Google.GoogleAuth import auth_credentials
 
 
 # Google analytics query and setup
-def google_analytics_query(view_id, start_date, end_date):
+def google_analytics_query(token, view_id, start_date, end_date):
     # Google Analytics v4 api setup to make a request to google analytics
-    api_client = build(serviceName='analyticsreporting', version='v4', http=auth_credentials())
+    api_client = build(serviceName='analyticsreporting', version='v4', http=auth_credentials(token))
     # Max of 10 metrics in one request body
     response = api_client.reports().batchGet(
         body={
@@ -45,7 +45,6 @@ def google_analytics_query(view_id, start_date, end_date):
                 }
             ]
         }).execute()
-    print(response)
     # data = dump_data_for_melytips(response)
     return response
 

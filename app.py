@@ -58,7 +58,7 @@ class LoginView(Resource):
             return {'Error': 'wrong password'}
 
 
-class GoogleAuthTokensApiView(Resource):
+class GoogleAuthLoginApiView(Resource):
     """This View is for google login"""
     def options(self):
         return {},200
@@ -178,8 +178,21 @@ class RetrieveDashboardMetrics(Resource):
 
     def post(self):  # TODO: start date, end date
         if User.verify_token(request.json['token']):
-            pass
 
+            start_date, end_date = request.json['start_date'], request.json['end_date']
+
+            token = request.json['token']
+
+            view_id = User.get_by_token(token)['view_id']
+
+            if view_id:
+                ga_data = GoogleAnalytics.google_analytics_query(token, view_id, start_date, end_date)
+
+                dash_data = GoogleUtils.prep_dash_metrics(ga_data=ga_data)
+
+                return dash_data, 200
+            else:
+                return {'error': 'db does not contain view_id. Do a view id flow'}
 
         return {'Error': 'Wrong auth token'}, 403
 

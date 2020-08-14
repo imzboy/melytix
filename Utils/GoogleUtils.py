@@ -112,6 +112,4 @@ def prep_dash_metrics(ga_data: list = None, sc_data: list = None, yt_data: list 
     # print(UsersTypesTemp)
     # # TODO: make combine 4 lists into 3 lists
 
-
-    print(metrics)
     return metrics

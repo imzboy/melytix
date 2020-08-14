@@ -5,7 +5,6 @@ import binascii
 
 # Connecting to Mogodb Atlas
 uri = os.environ.get('MONGODB_URI', None)
-collection = pymongo.MongoClient(uri)
 
 client = pymongo.MongoClient(uri)
 
@@ -25,6 +24,12 @@ def get_by_id(user_id):
     return None
 
 
+def get_by_token(token: str):
+    user = db.find_one({'auth_token': token})
+    if user:
+        return user
+    return None
+
 def register(email: str, password: str) -> None:
     salt = os.urandom(24)
     password = pbkdf2_hmac('sha256', password.encode('utf-8'), salt, 100000)
@@ -36,6 +41,8 @@ def register(email: str, password: str) -> None:
     })
 
 def register_from_google(email: str, picture: str):
+    if db.find_one({'email': email}):
+        return None  # the user already exists
     db.insert_one({
         'email': email,
         'picture': picture,
