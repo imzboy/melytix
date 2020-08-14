@@ -206,11 +206,12 @@ api.add_resource(RegistrationView, '/registration', methods=['POST', 'OPTIONS'])
 api.add_resource(LoginView, '/login', methods=['POST', 'OPTIONS'])
 
 #Google login
-api.add_resource(GoogleAuthTokensApiView , '/insert-tokens', methods=['POST', 'OPTIONS'])
+api.add_resource(GoogleAuthLoginApiView , '/insert-tokens', methods=['POST', 'OPTIONS'])
 
 # google analytics
 api.add_resource(GetViewIdDropDown, '/get-select-data', methods=['POST', 'OPTIONS'])
 api.add_resource(PutViewId, '/insert-viewid', methods=['POST', 'OPTIONS'])
+api.add_resource(RetrieveDashboardMetrics, '/get-dash-data', methods=['POST', 'OPTIONS'])
 
 # search console
 api.add_resource(GetVerifiedSitesList, '/get-sites-url', methods=['POST', 'OPTIONS'])
