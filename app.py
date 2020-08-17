@@ -171,28 +171,38 @@ class PutViewId(Resource):
             return {'Error': 'no credentials provided'}, 403
 
 
-class RetrieveDashboardMetrics(Resource):
+class RetrieveGoogleAnalyticsMetrics(Resource):
     #  too soon
     def options(self):
         return {},200
 
-    def post(self):  # TODO: start date, end date
+    def post(self):
+        """This view inserts view id in db and makes a ga query"""
         if User.verify_token(request.json['token']):
 
             start_date, end_date = request.json['start_date'], request.json['end_date']
 
             token = request.json['token']
 
-            view_id = User.get_by_token(token)['view_id']
+            viewid = GoogleAnalytics.g_get_viewid(
+                request.json['account'],
+                request.json['web_property'],
+                token
+            )
+            User.insert_viewid(token, viewid)
+
+            metric = request.json['metric']
 
             if view_id:
                 ga_data = GoogleAnalytics.google_analytics_query(token, view_id, start_date, end_date)
 
                 dash_data = GoogleUtils.prep_dash_metrics(ga_data=ga_data)
 
-                return dash_data, 200
+                GoogleAnalytics.insert_ga_data_in_db(token, dash_data)
+
+                return dash_data[metric], 200
             else:
-                return {'error': 'db does not contain view_id. Do a view id flow'}
+                return {'error': 'could not fetch view id from google'}, 404
 
         return {'Error': 'Wrong auth token'}, 403
 
@@ -210,8 +220,7 @@ api.add_resource(GoogleAuthLoginApiView , '/insert-tokens', methods=['POST', 'OP
 
 # google analytics
 api.add_resource(GetViewIdDropDown, '/get-select-data', methods=['POST', 'OPTIONS'])
-api.add_resource(PutViewId, '/insert-viewid', methods=['POST', 'OPTIONS'])
-api.add_resource(RetrieveDashboardMetrics, '/get-dash-data', methods=['POST', 'OPTIONS'])
+api.add_resource(RetrieveGoogleAnalyticsMetrics, '/get-ga-data', methods=['POST', 'OPTIONS'])
 
 # search console
 api.add_resource(GetVerifiedSitesList, '/get-sites-url', methods=['POST', 'OPTIONS'])
