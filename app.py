@@ -193,8 +193,8 @@ class RetrieveGoogleAnalyticsMetrics(Resource):
 
             metric = request.json['metric']
 
-            if view_id:
-                ga_data = GoogleAnalytics.google_analytics_query(token, view_id, start_date, end_date)
+            if viewid:
+                ga_data = GoogleAnalytics.google_analytics_query(token, viewid, start_date, end_date)
 
                 dash_data = GoogleUtils.prep_dash_metrics(ga_data=ga_data)
 
