@@ -94,10 +94,8 @@ class GetVerifiedSitesList(Resource):
             token = request.json['token']
 
             if User.verify_token(token):
-                scopes = User.get_scopes(token)
-                if 'sc' in scopes:
-                    site_list = get_site_list(token)
-                    return {'site_list': site_list}, 200
+                site_list = get_site_list(token)
+                return {'site_list': site_list}, 200
 
             return {'Error': 'Wrong auth token'}, 403
 
