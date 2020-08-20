@@ -7,7 +7,7 @@ from flask_cors import CORS
 import user as User
 
 from Systems.Google import GoogleAuth, GoogleAnalytics
-from Systems.Google.SearchConsole import get_site_list
+from Systems.Google.SearchConsole import get_site_list, make_sc_request
 from Utils import GoogleUtils
 
 app = Flask(__name__)
@@ -105,7 +105,7 @@ class GetVerifiedSitesList(Resource):
             return {'Error': 'no credentials provided'}, 403
 
 
-class PutSiteUrlAPI(Resource):
+class GetSearchConsoleDataAPI(Resource):
 
     def options(self):
         return {},200
@@ -114,21 +114,21 @@ class PutSiteUrlAPI(Resource):
         try:
             token = request.json['token']
             if User.verify_token(token):
-                User.insert_site_for_sc(token, request.json['site_url'])
-                return {'Message': 'Success'}, 200
+
+                site_url = request.json['site_url']
+                User.insert_site_for_sc(token, site_url)
+
+                response = make_sc_request(token, site_url, request.json['start_date'], request.json['end_date'])
+
+                data = GoogleUtils.prep_dash_metrics(sc_data=response)
+
+                return {'metric': data[request.json['metric']], 'dates': data['sc_dates']}, 200
             return {'Error': 'Wrong auth token'}, 403
         except KeyError:
             return {'Error': 'no credentials provided'}, 403
 
 
 """ to be able to query all 3 systems and give all metrics to a dashboard need TODO:
-    ~Google Analytics:
-        1. make an api for retrieving select_data for viewid
-        2. make and api that posts the select_data from user to a viewid function
-
-    ~Search Console:
-        1. make an api to register a client site in db
-        2. make 1 api to query all servises
 
     ~Youtube
         1. Utils yt api respose prep_dash_metrics
@@ -172,7 +172,6 @@ class PutViewId(Resource):
 
 
 class RetrieveGoogleAnalyticsMetrics(Resource):
-    #  too soon
     def options(self):
         return {},200
 
@@ -224,4 +223,4 @@ api.add_resource(RetrieveGoogleAnalyticsMetrics, '/get-ga-data', methods=['POST'
 
 # search console
 api.add_resource(GetVerifiedSitesList, '/get-sites-url', methods=['POST', 'OPTIONS'])
-api.add_resource(PutSiteUrlAPI, '/insert-sc-site', methods=['POST', 'OPTIONS'])
+api.add_resource(GetSearchConsoleDataAPI, '/get-sc-data', methods=['POST', 'OPTIONS'])
