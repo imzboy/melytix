@@ -197,7 +197,7 @@ class RetrieveGoogleAnalyticsMetrics(Resource):
 
                 GoogleAnalytics.insert_ga_data_in_db(token, dash_data)
 
-                return dash_data[metric], 200
+                return {'metric':dash_data[metric], 'dates': dash_data['ga_dates']}, 200
             else:
                 return {'error': 'could not fetch view id from google'}, 404
 
