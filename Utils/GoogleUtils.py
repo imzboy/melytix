@@ -113,3 +113,26 @@ def prep_dash_metrics(ga_data: list = None, sc_data: list = None, yt_data: list 
     # # TODO: make combine 4 lists into 3 lists
 
     return metrics
+
+
+def fill_empty_metric(full_dates: list, non_full_dates: list, metrics: list):
+    """
+        [2020-03-13, 2020-03-14, 2020-03-15, 2020-03-16] - full dates
+        [2020-03-14, 2020-03-16] - non full dates
+        [3, 5] - metric (the index in non full dates list coresponds to an index in metric list)
+        Turn in to:
+        [2020-03-13, 2020-03-14, 2020-03-15, 2020-03-16] - full dates
+        [0, 3, 0, 5] - filled in metric for empty days that were not included
+    """
+    full_metrics = []
+    for k, full_date in enumerate(full_dates):
+        for i, non_full_date in enumerate(non_full_dates):
+            if full_date == non_full_date:
+                full_metrics.append(metrics[i])
+            try:
+                if full_metrics[k] != 0 and full_date != non_full_date:
+                    full_metrics.append(0)
+            except IndexError:
+                full_metrics.append(0)
+    return full_metrics
+
