@@ -23,7 +23,8 @@ def google_analytics_query(token, view_id, start_date, end_date):
                                 {'expression': 'ga:avgSessionDuration'},
                                 {'expression': 'ga:bounces'},
                                 {'expression': 'ga:percentNewSessions'}],
-                    'dimensions': [{'name': 'ga:date'}]
+                    'dimensions': [{'name': 'ga:date'}],
+                    "includeEmptyRows": True
                 },
                 # {
                 #     'viewId': view_id,
@@ -41,7 +42,8 @@ def google_analytics_query(token, view_id, start_date, end_date):
                                 {'expression': 'ga:CTR'},
                                 {'expression': 'ga:costPerConversion'}],
                     'dimensions': [{'name': 'ga:adwordsCampaignID'},
-                                   {'name': 'ga:date'}]
+                                   {'name': 'ga:date'}],
+                    "includeEmptyRows": True
                 }
             ]
         }).execute()
