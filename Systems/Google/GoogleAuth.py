@@ -27,7 +27,9 @@ def code_exchange(code: str, uri: str):
     if refresh_token:
         return access_token, refresh_token
     else:
+        print(access_token,"____Access")
         user = get_by_access_token(access_token)
+        print(user,"____-USEr")
         return user['tokens']['g_access_token'], user['tokens']['g_refresh_token']
 
 
