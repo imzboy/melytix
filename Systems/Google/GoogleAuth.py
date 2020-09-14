@@ -11,12 +11,12 @@ CLIENT_ID = '380470694344-0a4vb8rvio43bje2dmbs5hk7l8ecdglm.apps.googleuserconten
 CLIENT_SECRET = 'Z9rH11ECkJ_7ceMmij7JnTWM'
 
 
-def code_exchange(code: str):
+def code_exchange(code: str, uri: str):
     data = {
         'code': code,
         'client_id': CLIENT_ID,
         'client_secret': CLIENT_SECRET,
-        'redirect_uri': 'http://localhost:8080',
+        'redirect_uri': uri,
         'grant_type': 'authorization_code'
         }
 

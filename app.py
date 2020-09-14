@@ -66,7 +66,10 @@ class GoogleAuthLoginApiView(Resource):
     def post(self):
         code = request.json['code']
 
-        access_token, refresh_token = GoogleAuth.code_exchange(code)
+        uri = 'http://localhost:8080' if request.path == '/insert-tokens' else 'https://kraftpy.github.io/MelytixView'
+
+        access_token, refresh_token = GoogleAuth.code_exchange(code, uri)
+
         if refresh_token == 403:
             return access_token, refresh_token  # error mesage and error code
 
@@ -214,6 +217,7 @@ api.add_resource(LoginView, '/login', methods=['POST', 'OPTIONS'])
 
 #Google login
 api.add_resource(GoogleAuthLoginApiView , '/insert-tokens', methods=['POST', 'OPTIONS'])
+api.add_resource(GoogleAuthLoginApiView, '/insert-tokens-main', methods=['POST', 'OPTIONS'])
 
 # google analytics
 api.add_resource(GetViewIdDropDown, '/get-select-data', methods=['POST', 'OPTIONS'])
