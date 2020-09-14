@@ -66,7 +66,36 @@ class GoogleAuthLoginApiView(Resource):
     def post(self):
         code = request.json['code']
 
-        uri = 'http://localhost:8080' if request.path == '/insert-tokens' else 'https://kraftpy.github.io/MelytixView'
+        uri = 'http://localhost:8080'
+
+        access_token, refresh_token = GoogleAuth.code_exchange(code, uri)
+
+        if refresh_token == 403:
+            return access_token, refresh_token  # error mesage and error code
+
+        email, picture = GoogleAuth.get_google_user_data(access_token)
+
+        if picture == 403:
+            return email, picture  # error mesage and error code
+
+        User.register_from_google(email, picture)
+
+        token = User.get_or_create_token(email)
+
+        User.insert_tokens(token, access_token, refresh_token)
+
+        return {'email': email, 'picture': picture, 'auth_token': token}
+
+
+class GoogleAuthLoginApiViewMain(Resource):
+    """This View is for google login"""
+    def options(self):
+        return {},200
+
+    def post(self):
+        code = request.json['code']
+
+        uri = 'https://kraftpy.github.io/MelytixView'
 
         access_token, refresh_token = GoogleAuth.code_exchange(code, uri)
 
@@ -217,7 +246,7 @@ api.add_resource(LoginView, '/login', methods=['POST', 'OPTIONS'])
 
 #Google login
 api.add_resource(GoogleAuthLoginApiView , '/insert-tokens', methods=['POST', 'OPTIONS'])
-api.add_resource(GoogleAuthLoginApiView, '/insert-tokens-main', methods=['POST', 'OPTIONS'])
+api.add_resource(GoogleAuthLoginApiViewMain, '/insert-tokens-main', methods=['POST', 'OPTIONS'])
 
 # google analytics
 api.add_resource(GetViewIdDropDown, '/get-select-data', methods=['POST', 'OPTIONS'])
