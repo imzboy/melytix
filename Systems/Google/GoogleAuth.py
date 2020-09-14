@@ -24,6 +24,7 @@ def code_exchange(code: str, uri: str):
 
 
     access_token, refresh_token = r.json().get('access_token'), r.json().get('refresh_token')
+    print(r.json())
     if refresh_token:
         return access_token, refresh_token
     else:
