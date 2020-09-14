@@ -23,6 +23,11 @@ def get_by_id(user_id):
         return user
     return None
 
+def get_by_access_token(access_token: str):
+    user = db.find_one({'tokens':{'g_access_token':access_token}})
+    if user:
+        return user
+    return None
 
 def get_by_token(token: str):
     user = db.find_one({'auth_token': token})
