@@ -98,6 +98,7 @@ class GoogleAuthLoginApiViewMain(Resource):
         uri = 'https://kraftpy.github.io/MelytixView'
 
         access_token, refresh_token = GoogleAuth.code_exchange(code, uri)
+        print(access_token, refresh_token)
 
         if refresh_token == 403:
             return access_token, refresh_token  # error mesage and error code
