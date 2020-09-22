@@ -67,6 +67,7 @@ class CeleryTest(Resource):
     def get(self):
         test.delay()
 
+
 # URLs declaring --------------------------------
 
 # simple test
