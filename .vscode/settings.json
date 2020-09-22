@@ -1,5 +1,5 @@
 {
-    "python.pythonPath": "/home/maxt/proj/meme/melytix/venv/bin/python3",
+    "python.pythonPath": "c:\\Proj\\melytix\\melytix\\.venv\\Scripts\\python.exe",
     "cSpell.words": [
         "hftlhq",
         "pymongo"

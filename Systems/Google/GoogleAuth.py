@@ -1,4 +1,4 @@
-from user import get_g_tokens, get_by_access_token
+from user import get_g_tokens, query
 
 from requests_oauthlib import OAuth2Session
 from oauth2client import client as oauth_client
@@ -24,19 +24,16 @@ def code_exchange(code: str, uri: str):
 
 
     access_token, refresh_token = r.json().get('access_token'), r.json().get('refresh_token')
-    print(r.json())
+
     if refresh_token:
         return access_token, refresh_token
     else:
-        print(access_token,"____Access")
-        user = get_by_access_token(access_token)
-        print(user,"____-USEr")
+        user = query(tokens={'g_access_token':access_token})
         return user['tokens']['g_access_token'], user['tokens']['g_refresh_token']
 
 
 def get_google_user_data(g_token: str):
     r = requests.get(f'https://www.googleapis.com/oauth2/v2/userinfo?oauth_token={g_token}')
-    print(r.json())
 
     try:
         if r.json()['verified_email']:
