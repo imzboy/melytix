@@ -1,4 +1,5 @@
 import os
+
 from flask_cors import CORS
 
 from flask_restful import Resource, Api
@@ -6,8 +7,6 @@ from flask_restful import Resource, Api
 from Systems.Google.views import (GetSearchConsoleDataAPI, GetVerifiedSitesList,
 GoogleAuthLoginApiView, GoogleAuthLoginApiViewMain, GetViewIdDropDown,
 RetrieveGoogleAnalyticsMetrics)
-
-from tasks import test
 
 from flask import Flask, request
 
@@ -20,9 +19,26 @@ app.config['CORS_HEADERS'] = 'Content-Type'
 app.config.update(BROKER_URL=os.environ['REDIS_URL'],
                 CELERY_RESULT_BACKEND=os.environ['REDIS_URL'])
 
+app.config.beat_schedule = {
+    'fire_every_10_secods': {
+        'task': 'tasks.refresh_metrics',
+        'schedule': 30.0
+    },
+}
+app.config.timezone = 'UTC'
+
+
 api = Api(app)
 
 cors = CORS(app)
+
+class HelloView(Resource):
+    def options(self):
+        return {}, 200
+
+    def get(self):
+        return {'Hello': 'World'}
+
 
 class RegistrationView(Resource):
     """The registration endpoint.

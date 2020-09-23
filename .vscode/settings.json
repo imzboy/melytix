@@ -1,5 +1,5 @@
 {
-    "python.pythonPath": "c:\\Proj\\melytix\\melytix\\.venv\\Scripts\\python.exe",
+    "python.pythonPath": ".venv/bin/python",
     "cSpell.words": [
         "hftlhq",
         "pymongo"

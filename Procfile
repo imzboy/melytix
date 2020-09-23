@@ -1,1 +1,1 @@
-web: honcho start -f Procfile.real 2>&1
+web: honcho start -f Procfile.real
