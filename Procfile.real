@@ -1,3 +1,0 @@
-web: gunicorn app:app
-worker: python celery worker --loglevel=info
-celery_beat: python celery beat --loglevel=info
