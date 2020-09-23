@@ -63,9 +63,6 @@ class LoginView(Resource):
             return {'Error': 'wrong password'}
 
 
-class CeleryTest(Resource):
-    def get(self):
-        test.delay()
 
 
 # URLs declaring --------------------------------
