@@ -24,11 +24,6 @@ api = Api(app)
 
 cors = CORS(app)
 
-class HelloView(Resource):
-    def get(self):
-        return {'Message': 'Hello World!'}
-
-
 class RegistrationView(Resource):
     """The registration endpoint.
        Takes credentials and creates a new user.
