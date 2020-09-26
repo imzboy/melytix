@@ -10,23 +10,9 @@ client = pymongo.MongoClient(uri)
 
 db = client.heroku_t2hftlhq.users
 
-def get_by_email(email: str):
-    user = db.find_one({'email': email})
-    if user:
-        return user
-    return None
 
-
-def get_by_id(user_id):
-    user = db.find_one({'_id': user_id})
-    if user:
-        return user
-    return None
-
-
-def get_by_token(token: str):
-    user = db.find_one({'auth_token': token})
-    if user:
+def query(**kwargs):
+    if (user := db.find_one(kwargs)):
         return user
     return None
 
@@ -48,13 +34,6 @@ def register_from_google(email: str, picture: str):
         'picture': picture,
         'user_type': 'google_auth'
     })
-
-
-def verify_token(token: str) -> bool:
-    user = db.find_one({'auth_token': token})
-    if user:
-        return True
-    return False
 
 
 def verify_password(email, inputted_pass):
@@ -150,3 +129,18 @@ def insert_tokens(token: str, access_token: str, refresh_token: str):
         }},
         upsert=False
     )
+
+
+def test_task():
+    if (test := db.find_one({'test': 'test'})):
+        i = test['task_ex'] + 1
+        db.update(
+            {'test': 'test'},
+            {'$set':{
+                'task_ex': i
+                }})
+    else:
+        db.insert_one({
+            'test': 'test',
+            'task_ex' : 1
+        })

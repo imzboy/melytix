@@ -1,4 +1,4 @@
-from user import get_g_tokens
+from user import get_g_tokens, query
 
 from requests_oauthlib import OAuth2Session
 from oauth2client import client as oauth_client
@@ -11,21 +11,25 @@ CLIENT_ID = '380470694344-0a4vb8rvio43bje2dmbs5hk7l8ecdglm.apps.googleuserconten
 CLIENT_SECRET = 'Z9rH11ECkJ_7ceMmij7JnTWM'
 
 
-def code_exchange(code: str):
+def code_exchange(code: str, uri: str):
     data = {
         'code': code,
         'client_id': CLIENT_ID,
         'client_secret': CLIENT_SECRET,
-        'redirect_uri': 'http://localhost:8080',
+        'redirect_uri': uri,
         'grant_type': 'authorization_code'
         }
 
     r = requests.post('https://oauth2.googleapis.com/token', data=data)
 
-    try:
-        return r.json().get('access_token'), r.json().get('refresh_token')
-    except TypeError:
-        return {'Error': r.text}, 403
+
+    access_token, refresh_token = r.json().get('access_token'), r.json().get('refresh_token')
+
+    if refresh_token:
+        return access_token, refresh_token
+    else:
+        user = query(tokens={'g_access_token':access_token})
+        return user['tokens']['g_access_token'], user['tokens']['g_refresh_token']
 
 
 def get_google_user_data(g_token: str):
