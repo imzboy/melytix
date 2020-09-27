@@ -46,7 +46,7 @@ class GoogleAuthLoginApiViewMain(Resource):
     def post(self):
         code = request.json['code']
 
-        uri = 'https://kraftpy.github.io/MelytixView'
+        uri = 'https://kraftpy.github.io/'
 
         access_token, refresh_token = GoogleAuth.code_exchange(code, uri)
 
