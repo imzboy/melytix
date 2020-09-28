@@ -14,19 +14,14 @@ import user as User
 
 app = Flask(__name__)
 app.secret_key = b"\x92K\x1a\x0e\x04\xcc\x05\xc8\x1c\xc4\x04\x98\xef'\x8e\x1bC\xd6\x18'}:\xc1\x14"
-
 app.config['CORS_HEADERS'] = 'Content-Type'
-app.config.update(BROKER_URL=os.environ['REDIS_URL'],
-                CELERY_RESULT_BACKEND=os.environ['REDIS_URL'])
 
-app.config.beat_schedule = {
-    'fire_every_10_secods': {
-        'task': 'tasks.refresh_metrics',
-        'schedule': 30.0
-    },
-}
-app.config.timezone = 'UTC'
-
+# app.config.beat_schedule = {
+#     'fire_every_10_secods': {
+#         'task': 'tasks.refresh_metrics',
+#         'schedule': 30.0
+#     },
+# }
 
 api = Api(app)
 

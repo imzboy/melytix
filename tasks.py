@@ -4,11 +4,8 @@ from celery.schedules import crontab
 
 from user import test_task
 
-celery_app = Celery(
-    'melytix-celery',
-    backend=os.environ['REDIS_URL'],
-    broker=os.environ['REDIS_URL']
-)
+celery_app = Celery('melytix-celery')
+
 
 @celery_app.task
 def refresh_metrics():
