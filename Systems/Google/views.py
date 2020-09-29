@@ -175,6 +175,7 @@ class RetrieveGoogleAnalyticsMetrics(Resource):
 
             if viewid:
                 ga_data = GoogleAnalytics.google_analytics_query(token, viewid, start_date, end_date)
+                print(GoogleAnalytics.google_analytics_query(token, viewid, 'yesterday', 'today'))
 
                 dash_data = GoogleUtils.prep_dash_metrics(ga_data=ga_data)
 

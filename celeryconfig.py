@@ -1,12 +1,14 @@
 import os
 
+from celery.schedules import crontab
+
 #periodic tasks
-celery_beat_schedule = {
-    "time_scheduler": {
-        "task": "tasks.refresh_metrics",
-        "schedule": 30.0,
-    }
-}
+# celery_beat_schedule = {
+#     "refresh_metrics": {
+#         "task": "tasks.refresh_metrics",
+#         "schedule": crontab(hour=0, minute=0),
+#     }
+# }
 
 #celery and beat configurations
 broker_uri = os.environ.get('REDIS_URL')

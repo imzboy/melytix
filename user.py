@@ -90,7 +90,7 @@ def insert_viewid(token: str, viewid: str):
     db.find_one_and_update(
         {'auth_token': token},
         {'$set': {
-            'viewid': viewid
+            'G_Analytics.viewid': viewid
         }},
         upsert=False
     )
@@ -129,18 +129,3 @@ def insert_tokens(token: str, access_token: str, refresh_token: str):
         }},
         upsert=False
     )
-
-
-def test_task():
-    if (test := db.find_one({'test': 'test'})):
-        i = test['task_ex'] + 1
-        db.update(
-            {'test': 'test'},
-            {'$set':{
-                'task_ex': i
-                }})
-    else:
-        db.insert_one({
-            'test': 'test',
-            'task_ex' : 1
-        })
