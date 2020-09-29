@@ -34,6 +34,7 @@ class TestView(Resource):
     def get(self):
         #do testing
         refresh_metrics.delay()
+        return {'message': 'yes'}
 
 
 class RegistrationView(Resource):
