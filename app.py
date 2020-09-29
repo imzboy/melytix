@@ -10,6 +10,8 @@ RetrieveGoogleAnalyticsMetrics)
 
 from flask import Flask, request
 
+from tasks import refresh_metrics
+
 import user as User
 
 app = Flask(__name__)
@@ -26,6 +28,12 @@ class HelloView(Resource):
 
     def get(self):
         return {'Hello': 'World'}
+
+
+class TestView(Resource):
+    def get(self):
+        #do testing
+        refresh_metrics.delay()
 
 
 class RegistrationView(Resource):
