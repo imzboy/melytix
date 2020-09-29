@@ -16,6 +16,14 @@ def query(**kwargs):
         return user
     return None
 
+
+def append_list(filter: dict, **kwargs):
+    db.update(
+        filter,
+        {'$push': kwargs}
+    )
+
+
 def register(email: str, password: str) -> None:
     salt = os.urandom(24)
     password = pbkdf2_hmac('sha256', password.encode('utf-8'), salt, 100000)

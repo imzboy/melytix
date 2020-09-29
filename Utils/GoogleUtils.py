@@ -172,24 +172,24 @@ def prep_db_metrics(ga_data: list = None, sc_data: list = None, yt_data: list = 
 
     if 'ga_sessions' in metrics:
         for x in ga_data['reports'][0]['data']['rows']:
-            metrics['ga_dates'].append(str(
+            metrics['ga_dates'] = (str(
                 x['dimensions'][0][0:4] + "-" + x['dimensions'][0][4:6] + "-" +
                 x['dimensions'][0][6:8]))
-            metrics['ga_sessions'].append(int(x['metrics'][0]['values'][0]))
-            metrics['ga_users'].append(int(x['metrics'][0]['values'][1]))
-            metrics['ga_pageViews'].append(int(x['metrics'][0]['values'][2]))
-            metrics['ga_pageViewsPerSession'].append(float(x['metrics'][0]['values'][3]))
-            metrics['ga_avgSessionDuration'].append(float(x['metrics'][0]['values'][4]))
-            metrics['ga_bounces'].append(int(x['metrics'][0]['values'][5]))
-            metrics['ga_percentNewSessions'].append(float(x['metrics'][0]['values'][6]))
+            metrics['ga_sessions'] = (int(x['metrics'][0]['values'][0]))
+            metrics['ga_users'] = (int(x['metrics'][0]['values'][1]))
+            metrics['ga_pageViews'] = (int(x['metrics'][0]['values'][2]))
+            metrics['ga_pageViewsPerSession'] = (float(x['metrics'][0]['values'][3]))
+            metrics['ga_avgSessionDuration'] = (float(x['metrics'][0]['values'][4]))
+            metrics['ga_bounces'] = (int(x['metrics'][0]['values'][5]))
+            metrics['ga_percentNewSessions'] = (float(x['metrics'][0]['values'][6]))
 
     if 'sc_clicks' in metrics:
         for x in sc_data['rows']:
-            metrics['sc_dates'].append(x['keys'][0])
-            metrics['clicks'].append(x['clicks'])
-            metrics['impressions'].append(x['impressions'])
-            metrics['ctr'].append(x['ctr'])
-            metrics['position'].append(x['position'])
+            metrics['sc_dates'] = (x['keys'][0])
+            metrics['clicks'] = (x['clicks'])
+            metrics['impressions'] = (x['impressions'])
+            metrics['ctr'] = (x['ctr'])
+            metrics['position'] = (x['position'])
 
     if 'yt_dates' in metrics:
         pass
