@@ -25,4 +25,4 @@ accept_content=["json"]
 
 result_serializer="json"
 
-beat_schedule=celery_beat_schedule
+# beat_schedule=celery_beat_schedule
