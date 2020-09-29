@@ -92,3 +92,7 @@ api.add_resource(RetrieveGoogleAnalyticsMetrics, '/get-ga-data', methods=['POST'
 # search console
 api.add_resource(GetVerifiedSitesList, '/get-sites-url', methods=['POST', 'OPTIONS'])
 api.add_resource(GetSearchConsoleDataAPI, '/get-sc-data', methods=['POST', 'OPTIONS'])
+
+
+#testing
+api.add_resource(TestView, '/test', methods=['POST', 'GET'])
