@@ -32,7 +32,7 @@ def refresh_metric(users: list):
     #TODO: in future make this function refresh all system metrics that user connects
     for user in users:
         print(user)
-        token = user['auth_token']
+        token = user['token']
         view_id = user['viewid']
 
         metrics = google_analytics_query(token, view_id, 'today', 'today')
