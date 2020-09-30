@@ -24,7 +24,7 @@ def refresh_metrics():
         print(users)
         # refresh 10 users by one task for more threaded performace
         for id in range(0, len(users), step):
-	        refresh_metric((users[id: id + step]))
+	        refresh_metric.delay((users[id: id + step]))
 
 
 @celery_app.task
@@ -44,6 +44,6 @@ def refresh_metric(users: list):
                     'email': user['email']
                     },
                 append={
-                    f'ga_data.{key}': insert_dict[key]
+                    f'G_Analytics.ga_data.{key}': insert_dict[key]
                     }
                 )

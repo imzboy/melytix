@@ -123,7 +123,7 @@ def insert_ga_data_in_db(token, ga_data):
     User.db.find_one_and_update(
         {'auth_token': token},
         {'$set': {
-            'ga_data': ga_data
+            'G_Analytics.ga_data': ga_data
         }},
         upsert=False
     )
