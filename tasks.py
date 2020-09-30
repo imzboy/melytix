@@ -44,6 +44,6 @@ def refresh_metric(users: list):
                     'email': user['email']
                     },
                 append={
-                    key: insert_dict[key]
+                    f'ga_data.{key}': insert_dict[key]
                     }
                 )
