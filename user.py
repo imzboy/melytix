@@ -23,10 +23,10 @@ def query_many(**kwargs):
     return None
 
 
-def append_list(filter: dict, **kwargs):
+def append_list(filter: dict, append: dict):
     db.update(
         filter,
-        {'$push': kwargs}
+        {'$push': append}
     )
 
 

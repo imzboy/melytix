@@ -43,5 +43,7 @@ def refresh_metric(users: list):
                 filter={
                     'email': user['email']
                     },
-                    key=insert_dict[key]
+                append={
+                    key: insert_dict[key]
+                    }
                 )
