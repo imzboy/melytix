@@ -33,7 +33,7 @@ class HelloView(Resource):
 class TestView(Resource):
     def get(self):
         #do testing
-        refresh_metrics.delay()
+        refresh_metrics()
         return {'message': 'yes'}
 
 
