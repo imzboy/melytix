@@ -17,6 +17,12 @@ def query(**kwargs):
     return None
 
 
+def query_many(**kwargs):
+    if(user := db.find(kwargs)):
+        return user
+    return None
+
+
 def append_list(filter: dict, **kwargs):
     db.update(
         filter,

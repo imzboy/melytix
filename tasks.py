@@ -4,14 +4,15 @@ from Systems.Google.GoogleAnalytics import google_analytics_query, insert_ga_dat
 from Utils.GoogleUtils import prep_db_metrics
 from user import append_list
 
-from user import query
+from user import query_many
 
 celery_app = Celery('melytix-celery')
 
 
 @celery_app.task
 def refresh_metrics():
-    if (users := query()):
+    if (users := query_many(user_type="google_auth")):
+        print(users)
         step = 10
         # refresh 10 users by one task for more threaded performace
         for id in range(0, len(users), step):
@@ -22,6 +23,7 @@ def refresh_metrics():
 def refresh_metric(users: list):
     #TODO: in future make this function refresh all system metrics that user connects
     for user in users:
+        print(user)
         token = user['tokens']['g_access_token']
         view_id = user['viewid']
 
