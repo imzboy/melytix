@@ -33,7 +33,7 @@ def refresh_metric(users: list):
     for user in users:
         print(user)
         token = user['token']
-        view_id = user['viewid']
+        view_id = user['view_id']
 
         metrics = google_analytics_query(token, view_id, 'today', 'today')
 
