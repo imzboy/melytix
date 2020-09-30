@@ -14,7 +14,13 @@ def refresh_metrics():
     if (mongo_users := query_many(user_type="google_auth")):
         print(mongo_users)
         step = 10
-        users = [user for user in mongo_users]  # convert pymongo cursor obj to list
+        users = []  # convert pymongo cursor obj to list
+        for user in mongo_users:
+            users.append(
+                {'email': user['email'],
+                 'token': user['auth_token'],
+                 'view_id': user['viewid']})
+
         print(users)
         # refresh 10 users by one task for more threaded performace
         for id in range(0, len(users), step):
@@ -26,7 +32,7 @@ def refresh_metric(users: list):
     #TODO: in future make this function refresh all system metrics that user connects
     for user in users:
         print(user)
-        token = user['tokens']['g_access_token']
+        token = user['auth_token']
         view_id = user['viewid']
 
         metrics = google_analytics_query(token, view_id, 'today', 'today')
