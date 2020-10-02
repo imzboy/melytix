@@ -1,4 +1,5 @@
 
+import datetime
 from flask_restful import Resource, Api
 
 from flask import Flask, request
@@ -39,7 +40,10 @@ class GoogleAuthLoginApiView(Resource):
 
 
 class GoogleAuthLoginApiViewMain(Resource):
-    """This View is for google login"""
+    """
+    This View is for google login and registration.
+    kinda needs a refactoring...
+    """
     def options(self):
         return {},200
 
@@ -157,31 +161,42 @@ class RetrieveGoogleAnalyticsMetrics(Resource):
         return {},200
 
     def post(self):
-        """This view inserts view id in db and makes a ga query"""
-        if User.query(auth_token=request.json['token']):
-
-            start_date, end_date = request.json['start_date'], request.json['end_date']
-
-            token = request.json['token']
-
-            viewid = GoogleAnalytics.g_get_viewid(
-                request.json['account'],
-                request.json['web_property'],
-                token
-            )
-            User.insert_viewid(token, viewid)
+        """This view inserts view id in db and makes a ga query for past 3 weeks"""
+        if (user := User.query(auth_token=request.json['token'])):
 
             metric = request.json['metric']
 
-            if viewid:
-                ga_data = GoogleAnalytics.google_analytics_query(token, viewid, start_date, end_date)
+            if (view_id := user.get('G_Analytics').get('viewid')):
 
-                dash_data = GoogleUtils.prep_dash_metrics(ga_data=ga_data)
+                ga_data = user.get('G_Analytics').get('ga_data')
 
-                GoogleAnalytics.insert_ga_data_in_db(token, dash_data)
+                return {'metric': ga_data[metric], 'dates': ga_data['ga_dates']}, 200
 
-                return {'metric':dash_data[metric], 'dates': dash_data['ga_dates']}, 200
             else:
-                return {'error': 'could not fetch view id from google'}, 404
+                # start_date, end_date = request.json['start_date'], request.json['end_date']
+                thee_weeks_ago = (datetime.datetime.now() - datetime.timedelta(weeks=3)).strftime('%Y-%m-%d')
+
+                start_date, end_date = thee_weeks_ago, 'today'
+
+                token = request.json['token']
+
+                viewid = GoogleAnalytics.g_get_viewid(
+                    request.json['account'],
+                    request.json['web_property'],
+                    token
+                )
+
+                User.insert_viewid(token, viewid)
+
+                if viewid:
+                    ga_data = GoogleAnalytics.google_analytics_query(token, viewid, start_date, end_date)
+
+                    dash_data = GoogleUtils.prep_dash_metrics(ga_data=ga_data)
+
+                    GoogleAnalytics.insert_ga_data_in_db(token, dash_data)
+
+                    return {'metric':dash_data[metric], 'dates': dash_data['ga_dates']}, 200
+                else:
+                    return {'error': 'could not fetch view id from google'}, 404
 
         return {'Error': 'Wrong auth token'}, 403

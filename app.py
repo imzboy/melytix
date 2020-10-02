@@ -30,11 +30,15 @@ class HelloView(Resource):
         return {'Hello': 'World'}
 
 
-class TestView(Resource):
-    def get(self):
-        #do testing
-        refresh_metrics().delay()
-        return {'message': 'yes'}
+class ManualRefreshMetrics(Resource):
+    def get(self, admin_pass):
+        if admin_pass == '7887334Mna':
+            #do testing
+            refresh_metrics()
+            # refresh_metrics().delay()
+            return {'message': 'yes'}
+        else:
+            return {'Forbiden access to resource'}, 403
 
 
 class RegistrationView(Resource):
@@ -96,4 +100,4 @@ api.add_resource(GetSearchConsoleDataAPI, '/get-sc-data', methods=['POST', 'OPTI
 
 
 #testing
-api.add_resource(TestView, '/test', methods=['POST', 'GET'])
+api.add_resource(ManualRefreshMetrics, '/refresh/<string:password>', methods=['POST', 'GET'])

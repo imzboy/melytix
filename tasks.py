@@ -12,7 +12,6 @@ celery_app = Celery('melytix-celery')
 @celery_app.task
 def refresh_metrics():
     if (mongo_users := query_many(user_type="google_auth")):
-        print(mongo_users)
         step = 10
         users = []  # convert pymongo cursor obj to list
         for user in mongo_users:
@@ -24,7 +23,8 @@ def refresh_metrics():
         print(users)
         # refresh 10 users by one task for more threaded performace
         for id in range(0, len(users), step):
-	        refresh_metric.delay((users[id: id + step]))
+	            refresh_metric.delay((users[id: id + step]))
+	        # refresh_metric.delay((users[id: id + step]))
 
 
 @celery_app.task
@@ -47,3 +47,9 @@ def refresh_metric(users: list):
                     f'G_Analytics.ga_data.{key}': insert_dict[key]
                     }
                 )
+
+
+@celery_app.task
+def generate_tips():
+    if (mongo_users := query_many()):
+        pass

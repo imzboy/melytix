@@ -2,6 +2,7 @@
 .env/
 __pycache__/
 Systems/__pycache__/
-.vscode/
 venv/
 env/
+.gitignore
+.vscode/settings.json
