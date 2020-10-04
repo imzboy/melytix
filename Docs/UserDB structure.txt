@@ -34,6 +34,14 @@ Docs syntax:
             "description": <string>,
             "active": <boolean>
         }
+    "Alerts"[ <list> (the generated alerst for user)
+        {  # every tip is an object with its fields
+            "id": <uuid string>,
+            "category" <string>,
+            "title": <string>,
+            "description": <string>,
+            "active": <boolean>
+        }
     ]
 }
 }
