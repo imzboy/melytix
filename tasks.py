@@ -24,7 +24,7 @@ def refresh_metrics():
 
         # refresh 10 users by one task for more threaded performace
         for id in range(0, len(users), step):
-	            refresh_metric.delay((users[id: id + step]))
+	            refresh_metric((users[id: id + step]))
 	        # refresh_metric.delay((users[id: id + step]))
 
 
