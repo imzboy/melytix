@@ -2,7 +2,7 @@ from Alerts.Alert import Alert
 
 
 def sessions_lower(metrics: dict):
-    if metrics.get('ga_sessions')[len(metrics['ga_sessions'])] < metrics.get('ga_sessions')[len(metrics['ga_sessions']) - 1]:
+    if metrics.get('ga_sessions')[len(metrics['ga_sessions']) - 1] < metrics.get('ga_sessions')[len(metrics['ga_sessions']) - 2]:
         return True
     return False
 
