@@ -102,4 +102,4 @@ api.add_resource(GetSearchConsoleDataAPI, '/get-sc-data', methods=['POST', 'OPTI
 
 
 #testing
-api.add_resource(ManualRefreshMetrics, '/refresh/<string:password>', methods=['POST', 'GET'])
+api.add_resource(ManualRefreshMetricsAndAlerts, '/refresh/<string:password>', methods=['POST', 'GET'])
