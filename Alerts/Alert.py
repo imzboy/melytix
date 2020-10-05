@@ -1,9 +1,9 @@
-
+import uuid
 
 class Alert:
-    def __init__(self, _id: str, category: str, title: str, description: str, 
+    def __init__(self, category: str, title: str, description: str, 
                 analytics_func: function):
-        self._id = _id
+        self._id = str(uuid.uuid4())
         self.category = category
         self.title = title
         self.description = description

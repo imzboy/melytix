@@ -1,10 +1,12 @@
 import os
 from celery import Celery
-from Systems.Google.GoogleAnalytics import google_analytics_query, insert_ga_data_in_db
+from Systems.Google.GoogleAnalytics import google_analytics_query
 from Utils.GoogleUtils import prep_db_metrics
 from user import append_list
 
 from user import query_many
+
+from Alerts.Alerts import return_alerts
 
 celery_app = Celery('melytix-celery')
 
@@ -20,7 +22,6 @@ def refresh_metrics():
                  'token': user['auth_token'],
                  'view_id': user['viewid']})
 
-        print(users)
         # refresh 10 users by one task for more threaded performace
         for id in range(0, len(users), step):
 	            refresh_metric.delay((users[id: id + step]))
@@ -53,3 +54,28 @@ def refresh_metric(users: list):
 def generate_tips():
     if (mongo_users := query_many()):
         pass
+
+
+@celery_app.task
+def generate_alert(users: list):
+    for user in users:
+        for alert in return_alerts():
+            if alert.analytics_func(user['metrics']):
+                append_list(
+                    {'email': user['email']},
+                    {"Alerts": alert.generate()})
+
+
+@celery_app.task
+def generate_alerts():
+    if (mongo_users := query_many()):
+        users = []
+        for user in mongo_users:
+            users.append(
+                {'email': user['email'],
+                'metrics': user['G_Analytics.ga_data']}
+            )
+
+        for id in range(0, len(users), 10):
+	            # generate_alert.delay((users[id: id + 10]))
+                generate_alert((users[id: id + 10]))

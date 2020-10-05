@@ -10,7 +10,7 @@ RetrieveGoogleAnalyticsMetrics)
 
 from flask import Flask, request
 
-from tasks import refresh_metrics
+from tasks import refresh_metrics, generate_alerts
 
 import user as User
 
@@ -30,12 +30,14 @@ class HelloView(Resource):
         return {'Hello': 'World'}
 
 
-class ManualRefreshMetrics(Resource):
+class ManualRefreshMetricsAndAlerts(Resource):
     def get(self, admin_pass):
         if admin_pass == '7887334Mna':
             #do testing
             refresh_metrics()
             # refresh_metrics().delay()
+            generate_alerts()
+            # generate_alerts.delay()
             return {'message': 'yes'}
         else:
             return {'Forbiden access to resource'}, 403
