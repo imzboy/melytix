@@ -73,7 +73,7 @@ def generate_alerts():
         for user in mongo_users:
             users.append(
                 {'email': user['email'],
-                'metrics': user['G_Analytics.ga_data']}
+                'metrics': user['G_Analytics']['ga_data']}
             )
 
         for id in range(0, len(users), 10):
