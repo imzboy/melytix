@@ -14,7 +14,7 @@ class Alert:
         Constructs it self in dict format to be ready to be insertred in the database
         """
         return {
-            "id": self.id,
+            "id": self._id,
             "category": self.category,
             "title": self.title,
             "description": self.description,
