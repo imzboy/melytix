@@ -31,8 +31,8 @@ class HelloView(Resource):
 
 
 class ManualRefreshMetricsAndAlerts(Resource):
-    def get(self, admin_pass):
-        if admin_pass == '7887334Mna':
+    def get(self, password):
+        if password == '7887334Mna':
             #do testing
             refresh_metrics()
             # refresh_metrics().delay()
