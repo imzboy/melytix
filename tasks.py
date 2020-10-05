@@ -68,7 +68,7 @@ def generate_alert(users: list):
 
 @celery_app.task
 def generate_alerts():
-    if (mongo_users := query_many()):
+    if (mongo_users := query_many(user_type="google_auth")):
         users = []
         for user in mongo_users:
             users.append(
