@@ -8,6 +8,8 @@ from Systems.Google.views import (GetSearchConsoleDataAPI, GetVerifiedSitesList,
 GoogleAuthLoginApiView, GoogleAuthLoginApiViewMain, GetViewIdDropDown,
 RetrieveGoogleAnalyticsMetrics)
 
+from Alerts.views import (RetriveUserAlerts)
+
 from flask import Flask, request
 
 from tasks import refresh_metrics, generate_alerts
@@ -100,6 +102,8 @@ api.add_resource(RetrieveGoogleAnalyticsMetrics, '/get-ga-data', methods=['POST'
 api.add_resource(GetVerifiedSitesList, '/get-sites-url', methods=['POST', 'OPTIONS'])
 api.add_resource(GetSearchConsoleDataAPI, '/get-sc-data', methods=['POST', 'OPTIONS'])
 
+#alerts and tips
+api.add_resource(RetriveUserAlerts, '/get-alerts', methods=['POST', 'OPTIONS'])
 
 #testing
 api.add_resource(ManualRefreshMetricsAndAlerts, '/refresh/<string:password>', methods=['POST', 'GET'])

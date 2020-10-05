@@ -80,7 +80,7 @@ class GetVerifiedSitesList(Resource):
         try:
             token = request.json['token']
 
-            if User.query(token):
+            if User.query(auth_token=token):
                 site_list = get_site_list(token)
                 return {'site_list': site_list}, 200
 
