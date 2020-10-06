@@ -1,0 +1,15 @@
+This document is for capturing milestones for development
+
+1. Dashboard working (done)
+
+2. Alerts generation (done)
+    2.1 Rework id for alerts and tips to be unique and if the id is already in the database don't put it in again.
+
+3. Rework user login flow and proudct use flow(in progress)
+
+4. Tips generation
+    4.1 same as 2.1
+
+5. Automatic metrics refresh, tips and alerts generation <Every day at 22:00>
+    5.1 may swith hosting service for this task.
+
