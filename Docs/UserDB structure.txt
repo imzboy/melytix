@@ -42,6 +42,7 @@ Docs syntax:
             "description": <string>,
             "active": <boolean>
         }
-    ]
+    ],
+    "DashSettings": <dict> (user settings for his dashboard)
 }
 }

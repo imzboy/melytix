@@ -64,6 +64,7 @@ class RegistrationView(Resource):
 
 
 class LoginView(Resource):
+
     def options(self):
         return {},200
 
@@ -78,6 +79,44 @@ class LoginView(Resource):
         else:
             return {'Error': 'wrong password'}
 
+
+class CacheDashboardSettings(Resource):
+    def options(self):
+        return {}, 200
+
+    def post(self):
+        try:
+            token = request.json['token']
+
+            if User.query(auth_token=token):
+                User.insert_dash_settings(token, request.json['settings'])
+                return {'Message': 'Success'}, 200
+
+            return {'Error': 'Wrong auth token'}, 403
+
+        except KeyError:
+            return {'Error': 'no credentials provided'}, 403
+
+
+class GetCachedDashboardSettings(Resource):
+    def options(self):
+        return {}, 200
+
+    def post(self):
+        try:
+            token = request.json['token']
+
+            if (user := User.query(auth_token=token)):
+
+                if (settings := user.get('DashSettings')):
+                    return {'settings': settings}, 200
+                else:
+                    return {'Error': 'user has no Dash settings inserted'}, 404
+
+            return {'Error': 'Wrong auth token'}, 403
+
+        except KeyError:
+            return {'Error': 'no credentials provided'}, 403
 
 
 
@@ -107,3 +146,7 @@ api.add_resource(RetriveUserAlerts, '/get-alerts', methods=['POST', 'OPTIONS'])
 
 #testing
 api.add_resource(ManualRefreshMetricsAndAlerts, '/refresh/<string:password>', methods=['POST', 'GET'])
+
+#DashSettings post and get
+api.add_resource(GetCachedDashboardSettings, '/get-dash-settings', methods=['OPTIONS', 'POST'])
+api.add_resource(CacheDashboardSettings, '/put-dash-settings', methods=['OPTIONS', 'POST'])
