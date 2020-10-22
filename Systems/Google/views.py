@@ -10,7 +10,7 @@ from Systems.Google import GoogleAuth, GoogleAnalytics
 from Systems.Google.SearchConsole import get_site_list, make_sc_request
 from Utils import GoogleUtils
 
-class GoogleAuthLoginApiViewMain(Resource):
+class GoogleAuthLoginApiView(Resource):
     """
     This View is for google login and registration.
     kinda needs a refactoring...
