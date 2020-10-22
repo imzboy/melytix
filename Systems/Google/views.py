@@ -150,6 +150,8 @@ class RetrieveGoogleAnalyticsMetrics(Resource):
     def post(self):
         """This view inserts view id in db and makes a ga query for past 3 weeks"""
         if (user := User.query(auth_token=request.json['token'])):
+            if not user.get('tokens').get('g_access_token'):
+                return {'Error': 'user did not gave access to google yet'}, 404
 
             metric = request.json['metric']
 
@@ -173,9 +175,8 @@ class RetrieveGoogleAnalyticsMetrics(Resource):
                     token
                 )
 
-                User.insert_viewid(token, viewid)
-
                 if viewid:
+                    User.insert_viewid(token, viewid)
                     ga_data = GoogleAnalytics.google_analytics_query(token, viewid, start_date, end_date)
 
                     dash_data = GoogleUtils.prep_dash_metrics(ga_data=ga_data)

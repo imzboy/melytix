@@ -1,10 +1,10 @@
 Melytix User Database Structure:
-Note: We are using mongo db as our main database so the scrutcture will be in mongodb document as json format
+Note: We are using mongo db as our main database so the structure will be in mongodb document as json format
 
 Docs syntax:
     # - comment
     ~ - all matching cases
-    () - varialble description
+    () - variable description
     <> - variable type (int/string/hash/etc.)
 
 {
@@ -15,12 +15,12 @@ Docs syntax:
     "email": <string>,
     "password": <binary> (Hashed string),
     "salt": <binary> (salt that was used to hash the password),
-    "auth_token" : <string> (generated uuid token that is used in every api for secure acssess),
-    "tokens": <dict> (all the acssess and refresh tokens used for all connected systems),
+    "auth_token" : <string> (generated uuid token that is used in every api for secure assess),
+    "tokens": <dict> (all the assess and refresh tokens used for all connected systems),
     "connected_systems": <list> (the list of all the systems that user connected)
-    "G_Analytics" : { <dict> (the google andlytics data)
-        "viewid" <string> (used to query the gooogle analytics api),
-        "ga_data": { <dict> (all metrics and dates from google andlytics)
+    "G_Analytics" : { <dict> (the google analytics data)
+        "viewid" <string> (used to query the google analytics api),
+        "ga_data": { <dict> (all metrics and dates from google analytics)
             "ga_~name of the metric" : <list> (the array of metrics) # ga_~name of the metric[i] == ga_dates[i],
             "ga_dates": <list> (the array of dates from google google analytics, contains every day from user registration minus 3 weeks)
         }
@@ -34,7 +34,7 @@ Docs syntax:
             "description": <string>,
             "active": <boolean>
         }
-    "Alerts"[ <list> (the generated alerst for user)
+    "Alerts"[ <list> (the generated alerts for user)
         {  # every tip is an object with its fields
             "id": <uuid string>,
             "category" <string>,
