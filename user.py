@@ -29,6 +29,12 @@ def append_list(filter: dict, append: dict):
         {'$push': append}
     )
 
+def find_and_update(filter, update):
+    db.find_one_and_update(
+        filter,
+        {'$set': update},
+        upsert=False
+    )
 
 def register(email: str, password: str) -> None:
     salt = os.urandom(24)
@@ -69,10 +75,9 @@ def verify_password(email, inputted_pass):
 
 def get_or_create_token(email):
     user = db.find_one({'email': email})
-    try:
-        token = user['auth_token']
+    if (token := user.get('auth_token')):
         return token
-    except KeyError:
+    else:
         token = binascii.hexlify(os.urandom(20)).decode()
         db.find_one_and_update(
             {'email': email},

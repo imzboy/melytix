@@ -10,35 +10,6 @@ from Systems.Google import GoogleAuth, GoogleAnalytics
 from Systems.Google.SearchConsole import get_site_list, make_sc_request
 from Utils import GoogleUtils
 
-class GoogleAuthLoginApiView(Resource):
-    """This View is for google login"""
-    def options(self):
-        return {},200
-
-    def post(self):
-        code = request.json['code']
-
-        uri = 'http://localhost:8080'
-
-        access_token, refresh_token = GoogleAuth.code_exchange(code, uri)
-
-        if refresh_token == 403:
-            return access_token, refresh_token  # error mesage and error code
-
-        email, picture = GoogleAuth.get_google_user_data(access_token)
-
-        if picture == 403:
-            return email, picture  # error mesage and error code
-
-        User.register_from_google(email, picture)
-
-        token = User.get_or_create_token(email)
-
-        User.insert_tokens(token, access_token, refresh_token)
-
-        return {'email': email, 'picture': picture, 'auth_token': token}
-
-
 class GoogleAuthLoginApiViewMain(Resource):
     """
     This View is for google login and registration.
@@ -49,27 +20,42 @@ class GoogleAuthLoginApiViewMain(Resource):
 
     def post(self):
         code = request.json['code']
+        token = request.json['token']
+        if (user := User.query(auth_token=token)):
 
-        uri = 'https://kraftpy.github.io'
+            uri = 'http://localhost:8080'
 
-        access_token, refresh_token = GoogleAuth.code_exchange(code, uri)
+            access_token, refresh_token = GoogleAuth.code_exchange(code, uri)
 
-        if refresh_token == 403:
-            return access_token, refresh_token  # error mesage and error code
+            User.insert_tokens(token, access_token, refresh_token)
 
-        email, picture = GoogleAuth.get_google_user_data(access_token)
+            return {'Message': 'Success'}, 200
 
-        if picture == 403:
-            return email, picture  # error mesage and error code
+        return {'Error': 'Wrong auth token'}, 403
 
-        User.register_from_google(email, picture)
 
-        token = User.get_or_create_token(email)
+class GoogleAuthLoginApiViewMain(Resource):
+    """
+    This View is for getting assess to google systems.
+    kinda needs a refactoring...
+    """
+    def options(self):
+        return {},200
 
-        User.insert_tokens(token, access_token, refresh_token)
+    def post(self):
+        code = request.json['code']
+        token = request.json['token']
+        if (user := User.query(auth_token=token)):
 
-        return {'email': email, 'picture': picture, 'auth_token': token}
+            uri = 'https://kraftpy.github.io'
 
+            access_token, refresh_token = GoogleAuth.code_exchange(code, uri)
+
+            User.insert_tokens(token, access_token, refresh_token)
+
+            return {'Message': 'Success'}, 200
+
+        return {'Error': 'Wrong auth token'}, 403
 
 class GetVerifiedSitesList(Resource):
 
@@ -157,6 +143,7 @@ class PutViewId(Resource):
 
 
 class RetrieveGoogleAnalyticsMetrics(Resource):
+
     def options(self):
         return {},200
 

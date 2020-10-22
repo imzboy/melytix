@@ -80,6 +80,27 @@ class LoginView(Resource):
             return {'Error': 'wrong password'}
 
 
+class LogOutView(Resource):
+
+    def options(self):
+        return {}, 200
+
+    def post(self):
+            try:
+                token = request.json['token']
+
+                if User.query(auth_token=token):
+                    User.find_and_update(
+                        {'auth_token': token},
+                        {'auth_token': None})
+                    return {}, 200
+
+                return {'Error': 'Wrong auth token'}, 403
+
+            except KeyError:
+                return {'Error': 'no credentials provided'}, 403
+
+
 class CacheDashboardSettings(Resource):
     def options(self):
         return {}, 200
@@ -128,6 +149,8 @@ api.add_resource(HelloView, '/', methods=['GET', 'OPTIONS'])
 #Login end points
 api.add_resource(RegistrationView, '/registration', methods=['POST', 'OPTIONS'])
 api.add_resource(LoginView, '/login', methods=['POST', 'OPTIONS'])
+api.add_resource(LogOutView, '/logout', methods=['POST', 'OPTIONS'])
+
 
 #Google login
 api.add_resource(GoogleAuthLoginApiView , '/insert-tokens', methods=['POST', 'OPTIONS'])
