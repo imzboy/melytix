@@ -43,7 +43,6 @@ def register(email: str, password: str) -> None:
         'email': email,
         'password': password,
         'salt': salt,
-        'user_type': 'normal'
     })
 
 def register_from_google(email: str, picture: str):
