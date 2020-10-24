@@ -12,7 +12,7 @@ from Alerts.views import (RetriveUserAlerts)
 
 from flask import Flask, request
 
-from tasks import refresh_metrics, generate_alerts
+from tasks import refresh_metrics, generate_tips_and_alerts
 
 import user as User
 
@@ -36,10 +36,8 @@ class ManualRefreshMetricsAndAlerts(Resource):
     def get(self, password):
         if password == '7887334Mna':
             #do testing
-            refresh_metrics()
-            # refresh_metrics().delay()
-            generate_alerts()
-            # generate_alerts.delay()
+            generate_tips_and_alerts()
+            # generate_tips_and_alerts.delay()
             return {'message': 'yes'}
         else:
             return {'Forbiden access to resource'}, 403

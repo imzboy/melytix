@@ -1,8 +1,10 @@
 .venv/
 .env/
+.env
 __pycache__/
 Systems/__pycache__/
 venv/
 env/
 .gitignore
 .vscode/settings.json
+.wenv/
