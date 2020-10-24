@@ -7,6 +7,7 @@ from user import append_list
 from user import query_many
 
 from Alerts.Alerts import return_alerts
+from Tips.Tips import return_tips
 
 celery_app = Celery('melytix-celery')
 
@@ -51,9 +52,13 @@ def refresh_metric(users: list):
 
 
 @celery_app.task
-def generate_tips():
-    if (mongo_users := query_many()):
-        pass
+def generate_tip(users: list):
+    for user in users:
+        for tip in return_tips():
+            if tip.analytics_func(user['metrics']):
+                append_list(
+                    {'email': user['email']},
+                    {"Tips": tip.generate()})
 
 
 @celery_app.task
@@ -67,8 +72,8 @@ def generate_alert(users: list):
 
 
 @celery_app.task
-def generate_alerts():
-    if (mongo_users := query_many(user_type="google_auth")):
+def generate_tips_and_alerts():
+    if (mongo_users := query_many()):
         users = []
         for user in mongo_users:
             users.append(
@@ -79,3 +84,4 @@ def generate_alerts():
         for id in range(0, len(users), 10):
 	            # generate_alert.delay((users[id: id + 10]))
                 generate_alert((users[id: id + 10]))
+                generate_tip((users[id: id + 10]))

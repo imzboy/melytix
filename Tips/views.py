@@ -5,7 +5,7 @@ from flask import Flask, request
 import user as User
 
 
-class RetriveUserAlerts(Resource):
+class RetriveUserTips(Resource):
 
     def options(self):
         return {}, 200
@@ -15,16 +15,16 @@ class RetriveUserAlerts(Resource):
             token = request.json['token']
             if (user := User.query(auth_token=token)):
 
-                if (alerts := user.get('Alerts')):
+                if (tips := user.get('Tips')):
 
-                    active_alerts = []
-                    for alert in alerts:
+                    active_tips = []
+                    for alert in tips:
                         if alert['active']:
-                            active_alerts.append(alert)
+                            active_tips.append(alert)
 
-                    return active_alerts, 200
+                    return active_tips, 200
                 else:
-                    return {'Error': 'no alerts has been generated'}, 404
+                    return {'Error': 'no tips has been generated'}, 404
 
         except KeyError:
             return {'Error': 'no credentials provided'}, 403
