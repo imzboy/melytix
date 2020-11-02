@@ -15,7 +15,7 @@ class RetriveUserAlerts(Resource):
             token = request.json['token']
             if (user := User.query(auth_token=token)):
 
-                if (alerts := user.get('Alerts')):
+                if (alerts := user['Alerts']):
 
                     active_alerts = []
                     for alert in alerts:
