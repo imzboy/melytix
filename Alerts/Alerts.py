@@ -10,7 +10,6 @@ def sessions_lower(metrics: dict):
 #
 #
 
-
 def crytical_low_ga_users(metrics: dict):
     ga_users = metrics.get('ga_users')
     min_ga_users = ga_users[0]
@@ -22,9 +21,6 @@ def crytical_low_ga_users(metrics: dict):
         return True
     else:
         return False
-
-    
-
 
 
 def crytical_high_ga_users(metrics: dict):
@@ -39,29 +35,29 @@ def crytical_high_ga_users(metrics: dict):
     else:
         return False
 
+
 def crytical_day_ga_users(metrics: dict):
     pass
+
 
 def path_to_grow_ga_users(metrics: dict):
     ga_users = metrics.get('ga_users')
     i = 1
     for i in range(len(ga_users)):
         if ga_users[i]<ga_users[i-1]:
-            break
             return False
 
     return True
+
 
 def path_to_low_ga_users(metrics: dict):
     ga_users = metrics.get('ga_users')
     i = 1
     for i in range(len(ga_users)):
         if ga_users[i]>ga_users[i-1]:
-            break
             return False
 
     return True
-
 #
 #
 # Cancel of new alerts Vova 24.10.2020
@@ -90,68 +86,68 @@ always_alert = Alert(
 #
 #
 
-crytical_low_ga_users = Alert(
+crytical_low_ga_users_alert = Alert(
     category='Аналитика ( Google Analytics )',
     title='В "" день количество пользователей критически понизилось по сравнению с другими днями этой недели',
     description='The test alert',
     analytics_func=crytical_low_ga_users
 )
 
-crytical_high_ga_users = Alert(
+crytical_high_ga_users_alert = Alert(
     category='Аналитика ( Google Analytics )',
     title='В "" день количество пользователей повысилось по сравнению с другими днями этой недели',
     description='The test alert',
     analytics_func=crytical_high_ga_users
 )
 
-crytical_day_ga_users = Alert(
+crytical_day_ga_users_alert = Alert(
     category='Test',
     title='This is test alert',
     description='The test alert',
     analytics_func=crytical_day_ga_users
 )
 
-path_to_grow_ga_users = Alert(
+path_to_grow_ga_users_alert = Alert(
     category='Аналитика ( Google Analytics )',
     title='На протяжении последних 7 дней трафик последовательно растёт',
     description='Хорошие новости! Вы показываете отличный последовательный рост трафика на вашем сайте с помощью активных каналов привлечения. Задокументируйте план - действий, который был сделан в последние дни для того, чтобы повторить этот успех и усильте текущие активные маркетинговые каналы.',
     analytics_func=path_to_grow_ga_users
 )
 
-path_to_low_ga_users = Alert(
+path_to_low_ga_users_alert = Alert(
     category='Аналитика ( Google Analytics )',
     title='На протяжении последних 7 дней трафик последовательно падает',
     description='По данным сервиса Google Analytics количество пользователей главного домена падает на протяжении последних 7 дней. Обратите внимание на позиции сайта в поиске, выключенные или включенные рекламные каналы, а так же на показатель "Trust" вашего домена.',
     analytics_func=path_to_low_ga_users
 )
 
-path_to_low_position_keywords_gsc = Alert(
-    category='Test',
-    title='This is test alert',
-    description='The test alert',
-    analytics_func=path_to_low_position_keywords_gsc
-)
+# path_to_low_position_keywords_gsc = Alert(
+#     category='Test',
+#     title='This is test alert',
+#     description='The test alert',
+#     analytics_func=path_to_low_position_keywords_gsc
+# )
 
-path_to_grow_position_keywords_gsc = Alert(
-    category='Test',
-    title='This is test alert',
-    description='The test alert',
-    analytics_func=path_to_grow_position_keywords_gsc
-)
+# path_to_grow_position_keywords_gsc = Alert(
+#     category='Test',
+#     title='This is test alert',
+#     description='The test alert',
+#     analytics_func=path_to_grow_position_keywords_gsc
+# )
 
-noncritical_alert_with_errors_pages_index_gsc = Alert(
-    category='Test',
-    title='This is test alert',
-    description='The test alert',
-    analytics_func=noncritical_alert_with_errors_pages_index_gsc
-)
+# noncritical_alert_with_errors_pages_index_gsc = Alert(
+#     category='Test',
+#     title='This is test alert',
+#     description='The test alert',
+#     analytics_func=noncritical_alert_with_errors_pages_index_gsc
+# )
 
-critical_alert_with_errors_pages_index_gsc = Alert(
-    category='Test',
-    title='This is test alert',
-    description='The test alert',
-    analytics_func=critical_alert_with_errors_pages_index_gsc
-)
+# critical_alert_with_errors_pages_index_gsc = Alert(
+#     category='Test',
+#     title='This is test alert',
+#     description='The test alert',
+#     analytics_func=critical_alert_with_errors_pages_index_gsc
+# )
 
 
 
@@ -160,4 +156,6 @@ critical_alert_with_errors_pages_index_gsc = Alert(
 # Cancel of new alerts Vova 24.10.2020
 
 def return_alerts():
-    return [lower_than_yesterday, always_alert]
+    return [lower_than_yesterday, always_alert, crytical_low_ga_users_alert,
+    crytical_high_ga_users_alert, crytical_day_ga_users_alert, path_to_grow_ga_users_alert,
+    path_to_low_ga_users_alert]
