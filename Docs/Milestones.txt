@@ -13,3 +13,8 @@ This document is for capturing milestones for development
 5. Automatic metrics refresh, tips and alerts generation <Every day at 22:00>
     5.1 may swith hosting service for this task.
 
+
+
+Things to do before launch(MVP):
+    1.Configure CORS
+    2.Make tips and alerts and test them
