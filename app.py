@@ -63,7 +63,7 @@ def registration():
 @app.route('/admin/reg-a-user', methods=["GET", "POST"])
 def reg_a_user():
     if request.method == 'GET':
-        render_template('admin/login/index.html', url='/admin/reg-a-user')
+        return render_template('admin/login/index.html', url='/admin/reg-a-user')
     elif request.method == 'POST':
         form = request.form
         email = form.get("login")
@@ -74,6 +74,7 @@ def reg_a_user():
                 return render_template('admin/login/index.html', message='success', url='/admin/reg-a-user')
             else:
                 return render_template('admin/login/index.html', message='user with that email already exists', url='/admin/reg-a-user')
+    return '?'
 
 class LoginView(Resource):
 
