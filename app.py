@@ -3,6 +3,7 @@ import os
 from flask_cors import CORS
 
 from flask_restful import Resource, Api
+from werkzeug.utils import redirect
 
 from Systems.Google.views import (GetSearchConsoleDataAPI, GetVerifiedSitesList,
 GoogleAuthLoginApiView, GoogleAuthLoginApiViewMain, GetViewIdDropDown,
@@ -10,7 +11,7 @@ RetrieveGoogleAnalyticsMetrics)
 
 from Alerts.views import (RetriveUserAlerts)
 
-from flask import Flask, request
+from flask import Flask, request, render_template, url_for
 
 from tasks import refresh_metrics, generate_tips_and_alerts
 
@@ -43,23 +44,36 @@ class ManualRefreshMetricsAndAlerts(Resource):
             return {'Forbiden access to resource'}, 403
 
 
-class RegistrationView(Resource):
-    """The registration endpoint.
-       Takes credentials and creates a new user.
-       Credentials : email, password"""
-    def options(self):
-        return {},200
+@app.route('/admin/login', methods=['GET', 'POST'])
+def registration():
+    if request.method == 'POST':
+        form = request.form
+        login = form.get("login")
+        password = form.get("pass")
+        if login and password:
+            if login == "Melycat" and password == "789456123321654asdasdqqq&":
+                return redirect(url_for('reg_a_user'))
+            else:
+                return render_template('admin/login/index.html', url='/admin/login', message='wrong credantials')
+    elif request.method == 'GET':
+        return render_template('admin/login/index.html', url='/admin/login')
+    return '?'
 
-    def post(self):
-        email = request.json['email']
-        password = request.json['password']
-        if not User.query(email=email):
-            User.register(email, password)
-            return {'status': 'success',
-                    'email': email}
-        else:
-            return {'Error': 'User with that email already created'}
 
+@app.route('/admin/reg-a-user', methods=["GET", "POST"])
+def reg_a_user():
+    if request.method == 'GET':
+        render_template('admin/login/index.html', url='/admin/reg-a-user')
+    elif request.method == 'POST':
+        form = request.form
+        email = form.get("login")
+        password = form.get("pass")
+        if email and password:
+            if not User.query(email=email):
+                User.register(email, password)
+                return render_template('admin/login/index.html', message='success', url='/admin/reg-a-user')
+            else:
+                return render_template('admin/login/index.html', message='user with that email already exists', url='/admin/reg-a-user')
 
 class LoginView(Resource):
 
@@ -145,7 +159,7 @@ class GetCachedDashboardSettings(Resource):
 api.add_resource(HelloView, '/', methods=['GET', 'OPTIONS'])
 
 #Login end points
-api.add_resource(RegistrationView, '/registration', methods=['POST', 'OPTIONS'])
+# api.add_resource(RegistrationView, '/registration', methods=['POST', 'OPTIONS'])
 api.add_resource(LoginView, '/login', methods=['POST', 'OPTIONS'])
 api.add_resource(LogOutView, '/logout', methods=['POST', 'OPTIONS'])
 
