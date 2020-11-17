@@ -27,6 +27,9 @@ class GoogleAuthLoginApiView(Resource):
 
             access_token, refresh_token = GoogleAuth.code_exchange(code, uri)
 
+            if not refresh_token:
+                return {'error': 'No refresh token got. The user needs to revoke access'}, 404
+
             User.insert_tokens(token, access_token, refresh_token)
 
             return {'Message': 'Success'}, 200
@@ -51,11 +54,15 @@ class GoogleAuthLoginApiViewMain(Resource):
 
             access_token, refresh_token = GoogleAuth.code_exchange(code, uri)
 
+            if not refresh_token:
+                return {'error': 'No refresh token got. The user needs to revoke access'}, 404
+
             User.insert_tokens(token, access_token, refresh_token)
 
             return {'Message': 'Success'}, 200
 
         return {'Error': 'Wrong auth token'}, 403
+
 
 class GetVerifiedSitesList(Resource):
 
