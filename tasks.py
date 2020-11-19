@@ -76,11 +76,12 @@ def generate_tips_and_alerts():
     if (mongo_users := query_many()):
         users = []
         for user in mongo_users:
-            users.append(
-                {'email': user['email'],
-                'metrics': user['G_Analytics']['ga_data']}
-            )
- 
+            if user.get('G_Analytics'):
+                users.append(
+                    {'email': user['email'],
+                    'metrics': user['G_Analytics']['ga_data']}
+                )
+
         for id in range(0, len(users), 10):
 	            # generate_alert.delay((users[id: id + 10]))
                 generate_alert((users[id: id + 10]))
