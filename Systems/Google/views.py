@@ -155,14 +155,16 @@ class RetrieveGoogleAnalyticsMetrics(Resource):
         return {},200
 
     def post(self):
-        """This view inserts view id in db and makes a ga query for past 3 weeks"""
+        """
+        This view is responsible for first request to GA if there is no metrics in the user database
+        """
         if (user := User.query(auth_token=request.json['token'])):
             if not user.get('tokens').get('g_access_token'):
                 return {'Error': 'user did not gave access to google yet'}, 404
 
             metric = request.json['metric']
 
-            if (view_id := user.get('G_Analytics').get('viewid')):
+            if user.get('G_Analytics'):
 
                 ga_data = user.get('G_Analytics').get('ga_data')
 
