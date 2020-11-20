@@ -6,16 +6,13 @@ def sessions_lower(metrics: dict):
         return True
     return False
 
-# New alerts Vova 24.10.2020
-#
-#
 
 def crytical_low_ga_users(metrics: dict):
     ga_users = metrics.get('ga_users')
     min_ga_users = ga_users[0]
     for i in range(len(ga_users)):
         if min_ga_users+(min_ga_users/100*30)<ga_users[i]:
-            min_fga_users=ga_users[i]
+            min_ga_users=ga_users[i]
 
     if min_ga_users != ga_users[0]:
         return True
@@ -58,9 +55,7 @@ def path_to_low_ga_users(metrics: dict):
             return False
 
     return True
-#
-#
-# Cancel of new alerts Vova 24.10.2020
+
 
 def just_true(metrics: dict):
     return True
@@ -82,16 +77,13 @@ always_alert = Alert(
 )
 
 
-# New alerts Vova 24.10.2020
-#
-#
-
 crytical_low_ga_users_alert = Alert(
     category='Аналитика ( Google Analytics )',
     title='В "" день количество пользователей критически понизилось по сравнению с другими днями этой недели',
     description='The test alert',
     analytics_func=crytical_low_ga_users
 )
+
 
 crytical_high_ga_users_alert = Alert(
     category='Аналитика ( Google Analytics )',
@@ -100,6 +92,7 @@ crytical_high_ga_users_alert = Alert(
     analytics_func=crytical_high_ga_users
 )
 
+
 crytical_day_ga_users_alert = Alert(
     category='Test',
     title='This is test alert',
@@ -107,12 +100,14 @@ crytical_day_ga_users_alert = Alert(
     analytics_func=crytical_day_ga_users
 )
 
+
 path_to_grow_ga_users_alert = Alert(
     category='Аналитика ( Google Analytics )',
     title='На протяжении последних 7 дней трафик последовательно растёт',
     description='Хорошие новости! Вы показываете отличный последовательный рост трафика на вашем сайте с помощью активных каналов привлечения. Задокументируйте план - действий, который был сделан в последние дни для того, чтобы повторить этот успех и усильте текущие активные маркетинговые каналы.',
     analytics_func=path_to_grow_ga_users
 )
+
 
 path_to_low_ga_users_alert = Alert(
     category='Аналитика ( Google Analytics )',
@@ -150,33 +145,26 @@ path_to_low_ga_users_alert = Alert(
 # )
 
 
-
-#
-#
-# Cancel of new alerts Vova 24.10.2020
-
-
-# New alerts Borya 19.11.2020
-#
-#
-def CtrOfAllSCuser(metrics:dict):
+def ctrOfAllSCUser(metrics: dict):
     ctr = metrics.get('sc_ctr')
-    i = 1
-    for i in range(len(ctr)):
-        if ctr != ctr[i]:
-            return False
-        return True
+    if ctr:
+        counter = 0;
+        for item in ctr:
+            if item < 1.0: # if 100.0 = 100% \ 1.0 = 1%
+                counter += 1
+        # if 10 4
+        if float(len(ctr) / 100 * 40) < counter:
+            return True
+
+    return False
+
 
 ctrOfAllSearchConsoleUser = Alert(
     category='SEO',
-    title = f'CTR меньше 1 процента, люди не кликают на ваш сниппет в поиске!',
-    description = f'На протяжении недели CTR всех ваших объявлений достигает меньше одного процента - поменяйте заголов и описание сниппета в поиске ( изменив <title> и <description> страницы )',
-    analytics_func=CtrOfAllSCuser
+    title = 'CTR меньше 1 процента, люди не кликают на ваш сниппет в поиске!',
+    description = 'На протяжении недели CTR всех ваших объявлений достигает меньше одного процента - поменяйте заголов и описание сниппета в поиске ( изменив <title> и <description> страницы )',
+    analytics_func=ctrOfAllSCUser
 )
-#
-#
-# Cancel of new alerts Borya 19.11.2020
-
 
 
 def return_alerts():
