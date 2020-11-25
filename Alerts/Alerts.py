@@ -145,29 +145,7 @@ path_to_low_ga_users_alert = Alert(
 # )
 
 
-def ctrOfAllSCUser(metrics: dict):
-    ctr = metrics.get('sc_ctr')
-    if ctr:
-        counter = 0;
-        for item in ctr:
-            if item < 1.0: # if 100.0 = 100% \ 1.0 = 1%
-                counter += 1
-        # if 10 4
-        if float(len(ctr) / 100 * 40) < counter:
-            return True
-
-    return False
-
-
-ctrOfAllSearchConsoleUser = Alert(
-    category='SEO',
-    title = 'CTR меньше 1 процента, люди не кликают на ваш сниппет в поиске!',
-    description = 'На протяжении недели CTR всех ваших объявлений достигает меньше одного процента - поменяйте заголов и описание сниппета в поиске ( изменив <title> и <description> страницы )',
-    analytics_func=ctrOfAllSCUser
-)
-
-
 def return_alerts():
     return [lower_than_yesterday, always_alert, crytical_low_ga_users_alert,
     crytical_high_ga_users_alert, crytical_day_ga_users_alert, path_to_grow_ga_users_alert,
-    path_to_low_ga_users_alert,ctrOfAllSearchConsoleUser]
+    path_to_low_ga_users_alert]

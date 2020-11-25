@@ -80,8 +80,9 @@ def generate_tips_and_alerts():
                 {'email': user['email'],
                 'metrics': user['G_Analytics']['ga_data']}
             )
- 
+
         for id in range(0, len(users), 10):
 	            # generate_alert.delay((users[id: id + 10]))
                 generate_alert((users[id: id + 10]))
+	            # generate_tip.delay((users[id: id + 10]))
                 generate_tip((users[id: id + 10]))
