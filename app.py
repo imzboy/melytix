@@ -3,7 +3,6 @@ import os
 from flask_cors import CORS
 
 from flask_restful import Resource, Api
-from werkzeug.utils import redirect
 
 from Systems.Google.views import (GetSearchConsoleDataAPI, GetVerifiedSitesList,
 GoogleAuthLoginApiView, GoogleAuthLoginApiViewMain, GetViewIdDropDown,
@@ -11,7 +10,7 @@ RetrieveGoogleAnalyticsMetrics)
 
 from Alerts.views import (RetriveUserAlerts)
 
-from flask import Flask, request, render_template, url_for
+from flask import Flask, request, render_template, url_for, redirect
 
 from tasks import refresh_metrics, generate_tips_and_alerts
 

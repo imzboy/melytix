@@ -1,4 +1,5 @@
 
+from Utils.GoogleUtils import find_start_and_end_date
 import datetime
 from flask_restful import Resource, Api
 
@@ -27,6 +28,9 @@ class GoogleAuthLoginApiView(Resource):
 
             access_token, refresh_token = GoogleAuth.code_exchange(code, uri)
 
+            if not refresh_token:
+                return {'error': 'No refresh token got. The user needs to revoke access'}, 404
+
             User.insert_tokens(token, access_token, refresh_token)
 
             return {'Message': 'Success'}, 200
@@ -51,11 +55,15 @@ class GoogleAuthLoginApiViewMain(Resource):
 
             access_token, refresh_token = GoogleAuth.code_exchange(code, uri)
 
+            if not refresh_token:
+                return {'error': 'No refresh token got. The user needs to revoke access'}, 404
+
             User.insert_tokens(token, access_token, refresh_token)
 
             return {'Message': 'Success'}, 200
 
         return {'Error': 'Wrong auth token'}, 403
+
 
 class GetVerifiedSitesList(Resource):
 
@@ -148,18 +156,26 @@ class RetrieveGoogleAnalyticsMetrics(Resource):
         return {},200
 
     def post(self):
-        """This view inserts view id in db and makes a ga query for past 3 weeks"""
+        """
+        This view is responsible for first request to GA if there is no metrics in the user database
+        """
         if (user := User.query(auth_token=request.json['token'])):
             if not user.get('tokens').get('g_access_token'):
                 return {'Error': 'user did not gave access to google yet'}, 404
 
             metric = request.json['metric']
 
-            if (view_id := user.get('G_Analytics').get('viewid')):
+            if user.get('G_Analytics'):
 
                 ga_data = user.get('G_Analytics').get('ga_data')
+                print(ga_data[metric], ga_data['ga_dates'])
+                # Filtering only the dates requested
+                start_i, end_i = find_start_and_end_date(ga_data.get('ga_dates'), request.json['start_date'], request.json['end_date'])
 
-                return {'metric': ga_data[metric], 'dates': ga_data['ga_dates']}, 200
+                metrics = ga_data[metric][start_i:end_i + 1]
+                dates = ga_data['ga_dates'][start_i:end_i + 1]
+
+                return {'metric': metrics, 'dates': dates}, 200
 
             else:
                 # start_date, end_date = request.json['start_date'], request.json['end_date']
