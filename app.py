@@ -50,6 +50,7 @@ def registration():
         form = request.form
         login = form.get("login")
         password = form.get("pass")
+        print(login, password)
         if login and password:
             if login == "Melycat" and password == "789456123321654asdasdqqq&":
                 return redirect(url_for('reg_a_user'))
