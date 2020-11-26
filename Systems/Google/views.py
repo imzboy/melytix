@@ -168,7 +168,6 @@ class RetrieveGoogleAnalyticsMetrics(Resource):
             if user.get('G_Analytics'):
 
                 ga_data = user.get('G_Analytics').get('ga_data')
-                print(ga_data[metric], ga_data['ga_dates'])
                 # Filtering only the dates requested
                 start_i, end_i = find_start_and_end_date(ga_data.get('ga_dates'), request.json['start_date'], request.json['end_date'])
 

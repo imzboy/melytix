@@ -232,11 +232,12 @@ def prep_db_metrics(ga_data: list = None, sc_data: list = None, yt_data: list = 
 
 
 def find_start_and_end_date(dates, strart_date, end_date):
-    start_date_index = -1
-    end_date_index = -1
+    start_date_index = 0
+    end_date_index = len(dates) - 1
 
     for i, date in enumerate(dates):
         if strart_date == date:
+            print(strart_date, date)
             start_date_index = i
 
         if end_date == date:
