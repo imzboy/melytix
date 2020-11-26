@@ -8,7 +8,9 @@ from Systems.Google.views import (GetSearchConsoleDataAPI, GetVerifiedSitesList,
 GoogleAuthLoginApiView, GoogleAuthLoginApiViewMain, GetViewIdDropDown,
 RetrieveGoogleAnalyticsMetrics)
 
-from Alerts.views import (RetriveUserAlerts)
+from Alerts.views import RetriveUserAlerts
+from Tips.views import RetriveUserTips
+
 
 from flask import Flask, request, render_template, url_for, redirect
 
@@ -36,6 +38,7 @@ class ManualRefreshMetricsAndAlerts(Resource):
     def get(self, password):
         if password == '7887334Mna':
             #do testing
+            refresh_metrics()
             generate_tips_and_alerts()
             # generate_tips_and_alerts.delay()
             return {'message': 'yes'}
@@ -49,7 +52,6 @@ def registration():
         form = request.form
         login = form.get("login")
         password = form.get("pass")
-        print(login, password)
         if login and password:
             if login == "Melycat" and password == "789456123321654asdasdqqq&":
                 return redirect(url_for('reg_a_user'))
@@ -179,6 +181,7 @@ api.add_resource(GetSearchConsoleDataAPI, '/get-sc-data', methods=['POST', 'OPTI
 
 #alerts and tips
 api.add_resource(RetriveUserAlerts, '/get-alerts', methods=['POST', 'OPTIONS'])
+api.add_resource(RetriveUserTips, '/get-tips', methods=['POST', 'OPTIONS'])
 
 #testing
 api.add_resource(ManualRefreshMetricsAndAlerts, '/refresh/<string:password>', methods=['POST', 'GET'])

@@ -71,8 +71,8 @@ class GetVerifiedSitesList(Resource):
         return {},200
 
     def post(self):
-        try:
-            token = request.json['token']
+
+        if (token := request.json.get('token')):
 
             if User.query(auth_token=token):
                 site_list = get_site_list(token)
@@ -80,8 +80,7 @@ class GetVerifiedSitesList(Resource):
 
             return {'Error': 'Wrong auth token'}, 403
 
-        except KeyError:
-            return {'Error': 'no credentials provided'}, 403
+        return {'Error': 'no credentials provided'}, 403
 
 
 class GetSearchConsoleDataAPI(Resource):
@@ -90,8 +89,8 @@ class GetSearchConsoleDataAPI(Resource):
         return {},200
 
     def post(self):
-        try:
-            token = request.json['token']
+
+        if (token := request.json['token']):
             if User.query(auth_token=token):
 
                 site_url = request.json['site_url']
@@ -102,9 +101,10 @@ class GetSearchConsoleDataAPI(Resource):
                 data = GoogleUtils.prep_dash_metrics(sc_data=response)
 
                 return {'metric': data[request.json['metric']], 'dates': data['sc_dates']}, 200
+
             return {'Error': 'Wrong auth token'}, 403
-        except KeyError:
-            return {'Error': 'no credentials provided'}, 403
+
+        return {'Error': 'no credentials provided'}, 403
 
 
 """ to be able to query all 3 systems and give all metrics to a dashboard need TODO:
