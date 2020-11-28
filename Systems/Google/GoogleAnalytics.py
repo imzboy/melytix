@@ -44,7 +44,7 @@ def google_analytics_query(token, view_id, start_date, end_date):
                     'dimensions': [{'name': 'ga:adwordsCampaignID'},
                                    {'name': 'ga:date'}],
                     "includeEmptyRows": True
-                }
+                }  #TODO: add parsing of metrics above in GoogleUtils.prep_db_metrics()
                 #
                 # ga:browser
                 # ga:browserVersion

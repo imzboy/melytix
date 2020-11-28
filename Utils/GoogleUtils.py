@@ -1,5 +1,12 @@
 from Systems.Google.GoogleAuth import CLIENT_ID, CLIENT_SECRET
 
+"""
+This file is utterly garbage, i can't believe i made this shit
+
+NEEDS REFACTORING FAST!!!
+"""
+
+
 def prep_dash_metrics(ga_data: list = None, sc_data: list = None, yt_data: list = None) -> dict:
     metrics = {}
     # metrics = {
