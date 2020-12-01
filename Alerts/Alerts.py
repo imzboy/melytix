@@ -6,9 +6,6 @@ def sessions_lower(metrics: dict):
         return True
     return False
 
-# New alerts Vova 24.10.2020
-#
-#
 
 def crytical_low_ga_users(metrics: dict):
     ga_users = metrics.get('ga_users')
@@ -58,9 +55,7 @@ def path_to_low_ga_users(metrics: dict):
             return False
 
     return True
-#
-#
-# Cancel of new alerts Vova 24.10.2020
+
 
 def just_true(metrics: dict):
     return True
@@ -82,16 +77,13 @@ always_alert = Alert(
 )
 
 
-# New alerts Vova 24.10.2020
-#
-#
-
 crytical_low_ga_users_alert = Alert(
     category='Аналитика ( Google Analytics )',
     title='В "" день количество пользователей критически понизилось по сравнению с другими днями этой недели',
     description='The test alert',
     analytics_func=crytical_low_ga_users
 )
+
 
 crytical_high_ga_users_alert = Alert(
     category='Аналитика ( Google Analytics )',
@@ -100,6 +92,7 @@ crytical_high_ga_users_alert = Alert(
     analytics_func=crytical_high_ga_users
 )
 
+
 crytical_day_ga_users_alert = Alert(
     category='Test',
     title='This is test alert',
@@ -107,12 +100,14 @@ crytical_day_ga_users_alert = Alert(
     analytics_func=crytical_day_ga_users
 )
 
+
 path_to_grow_ga_users_alert = Alert(
     category='Аналитика ( Google Analytics )',
     title='На протяжении последних 7 дней трафик последовательно растёт',
     description='Хорошие новости! Вы показываете отличный последовательный рост трафика на вашем сайте с помощью активных каналов привлечения. Задокументируйте план - действий, который был сделан в последние дни для того, чтобы повторить этот успех и усильте текущие активные маркетинговые каналы.',
     analytics_func=path_to_grow_ga_users
 )
+
 
 path_to_low_ga_users_alert = Alert(
     category='Аналитика ( Google Analytics )',
@@ -149,11 +144,6 @@ path_to_low_ga_users_alert = Alert(
 #     analytics_func=critical_alert_with_errors_pages_index_gsc
 # )
 
-
-
-#
-#
-# Cancel of new alerts Vova 24.10.2020
 
 def return_alerts():
     return [lower_than_yesterday, always_alert, crytical_low_ga_users_alert,

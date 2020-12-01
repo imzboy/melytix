@@ -3,15 +3,16 @@ import os
 from flask_cors import CORS
 
 from flask_restful import Resource, Api
-from werkzeug.utils import redirect
 
 from Systems.Google.views import (GetSearchConsoleDataAPI, GetVerifiedSitesList,
 GoogleAuthLoginApiView, GoogleAuthLoginApiViewMain, GetViewIdDropDown,
 RetrieveGoogleAnalyticsMetrics)
 
-from Alerts.views import (RetriveUserAlerts)
+from Alerts.views import RetriveUserAlerts
+from Tips.views import RetriveUserTips
 
-from flask import Flask, request, render_template, url_for
+
+from flask import Flask, request, render_template, url_for, redirect
 
 from tasks import refresh_metrics, generate_tips_and_alerts
 
@@ -37,6 +38,7 @@ class ManualRefreshMetricsAndAlerts(Resource):
     def get(self, password):
         if password == '7887334Mna':
             #do testing
+            refresh_metrics()
             generate_tips_and_alerts()
             # generate_tips_and_alerts.delay()
             return {'message': 'yes'}
@@ -179,6 +181,7 @@ api.add_resource(GetSearchConsoleDataAPI, '/get-sc-data', methods=['POST', 'OPTI
 
 #alerts and tips
 api.add_resource(RetriveUserAlerts, '/get-alerts', methods=['POST', 'OPTIONS'])
+api.add_resource(RetriveUserTips, '/get-tips', methods=['POST', 'OPTIONS'])
 
 #testing
 api.add_resource(ManualRefreshMetricsAndAlerts, '/refresh/<string:password>', methods=['POST', 'GET'])

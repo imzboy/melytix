@@ -45,6 +45,31 @@ def google_analytics_query(token, view_id, start_date, end_date):
                                    {'name': 'ga:date'}],
                     "includeEmptyRows": True
                 }
+                #
+                # ga:browser
+                # ga:browserVersion
+                # ga:operatingSystem
+                # ga:operatingSystemVersion
+                # ga:mobileDeviceBranding
+                # ga:mobileDeviceModel
+                # ga:mobileInputSelector
+                # ga:mobileDeviceInfo
+                # ga:deviceCategory
+                # ga:browserSize
+                # ga:country
+                # ga:region
+                # ga:city
+                # ga:language
+                # ga:pageviews
+                # ga:timeOnPage
+                # ga:pageLoadTime
+                # ga:avgPageLoadTime
+                # ga:transactionsPerSession
+                # ga:transactionRevenue
+                # ga:userAgeBracket
+                # ga:userGender
+                # ga:interestOtherCategory
+                # TODO: metrics to add
             ]
         }).execute()
     # data = dump_data_for_melytips(response)

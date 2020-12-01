@@ -148,6 +148,7 @@ def insert_tokens(token: str, access_token: str, refresh_token: str):
         upsert=False
     )
 
+
 def insert_dash_settings(token: str, settings: dict):
     db.find_one_and_update(
         {'auth_token': token},
