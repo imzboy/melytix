@@ -203,7 +203,7 @@ NoAVGSessionDurationFunc = Tip(
 )
 
 
-def LossOfNewUsers(metrics:dict):
+def LossOfNewUsersFunc(metrics:dict):
     ctr = metrics.get('ga_NewUser')
     counter =0
     for item in range(len(ctr)):
@@ -215,15 +215,15 @@ def LossOfNewUsers(metrics:dict):
             return False
 
 
-LossOfNewUsersFunc = Tip(
-    category='Analytics',
-    title='Приток новых уникальных пользователей на этой неделе упал!',
-    description='На протяжении недели зафиксировано падение новых уникальных пользователей. '
+LossOfNewUsers = Tip(
+    category ='Analytics',
+    title = 'Приток новых уникальных пользователей на этой неделе упал!',
+    description = 'На протяжении недели зафиксировано падение новых уникальных пользователей. '
                 'Проверьте состояние каналов маркетинга для исправления и повышения данной метрики для увеличения показателей ранжирования сайта и новой уникальной конверсии.',
-    analytics_func=LossOfNewUsers
+    analytics_func = LossOfNewUsersFunc
 )
 
 
 def return_tips():
     return [CtrOfAllSearchConsoleUser,GrowsOfNewUsersFunc,LowGAPageViewsPerSessionFunc,LowGAReturningUserFunc,NoGAReturningUserFunc,
-            RightGAReturningUserFunc,RightAVGSessionDurationFunc,LowAVGSessionDurationFunc,NoAVGSessionDurationFunc,LossOfNewUsersFunc]
+            RightGAReturningUserFunc,RightAVGSessionDurationFunc,LowAVGSessionDurationFunc,NoAVGSessionDurationFunc,LossOfNewUsers]
