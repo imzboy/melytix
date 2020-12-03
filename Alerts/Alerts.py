@@ -144,8 +144,115 @@ path_to_low_ga_users_alert = Alert(
 #     analytics_func=critical_alert_with_errors_pages_index_gsc
 # )
 
+def gaBouncecCryticalFunc(metrics:dict):
+    ctr = metrics.get('ga_bounces')
+    array = 0
+    for i in range(len(ctr)):
+        array +=ctr[i]
+        if i==7:
+            if array/7>50:
+                return True
+            else:
+                return False
+
+
+gaBouncecCrytical = Alert(
+    category=' Analytics',
+    title='Средний показатель отказов по сайту повысился больше, чем 50%, что неприемлемо для поисковых систем Google и Yandex',
+    description='Средний показатель отказов на сайте вырос и сейчас он больше, чем 50%. Ваше ранжирование в поисковой системе понижается, а клиенты проводят меньше времени на сайте, чем возможно. Проверьте посадочные страницы на которые вы привлекаете трафик при первом касании с клиентом.',
+    analytics_func=gaBouncecCryticalFunc
+)
+
+
+def GABouncecBadFunc(metrics:dict):
+    ctr = metrics.get('ga_bounces')
+    array = 0
+    for i in range(len(ctr)):
+        array +=ctr[i]
+        if i==7:
+            if 50>array/7>25:
+                return True
+            else:
+                return False
+
+
+GABouncecBad = Alert(
+    category=' Analytics',
+    title='Средний показатель отказов по сайту больше, чем 25% что неприемлемо для ваших клиентов и поисковых систем Google и Yandex',
+    description='Средний показатель отказов на сайте вырос и сейчас он больше, чем 25%. Ваше ранжирование в поисковой системе понижается, а клиенты проводят меньше времени на сайте, чем возможно. Проверьте посадочные страницы на которые вы привлекаете трафик при первом касании с клиентом, а так же скорость загрузки страницы и глубину просмотра страницы.',
+    analytics_func=GABouncecBadFunc
+)
+
+
+def GABouncecCryticalDayBadFunc(metrics:dict):
+    ctr = metrics.get('ga_bounces')
+    count = 0
+    day = 0
+    for i in range(len(ctr)):
+        day+=1
+        if ctr[i]>50:
+            count+=1
+        elif day ==7:
+            if count>0:
+                return True
+            else:
+                return False
+
+
+GABouncecCryticalDayBad = Alert(
+    category=' Analytics',
+    title='Показатель отказов по сайту повысился больше, чем 50% в “N” ( N - день в котором произошёл критический момент )',
+    description='В “N” день на вашем сайте был замечен показатель больше, чем 50% - это плохая новость для Вас, но с помощью неё можно проанализировать все маркетинговые каналы'
+                ' и понять какой канал привёл нерелеватный трафик, которых не “зацепила” посадочная страница. Проведите анализ '
+                'с помощью сводки Google Analytics - Источники трафика сравнивая показатель с “Bounce Rate” ( рус. Показатель Отказов ).',
+    analytics_func=GABouncecCryticalDayBadFunc
+)
+
+def GAPathToLowReturningUserFunc(metrics:dict):
+    ctr = metrics.get('ga_ReturningUser')
+    count = 0
+    for i in range(len(ctr)):
+        if ctr[i]<=ctr[i-1]:
+            count+=1
+            if count == 7:
+                return True
+        else:
+            return False
+
+
+
+GAPathToLowReturningUser = Alert(
+    category=' Analytics',
+    title='Показатель возврата пользователей на сайт падает с каждым днём на протяжении последних 7 дней.',
+    description='Похоже новые пользователи не возвращаются к Вам на сайт. Проверьте актуальность источников вашего ремаркетинга или ретаргетинга . Возврат пользователей это важная метрика Вашей конверсии и показатель ранжирования для поисковых систем. '
+                'Обновите ваши креативы на ваших кампаниях нацеленных на возврат пользователей - скорее всего, они утратили актуальность.',
+    analytics_func=GAPathToLowReturningUserFunc
+)
+
+
+def GAPathToGrowReturningUserFunc(metrics:dict):
+    ctr = metrics.get('ga_ReturningUser')
+    count = 0
+    for i in range(len(ctr)):
+        if ctr[i]>=ctr[i-1]:
+            count+=1
+            if count == 7:
+                return True
+        else:
+            return False
+
+
+GAPathToGrowReturningUser = Alert(
+    category=' Analytics',
+    title='Показатель возврата пользователей на сайт возрастает с каждым днём на протяжении последних 7 дней.',
+    description='Отличная работа! Каналы вашего ремаркетинга показывают отличные показатели и растут за последние 7 дней возвращая'
+                'всё больше и больше пользователей! Это позитивно складывается на вашей конверсии и ранжировании ваших сниппетов в поисковой системе.',
+    analytics_func=GAPathToGrowReturningUserFunc
+)
+
 
 def return_alerts():
     return [lower_than_yesterday, always_alert, crytical_low_ga_users_alert,
     crytical_high_ga_users_alert, crytical_day_ga_users_alert, path_to_grow_ga_users_alert,
-    path_to_low_ga_users_alert]
+    path_to_low_ga_users_alert,gaBouncecCrytical,GABouncecBad,GABouncecCryticalDayBad,GAPathToLowReturningUser,
+    GAPathToGrowReturningUser]
