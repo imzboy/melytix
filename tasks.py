@@ -14,6 +14,10 @@ celery_app = Celery('melytix-celery')
 
 @celery_app.task
 def refresh_metrics():
+    """
+    Makes list of users with user_type="google_auth" from DB
+    and calls method for refreshing metrics for 10 users by one task
+    """
     if (mongo_users := query_many(user_type="google_auth")):
         step = 10
         users = []  # convert pymongo cursor obj to list
@@ -25,12 +29,18 @@ def refresh_metrics():
 
         # refresh 10 users by one task for more threaded performace
         for id in range(0, len(users), step):
-	            refresh_metric((users[id: id + step]))
+	        refresh_metric((users[id: id + step]))
 	        # refresh_metric.delay((users[id: id + step]))
 
 
 @celery_app.task
 def refresh_metric(users: list):
+    """
+    For each user from the list, it makes a request to Google Analytics
+    to get updated metrics for today, and updates these metrics in the DB
+            Parameters:
+                users (list): list of users to update metrics
+    """
     #TODO: in future make this function refresh all system metrics that user connects
     for user in users:
         print(user)
@@ -53,6 +63,11 @@ def refresh_metric(users: list):
 
 @celery_app.task
 def generate_tip(users: list):
+    """
+    Adds tips to the DB for each user from the list if their analytics_func returns True
+            Parameters:
+                users (list): list of users to check metrics of user
+    """
     for user in users:
         for tip in return_tips():
             if tip.analytics_func(user['metrics']):
@@ -63,6 +78,11 @@ def generate_tip(users: list):
 
 @celery_app.task
 def generate_alert(users: list):
+    """
+    Adds alerts to the DB for each user on the list according to their traffic
+                Parameters:
+                users (list): list of users to check traffic
+    """
     for user in users:
         for alert in return_alerts():
             if alert.analytics_func(user['metrics']):
@@ -73,6 +93,9 @@ def generate_alert(users: list):
 
 @celery_app.task
 def generate_tips_and_alerts():
+    """
+    For each user form DB calls methods of generating tips and alerts
+    """
     if (mongo_users := query_many()):
         users = []
         for user in mongo_users:
