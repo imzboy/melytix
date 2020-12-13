@@ -194,7 +194,7 @@ class RetrieveGoogleAnalyticsMetrics(Resource):
                     User.insert_viewid(token, viewid)
                     ga_data = GoogleAnalytics.google_analytics_query(token, viewid, start_date, end_date)
 
-                    dash_data = GoogleUtils.prep_dash_metrics(ga_data=ga_data)
+                    dash_data = GoogleUtils.GoogleReportsParser(ga_data).parse()
 
                     GoogleAnalytics.insert_ga_data_in_db(token, dash_data)
 
