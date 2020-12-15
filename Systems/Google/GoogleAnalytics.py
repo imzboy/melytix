@@ -5,6 +5,20 @@ from googleapiclient.discovery import build
 from Systems.Google.GoogleAuth import auth_credentials
 
 
+def generate_report_body(view_id: str, start_date: str, end_date: str, metrics: list, dimensions: list):
+    body_template = {
+        'viewId': view_id,
+        'dateRanges': [{'startDate': start_date, 'endDate': end_date}],
+        'metrics': [],
+        'dimensions': [],
+        "includeEmptyRows": True
+    }
+
+    metric_tempalate = {'expression': '{}'}
+    dimension_template = {'name': '{}'}
+
+
+
 # Google analytics query and setup
 def google_analytics_query(token, view_id, start_date, end_date):
     # Google Analytics v4 api setup to make a request to google analytics
@@ -22,43 +36,29 @@ def google_analytics_query(token, view_id, start_date, end_date):
                                 {'expression': 'ga:pageviewsPerSession'},
                                 {'expression': 'ga:avgSessionDuration'},
                                 {'expression': 'ga:bounces'},
-                                {'expression': 'ga:percentNewSessions'}],
+                                {'expression': 'ga:percentNewSessions'},
+                                {'expression': 'ga:browser'},
+                                {'expression': 'ga:browserVersion'},
+                                {'expression': 'ga:operatingSystem'}],
                     'dimensions': [{'name': 'ga:date'}],
                     "includeEmptyRows": True
                 },
                 # {
                 #     'viewId': view_id,
                 #     'dateRanges': [{'startDate': start_date, 'endDate': end_date}],
-                #     'metrics': [{'expression': 'ga:users'}],
-                #     'dimensions': [{'name': 'ga:userType'},
-                #                    {'name': 'ga:date'}]
+                #     'metrics': [{'expression': 'ga:operatingSystemVersion'},
+                #                 {'expression': 'ga:mobileDeviceBranding'},
+                #                 {'expression': 'ga:mobileDeviceModel'},
+                #                 {'expression': 'ga:mobileInputSelector'},
+                #                 {'expression': 'ga:mobileDeviceInfo'},
+                #                 {'expression': 'ga:deviceCategory'},
+                #                 {'expression': 'ga:browserSize'},
+                #                 {'expression': 'ga:country'},
+                #                 {'expression': 'ga:region'},
+                #                 {'expression': 'ga:city'}],
+                #     'dimensions': [{'name': 'ga:date'}],
+                #     "includeEmptyRows": True
                 # },
-                {
-                    'viewId': view_id,
-                    'dateRanges': [{'startDate': start_date, 'endDate': end_date}],
-                    'metrics': [{'expression': 'ga:adClicks'},
-                                {'expression': 'ga:adCost'},
-                                {'expression': 'ga:CPC'},
-                                {'expression': 'ga:CTR'},
-                                {'expression': 'ga:costPerConversion'}],
-                    'dimensions': [{'name': 'ga:adwordsCampaignID'},
-                                   {'name': 'ga:date'}],
-                    "includeEmptyRows": True
-                }  #TODO: add parsing of metrics above in GoogleUtils.prep_db_metrics()
-                #
-                # ga:browser
-                # ga:browserVersion
-                # ga:operatingSystem
-                # ga:operatingSystemVersion
-                # ga:mobileDeviceBranding
-                # ga:mobileDeviceModel
-                # ga:mobileInputSelector
-                # ga:mobileDeviceInfo
-                # ga:deviceCategory
-                # ga:browserSize
-                # ga:country
-                # ga:region
-                # ga:city
                 # ga:language
                 # ga:pageviews
                 # ga:timeOnPage
@@ -70,6 +70,19 @@ def google_analytics_query(token, view_id, start_date, end_date):
                 # ga:userGender
                 # ga:interestOtherCategory
                 # TODO: metrics to add
+                # {
+                #     'viewId': view_id,
+                #     'dateRanges': [{'startDate': start_date, 'endDate': end_date}],
+                #     'metrics': [{'expression': 'ga:adClicks'},
+                #                 {'expression': 'ga:adCost'},
+                #                 {'expression': 'ga:CPC'},
+                #                 {'expression': 'ga:CTR'},
+                #                 {'expression': 'ga:costPerConversion'}],
+                #     'dimensions': [{'name': 'ga:adwordsCampaignID'},
+                #                    {'name': 'ga:date'}],
+                #     "includeEmptyRows": True
+                # }
+                #
             ]
         }).execute()
     # data = dump_data_for_melytips(response)
