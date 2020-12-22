@@ -2,7 +2,7 @@ from Alerts.Alert import Alert
 
 
 def sessions_lower(metrics: dict):
-    if metrics.get('ga_sessions')[len(metrics['ga_sessions']) - 1] < metrics.get('ga_sessions')[len(metrics['ga_sessions']) - 2]:
+    if metrics.get('ga_sessions')[-1] < metrics.get('ga_sessions')[-2]:
         return True
     return False
 
@@ -146,6 +146,6 @@ path_to_low_ga_users_alert = Alert(
 
 
 def return_alerts():
-    return [lower_than_yesterday, always_alert, crytical_low_ga_users_alert,
+    return [lower_than_yesterday, crytical_low_ga_users_alert,
     crytical_high_ga_users_alert, crytical_day_ga_users_alert, path_to_grow_ga_users_alert,
     path_to_low_ga_users_alert]

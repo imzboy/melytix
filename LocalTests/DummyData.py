@@ -22,3 +22,17 @@ dummy = {
     "yt_subscribersGained": [5,7,8,4,6,8,3],
     "yt_dislikes": [5,7,8,4,6,8,3]
 }
+
+
+#launch this file via typing in console "python LocalTest/DummyData.py"
+#here are the import to algorithms to test
+from Alerts.Alerts import sessions_lower
+
+
+true_metrics = {1, 2, 3, 4, 5, 6, 0}  # here the last day is lower the pre-last day. The True condition
+false_metrics = {1, 2, 3, 4, 5, 6, 7}  # here the metrics staidly go up
+
+assert sessions_lower(true_metrics) == True
+
+assert sessions_lower(false_metrics) == False
+#if this does not throw AssertionError than the algorithm works

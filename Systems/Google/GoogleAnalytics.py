@@ -76,39 +76,6 @@ def google_analytics_query(token, view_id, start_date, end_date):
     return response
 
 
-# def dump_data_for_melytips(ga_response):
-#     data = []
-#     for x in ga_response.get('reports')[0].get('data').get('rows'):
-#         data.append(x)
-#     ga_data = {
-#         'sessions': ga_response.get('reports')[0].get('data').get('totals')[0].get('values')[0],
-#         'users': ga_response.get('reports')[0].get('data').get('totals')[0].get('values')[1],
-#         'pageviews': ga_response.get('reports')[0].get('data').get('totals')[0].get('values')[2],
-#         'pageviewsPerSession': ga_response.get('reports')[0].get('data').get('totals')[0].get('values')[3],
-#         'avgSessionDuration': ga_response.get('reports')[0].get('data').get('totals')[0].get('values')[4],
-#         'bounces': ga_response.get('reports')[0].get('data').get('totals')[0].get('values')[5],
-#         'percentNewSession': ga_response.get('reports')[0].get('data').get('totals')[0].get('values')[6]
-#         # 'NewVisitors': ga_response.get('reports')[1].get('data').get('rows')[0].get('metrics')[0].get('values')[0],
-#         # 'ReturningVisitors': ga_response.get('reports')[1].get('data').get('rows')[1].get('metrics')[0].get('values')[0]
-#     }
-#     if ga_response.get('reports')[1].get('data').get('rows'):
-#         AdWords_Data = {}
-#         for x in ga_response.get('reports')[1].get('data').get('rows'):
-#             AdWords_Data[x['dimensions'][0]] = {
-#                 'adClicks': x.get('metrics')[0].get('values')[0],
-#                 'adCost': x.get('metrics')[0].get('values')[1],
-#                 'CPC': x.get('metrics')[0].get('values')[2],
-#                 'CTR': x.get('metrics')[0].get('values')[3],
-#                 'costPerConversion': x.get('metrics')[0].get('values')[4]
-#             }
-
-#     if User.get_ga_data(current_user.id):
-#         User.update_ga_data(current_user.id, ga_data)
-#     else:
-#         User.create_ga_table(current_user.id, ga_data)
-#     return data
-
-
 def g_get_viewid(account, web_property, token):
     service = build(serviceName='analytics', version='v3', http=auth_credentials(token))
     profiles = service.management().profiles().list(
