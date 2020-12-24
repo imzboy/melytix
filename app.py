@@ -1,3 +1,4 @@
+from Admin.views import MainManualAnalyzeView
 import os
 
 from flask_cors import CORS
@@ -46,6 +47,17 @@ class ManualRefreshMetricsAndAlerts(Resource):
             return {'Forbiden access to resource'}, 403
 
 
+@app.route('/admin/', methods=['GET', 'POST'])
+def menu():
+    return f'<a href="{url_for("reg_a_user")}">register a new user</a><br><a href="{url_for("tips_alert_admin")}">Tips and Alerts Admin</a>'
+
+
+@app.route('/admin/tips-alerts', methods=['GET', 'POST'])
+def tips_alert_admin():
+    #TODO: render template by front with js
+    return render_template('admin/login/index.html')
+
+
 @app.route('/admin/login', methods=['GET', 'POST'])
 def registration():
     if request.method == 'POST':
@@ -54,9 +66,9 @@ def registration():
         password = form.get("pass")
         if login and password:
             if login == "Melycat" and password == "789456123321654asdasdqqq&":
-                return redirect(url_for('reg_a_user'))
+                return redirect(url_for('menu'))
             else:
-                return render_template('admin/login/index.html', url='/admin/login', message='wrong credantials')
+                return render_template('admin/login/index.html', url='/admin/login', message='wrong credentials')
     elif request.method == 'GET':
         return render_template('admin/login/index.html', url='/admin/login')
     return '?'
@@ -189,3 +201,6 @@ api.add_resource(ManualRefreshMetricsAndAlerts, '/refresh/<string:password>', me
 #DashSettings post and get
 api.add_resource(GetCachedDashboardSettings, '/get-dash-settings', methods=['OPTIONS', 'POST'])
 api.add_resource(CacheDashboardSettings, '/put-dash-settings', methods=['OPTIONS', 'POST'])
+
+#Admin
+api.add_resource(MainManualAnalyzeView, '/admin-api', methods=['OPTIONS', 'POST', 'GET'])

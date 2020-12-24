@@ -19,7 +19,8 @@ CtrOfAllSearchConsoleUser = Tip(
     category='SEO',
     title = 'CTR меньше 1 процента, люди не кликают на ваш сниппет в поиске!',
     description = 'На протяжении недели CTR всех ваших объявлений достигает меньше одного процента - поменяйте заголов и описание сниппета в поиске ( изменив <title> и <description> страницы )',
-    analytics_func=ctrOfAllSCUser
+    analytics_func=ctrOfAllSCUser,
+    is_human_created=False
 )
 
 def return_tips():
