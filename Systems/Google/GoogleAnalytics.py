@@ -46,13 +46,14 @@ def google_analytics_query(token, view_id, start_date, end_date):
                 'ga:percentNewSessions', 'ga:pageviews', 'ga:timeOnPage', 'ga:pageLoadTime',
                 'ga:avgPageLoadTime', 'ga:transactionsPerSession', 'ga:transactionRevenue'],
 
-                dimensions=['ga:browser', 'ga:browserVersion', 'ga:operatingSystem',
-                'ga:date', 'ga:browser', 'ga:browserVersion', 'ga:operatingSystem',
-                'ga:operatingSystemVersion', 'ga:mobileDeviceBranding',
-                'ga:mobileInputSelector', 'ga:mobileDeviceModel', 'ga:mobileDeviceInfo',
-                'ga:deviceCategory', 'ga:browserSize', 'ga:country', 'ga:region', 'ga:city',
-                'ga:language', 'ga:userAgeBracket', 'ga:userGender', 'ga:interestOtherCategory'
-                ]  # TODO: take metrics and dimesions to admin, so an admin could add more
+                dimensions=['ga:date']
+                # 'ga:browser', 'ga:browserVersion', 'ga:operatingSystem',
+                # , 'ga:browser', 'ga:browserVersion', 'ga:operatingSystem',
+                # 'ga:operatingSystemVersion', 'ga:mobileDeviceBranding',
+                # 'ga:mobileInputSelector', 'ga:mobileDeviceModel', 'ga:mobileDeviceInfo',
+                # 'ga:deviceCategory', 'ga:browserSize', 'ga:country', 'ga:region', 'ga:city',
+                # 'ga:language', 'ga:userAgeBracket', 'ga:userGender', 'ga:interestOtherCategory'
+                # ]  # TODO: take metrics and dimesions to admin, so an admin could add more
             )
         }).execute()
     # data = dump_data_for_melytips(response)
