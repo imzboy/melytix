@@ -18,8 +18,8 @@ def query(**kwargs):
 
 
 def query_many(**kwargs):
-    if(user := db.find(kwargs)):
-        return user
+    if(users := db.find(kwargs)):
+        return users
     return None
 
 
