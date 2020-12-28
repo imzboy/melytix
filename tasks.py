@@ -1,7 +1,7 @@
 import os
 from celery import Celery
 from Systems.Google.GoogleAnalytics import google_analytics_query
-from Utils.GoogleUtils import prep_db_metrics
+from Utils.GoogleUtils import GoogleReportsParser
 from user import append_list
 
 from user import query_many
@@ -49,14 +49,14 @@ def refresh_metric(users: list):
 
         metrics = google_analytics_query(token, view_id, 'today', 'today')
 
-        insert_dict = prep_db_metrics(ga_data=metrics)
-        for key in insert_dict:
+        insert_dict = GoogleReportsParser(metrics).parse()
+        for key, value in insert_dict.items():
             append_list(
                 filter={
                     'email': user['email']
                     },
                 append={
-                    f'G_Analytics.ga_data.{key}': insert_dict[key]
+                    f'G_Analytics.ga_data.{key}': value if isinstance(value, int) else value[0]
                     }
                 )
 

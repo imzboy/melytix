@@ -24,7 +24,7 @@ def query_many(**kwargs):
 
 
 def append_list(filter: dict, append: dict):
-    db.update(
+    db.update_one(
         filter,
         {'$push': append}
     )

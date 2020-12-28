@@ -10,80 +10,50 @@ def generate_report_body(view_id: str, start_date: str, end_date: str, metrics: 
         'viewId': view_id,
         'dateRanges': [{'startDate': start_date, 'endDate': end_date}],
         'metrics': [],
-        'dimensions': [],
+        'dimensions': [{'name': dimension} for dimension in dimensions],  # not optimized but i don't know how to do it otherwise
         "includeEmptyRows": True
     }
 
-    metric_tempalate = {'expression': '{}'}
-    dimension_template = {'name': '{}'}
+    # metric_tempalate = {'expression': '{}'}
+    # dimension_template = {'name': '{}'}
 
+    report_requests = []
+    step = 10  # Max of 10 metrics per report body
+    for i in range(0, len(metrics), step):
+        metrics_slice = metrics[i:i+step]
+
+        tmp_report_request = body_template
+        tmp_report_request['metrics'] = [{'expression': metric} for metric in metrics_slice]
+        report_requests.append(tmp_report_request)
+
+    return report_requests
 
 
 # Google analytics query and setup
 def google_analytics_query(token, view_id, start_date, end_date):
     # Google Analytics v4 api setup to make a request to google analytics
     api_client = build(serviceName='analyticsreporting', version='v4', http=auth_credentials(token))
-    # Max of 10 metrics in one request body
+    # Max of 10 metrics and 7 dimesions in one report body
     response = api_client.reports().batchGet(
         body={
-            'reportRequests': [
-                {
-                    'viewId': view_id,
-                    'dateRanges': [{'startDate': start_date, 'endDate': end_date}],
-                    'metrics': [{'expression': 'ga:sessions'},
-                                {'expression': 'ga:users'},
-                                {'expression': 'ga:pageviews'},
-                                {'expression': 'ga:pageviewsPerSession'},
-                                {'expression': 'ga:avgSessionDuration'},
-                                {'expression': 'ga:bounces'},
-                                {'expression': 'ga:percentNewSessions'},
-                                {'expression': 'ga:browser'},
-                                {'expression': 'ga:browserVersion'},
-                                {'expression': 'ga:operatingSystem'}],
-                    'dimensions': [{'name': 'ga:date'}],
-                    "includeEmptyRows": True
-                },
-                # {
-                #     'viewId': view_id,
-                #     'dateRanges': [{'startDate': start_date, 'endDate': end_date}],
-                #     'metrics': [{'expression': 'ga:operatingSystemVersion'},
-                #                 {'expression': 'ga:mobileDeviceBranding'},
-                #                 {'expression': 'ga:mobileDeviceModel'},
-                #                 {'expression': 'ga:mobileInputSelector'},
-                #                 {'expression': 'ga:mobileDeviceInfo'},
-                #                 {'expression': 'ga:deviceCategory'},
-                #                 {'expression': 'ga:browserSize'},
-                #                 {'expression': 'ga:country'},
-                #                 {'expression': 'ga:region'},
-                #                 {'expression': 'ga:city'}],
-                #     'dimensions': [{'name': 'ga:date'}],
-                #     "includeEmptyRows": True
-                # },
-                # ga:language
-                # ga:pageviews
-                # ga:timeOnPage
-                # ga:pageLoadTime
-                # ga:avgPageLoadTime
-                # ga:transactionsPerSession
-                # ga:transactionRevenue
-                # ga:userAgeBracket
-                # ga:userGender
-                # ga:interestOtherCategory
-                # TODO: metrics to add
-                # {
-                #     'viewId': view_id,
-                #     'dateRanges': [{'startDate': start_date, 'endDate': end_date}],
-                #     'metrics': [{'expression': 'ga:adClicks'},
-                #                 {'expression': 'ga:adCost'},
-                #                 {'expression': 'ga:CPC'},
-                #                 {'expression': 'ga:CTR'},
-                #                 {'expression': 'ga:costPerConversion'}],
-                #     'dimensions': [{'name': 'ga:adwordsCampaignID'},
-                #                    {'name': 'ga:date'}],
-                #     "includeEmptyRows": True
-                # }
-                #
-            ]
+            'reportRequests': generate_report_body(
+                view_id=view_id,
+                start_date=start_date,
+                end_date=end_date,
+
+                metrics=['ga:sessions', 'ga:users', 'ga:pageviews',
+                'ga:pageviewsPerSession', 'ga:avgSessionDuration', 'ga:bounces',
+                'ga:percentNewSessions', 'ga:pageviews', 'ga:timeOnPage', 'ga:pageLoadTime',
+                'ga:avgPageLoadTime', 'ga:transactionsPerSession', 'ga:transactionRevenue'],
+
+                dimensions=['ga:browser', 'ga:browserVersion', 'ga:operatingSystem',
+                'ga:date', 'ga:browser', 'ga:browserVersion', 'ga:operatingSystem',
+                'ga:operatingSystemVersion', 'ga:mobileDeviceBranding',
+                'ga:mobileInputSelector', 'ga:mobileDeviceModel', 'ga:mobileDeviceInfo',
+                'ga:deviceCategory', 'ga:browserSize', 'ga:country', 'ga:region', 'ga:city',
+                'ga:language', 'ga:userAgeBracket', 'ga:userGender', 'ga:interestOtherCategory'
+                ]  # TODO: take metrics and dimesions to admin, so an admin could add more
+            )
         }).execute()
     # data = dump_data_for_melytips(response)
     return response
