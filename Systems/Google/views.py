@@ -1,9 +1,9 @@
 
 from Utils.GoogleUtils import find_start_and_end_date
 import datetime
-from flask_restful import Resource, Api
+from flask_restful import Resource
 
-from flask import Flask, request
+from flask import request
 
 import user as User
 
@@ -165,9 +165,9 @@ class RetrieveGoogleAnalyticsMetrics(Resource):
 
             metric = request.json['metric']
 
-            if user.get('G_Analytics'):
+            if user.get('metrics').get('google_analytics'):
 
-                ga_data = user.get('G_Analytics').get('ga_data')
+                ga_data = user.get('metrics').get('google_analytics')
 
                 metrics = ga_data[metric][7:]
                 dates = ga_data['ga_dates'][7:]

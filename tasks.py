@@ -18,7 +18,7 @@ def refresh_metrics():
     Makes list of users with user_type="google_auth" from DB
     and calls method for refreshing metrics for 10 users by one task
     """
-    if (mongo_users := query_many(user_type="google_auth")):
+    if (mongo_users := query_many()):
         step = 10
         users = []  # convert pymongo cursor obj to list
         for user in mongo_users:
@@ -56,7 +56,7 @@ def refresh_metric(users: list):
                     'email': user['email']
                     },
                 append={
-                    f'G_Analytics.ga_data.{key}': value if isinstance(value, int) else value[0]
+                    f'google_analytics.metrics.{key}': value if isinstance(value, int) else value[0]
                     }
                 )
 
@@ -99,10 +99,10 @@ def generate_tips_and_alerts():
     if (mongo_users := query_many()):
         users = []
         for user in mongo_users:
-            if user.get('G_Analytics'):  # TODO: change this when more systems will be added
+            if user.get('metrics').get('google_analytics'):  # TODO: change this when more systems will be added
                 users.append(
                     {'email': user['email'],
-                    'metrics': user['G_Analytics']['ga_data']}
+                    'metrics': user['metrics']['google_analytics']}
                 )
 
         for id in range(0, len(users), 10):
