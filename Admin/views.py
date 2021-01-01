@@ -1,3 +1,4 @@
+from flask.globals import request
 from Alerts.Alert import Alert
 from Tips.Tip import Tip
 from user import append_list, query_many
@@ -28,11 +29,11 @@ class MainManualAnalyzeView(Resource):
             'Tip': Tip,
             'Alert': Alert
         }
-        user_email = self.request.get('email')
-        type_ = self.request.get('type')
-        category = self.request.get('category')
-        description = self.request.get('description')
-        title = self.request.get('title')
+        user_email = request.json['token']
+        type_ = request.get('type')
+        category = request.get('category')
+        description = request.get('description')
+        title = request.get('title')
         is_human_created = True
         item = helper_dict[type_](
             title=title,
