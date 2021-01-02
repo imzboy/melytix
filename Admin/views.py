@@ -36,17 +36,13 @@ class MainManualAnalyzeView(Resource):
         title = request.json.get('title')
         is_human_created = True
         item = helper_dict[type_](
-            title=title,
             category=category,
+            title=title,
             description=description,
-            is_human_created=is_human_created
+            is_human_created=is_human_created,
+            analytics_func=None
         )
         append_list(
             {'email': user_email},
             {type_: item.generate()})
         return {'message': 'success'}, 200
-
-
-
-
-
