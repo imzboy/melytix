@@ -29,11 +29,11 @@ class MainManualAnalyzeView(Resource):
             'Tip': Tip,
             'Alert': Alert
         }
-        user_email = request.json['token']
-        type_ = request.get('type')
-        category = request.get('category')
-        description = request.get('description')
-        title = request.get('title')
+        user_email = request.json.get('email')
+        type_ = request.json.get('type')
+        category = request.json.get('category')
+        description = request.json.get('description')
+        title = request.json.get('title')
         is_human_created = True
         item = helper_dict[type_](
             title=title,
