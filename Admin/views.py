@@ -26,8 +26,8 @@ class MainManualAnalyzeView(Resource):
 
     def post(self):
         helper_dict = {
-            'Tip': Tip,
-            'Alert': Alert
+            'Tips': Tip,
+            'Alerts': Alert
         }
         user_email = request.json.get('email')
         type_ = request.json.get('type')
@@ -35,7 +35,7 @@ class MainManualAnalyzeView(Resource):
         description = request.json.get('description')
         title = request.json.get('title')
         is_human_created = True
-        item = helper_dict[type_](
+        item = helper_dict.get(type_)(
             category=category,
             title=title,
             description=description,

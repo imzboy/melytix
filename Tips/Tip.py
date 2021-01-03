@@ -9,8 +9,8 @@ class Tip:
         self.category = category
         self.title = title
         self.description = description
-        self.analytics_func = analytics_func,
-        self.is_human_created=False
+        self.analytics_func = analytics_func
+        self.is_human_created=is_human_created
         self.created_at = datetime.datetime.now().strftime('%d.%m.%Y')
 
     def generate(self) -> dict:
