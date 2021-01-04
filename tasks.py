@@ -15,8 +15,8 @@ celery_app = Celery('melytix-celery')
 @celery_app.task
 def refresh_metrics():
     """
-    Makes list of users with user_type="google_auth" from DB
-    and calls method for refreshing metrics for 10 users by one task
+    Makes list of users from DB and calls method for refreshing metrics
+    for 10 users by one task
     """
     if (mongo_users := query_many()):
         step = 10

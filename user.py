@@ -10,6 +10,9 @@ client = pymongo.MongoClient(uri)
 
 db = client.heroku_t2hftlhq.users
 
+'''
+see Docs/UserDB Structure.txt if there is any questions
+'''
 
 def query(**kwargs):
     if (user := db.find_one(kwargs)):
@@ -130,6 +133,7 @@ def get_g_tokens(token: str):
         ).get('tokens', None)
     if tokens:
         return tokens['g_access_token'], tokens['g_refresh_token']
+    return None
 
 
 def insert_tokens(token: str, access_token: str, refresh_token: str):
