@@ -43,7 +43,6 @@ def refresh_metric(users: list):
     """
     #TODO: in future make this function refresh all system metrics that user connects
     for user in users:
-        print(user)
         token = user['token']
         view_id = user['view_id']
 
@@ -56,7 +55,7 @@ def refresh_metric(users: list):
                     'email': user['email']
                     },
                 append={
-                    f'google_analytics.metrics.{key}': value if isinstance(value, int) else value[0]
+                    f'metrics.google_analytics.{key}': value if isinstance(value, int) else value[0]
                     }
                 )
 

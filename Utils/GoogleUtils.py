@@ -2,6 +2,7 @@ from Systems.Google.GoogleAuth import CLIENT_ID, CLIENT_SECRET
 
 
 class GoogleReportsParser:
+    # TODO: redo to handle multiple dimesions
     """A class for parsing google analytics reports"""
     def __init__(self, reports: dict):
         self.reports = reports.get('reports')
