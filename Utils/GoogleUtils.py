@@ -60,6 +60,20 @@ class GoogleReportsParser:
         return metrics
 
 
+def prep_dash_metrics(ga_data: list = None, sc_data: list = None, yt_data: list = None) -> dict:
+    metrics = {}
+    # TODO: refactor
+    if 'sc_clicks' in metrics:
+        for x in sc_data['rows']:
+            metrics['sc_dates'].append(x['keys'][0])
+            metrics['sc_clicks'].append(x.get('clicks', 0))
+            metrics['sc_impressions'].append(x.get('impressions', 0))
+            metrics['sc_ctr'].append(x.get('ctr', 0))
+            metrics['sc_position'].append(x.get('position', 0))
+
+    return metrics
+
+
 def find_start_and_end_date(dates, strart_date, end_date):
     start_date_index = 0
     end_date_index = len(dates) - 1
