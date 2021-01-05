@@ -62,7 +62,13 @@ class GoogleReportsParser:
 
 
 def prep_dash_metrics(sc_data: list) -> dict:
-    metrics = {}
+    metrics = {
+        'sc_dates': [],
+        'sc_clicks': [],
+        'sc_impressions': [],
+        'sc_ctr': [],
+        'sc_position': [],
+    }
     # TODO: refactor
     for x in sc_data['rows']:
         metrics['sc_dates'].append(x['keys'][0])
