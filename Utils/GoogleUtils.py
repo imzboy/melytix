@@ -46,14 +46,15 @@ class GoogleReportsParser:
             'ga_dates': []
         }
 
-        for report in self.reports:
+        for row in self.reports[0].get('rows'):
+            metrics['ga_dates'].append(self._parse_date(row.get('dimensions')[0]))
+
+        for i, report in enumerate(self.reports):
             helper_dict = self.create_helper_dict(report)
             names = (item.get('name') for item in helper_dict.values())
             metrics.update({k: [] for k in names})
 
             for row in report.get('data').get('rows'):
-                metrics['ga_dates'].append(self._parse_date(row.get('dimensions')[0]))
-
                 for i, metric in enumerate(row.get('metrics')[0].get('values')):
                     metrics[helper_dict[i].get('name')].append(helper_dict[i].get('type')(metric))
 

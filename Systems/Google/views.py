@@ -99,8 +99,9 @@ class GetSearchConsoleDataAPI(Resource):
                 response = make_sc_request(token, site_url, request.json['start_date'], request.json['end_date'])
 
                 data = GoogleUtils.prep_dash_metrics(sc_data=response)
+                print(data)
 
-                return {'metric': data[request.json['metric']], 'dates': data['sc_dates']}, 200
+                return {'metric': data.get(request.json.get('metric'), []), 'dates': data['sc_dates']}, 200
 
             return {'Error': 'Wrong auth token'}, 403
 
