@@ -165,7 +165,7 @@ class RetrieveGoogleAnalyticsMetrics(Resource):
 
             metric = request.json['metric']
 
-            if user.get('metrics').get('google_analytics'):
+            if user.get('metrics', {}).get('google_analytics'):
 
                 ga_data = user.get('metrics').get('google_analytics')
 
