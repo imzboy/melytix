@@ -15,8 +15,8 @@ celery_app = Celery('melytix-celery')
 @celery_app.task
 def refresh_metrics():
     """
-    Makes list of users with user_type="google_auth" from DB
-    and calls method for refreshing metrics for 10 users by one task
+    Makes list of users from DB and calls method for refreshing metrics
+    for 10 users by one task
     """
     if (mongo_users := query_many()):
         step = 10
@@ -43,7 +43,6 @@ def refresh_metric(users: list):
     """
     #TODO: in future make this function refresh all system metrics that user connects
     for user in users:
-        print(user)
         token = user['token']
         view_id = user['view_id']
 
@@ -56,7 +55,7 @@ def refresh_metric(users: list):
                     'email': user['email']
                     },
                 append={
-                    f'google_analytics.metrics.{key}': value if isinstance(value, int) else value[0]
+                    f'metrics.google_analytics.{key}': value if isinstance(value, int) else value[0]
                     }
                 )
 

@@ -165,14 +165,18 @@ class RetrieveGoogleAnalyticsMetrics(Resource):
 
             metric = request.json['metric']
 
-            if user.get('metrics').get('google_analytics'):
+            if user.get('metrics', {}).get('google_analytics'):
 
                 ga_data = user.get('metrics').get('google_analytics')
 
-                metrics = ga_data[metric][7:]
-                dates = ga_data['ga_dates'][7:]
+                metrics = ga_data.get(metric)
+                dates = ga_data.get('ga_dates')
+                if metric and dates:
+                    metrics = metrics[7:]
+                    dates = dates[7:]
+                    return {'metric': metrics, 'dates': dates}, 200
 
-                return {'metric': metrics, 'dates': dates}, 200
+                return {'message': f'the metric "{metric}" was not found'}, 404
 
             else:
                 # start_date, end_date = request.json['start_date'], request.json['end_date']

@@ -22,7 +22,7 @@ def generate_report_body(view_id: str, start_date: str, end_date: str, metrics: 
     for i in range(0, len(metrics), step):
         metrics_slice = metrics[i:i+step]
 
-        tmp_report_request = body_template
+        tmp_report_request = body_template.copy()
         tmp_report_request['metrics'] = [{'expression': metric} for metric in metrics_slice]
         report_requests.append(tmp_report_request)
 
