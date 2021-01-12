@@ -1,5 +1,3 @@
-from Systems.Google.GoogleAuth import CLIENT_ID, CLIENT_SECRET
-
 
 class GoogleReportsParser:
     # TODO: redo to handle multiple dimesions
@@ -70,12 +68,12 @@ def prep_dash_metrics(sc_data: list) -> dict:
         'sc_position': [],
     }
     # TODO: refactor
-    for x in sc_data['rows']:
-        metrics['sc_dates'].append(x['keys'][0])
-        metrics['sc_clicks'].append(x.get('clicks', 0))
-        metrics['sc_impressions'].append(x.get('impressions', 0))
-        metrics['sc_ctr'].append(x.get('ctr', 0))
-        metrics['sc_position'].append(x.get('position', 0))
+    for row in sc_data['rows']:
+        metrics['sc_dates'].append(row['keys'][0])
+        metrics['sc_clicks'].append(row.get('clicks', 0))
+        metrics['sc_impressions'].append(row.get('impressions', 0))
+        metrics['sc_ctr'].append(row.get('ctr', 0))
+        metrics['sc_position'].append(row.get('position', 0))
 
     return metrics
 
