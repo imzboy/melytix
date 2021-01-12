@@ -44,16 +44,14 @@ class HelloView(Resource):
         return {'Hello': 'World'}
 
 
-class ManualRefreshMetricsAndAlerts(Resource):
-    def get(self, password):
-        if password == '7887334Mna':
-            #do testing
-            refresh_metrics()
-            generate_tips_and_alerts()
-            # generate_tips_and_alerts.delay()
-            return {'message': 'yes'}
-        else:
-            return {'Forbiden access to resource'}, 403
+@app.route('/refresh', methods=['GET'])
+@login_required
+def refresh():
+    refresh_metrics()
+
+    generate_tips_and_alerts()
+    # generate_tips_and_alerts.delay()
+    return {'message': 'yes'}
 
 
 @app.route('/admin/logout', methods=['GET'])
@@ -69,7 +67,8 @@ def logout():
 def menu():
     return f'<a href="{url_for("reg_a_user")}">register a new user</a>' \
     f'<br><a href="https://aleksandrkoltsov.github.io/melytix-admin/">Tips and Alerts Admin</a>' \
-    f'<br><a href="{url_for("logout")}">logout</a>'
+    f'<br><a href="{url_for("logout")}">logout</a>' \
+    f'<br><a href="/refresh">refresh metrics</a>'
 
 
 @app.route('/admin/login', methods=['GET', 'POST'])
@@ -211,9 +210,6 @@ api.add_resource(GetSearchConsoleDataAPI, '/get-sc-data', methods=['POST', 'OPTI
 #alerts and tips
 api.add_resource(RetriveUserAlerts, '/get-alerts', methods=['POST', 'OPTIONS'])
 api.add_resource(RetriveUserTips, '/get-tips', methods=['POST', 'OPTIONS'])
-
-#testing
-api.add_resource(ManualRefreshMetricsAndAlerts, '/refresh/<string:password>', methods=['POST', 'GET'])
 
 #DashSettings post and get
 api.add_resource(GetCachedDashboardSettings, '/get-dash-settings', methods=['OPTIONS', 'POST'])
