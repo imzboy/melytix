@@ -1,10 +1,10 @@
-from Admin.views import MainManualAnalyzeView
-import os
-
+from flask_login import LoginManager, login_required, login_user, logout_user
 from flask_cors import CORS
+from bson import ObjectId
 
 from flask_restful import Resource, Api
 
+from Admin.views import MainManualAnalyzeView
 from Systems.Google.views import (GetSearchConsoleDataAPI, GetVerifiedSitesList,
 GoogleAuthLoginApiView, GoogleAuthLoginApiViewMain, GetViewIdDropDown,
 RetrieveGoogleAnalyticsMetrics)
@@ -23,9 +23,18 @@ app = Flask(__name__)
 app.secret_key = b"\x92K\x1a\x0e\x04\xcc\x05\xc8\x1c\xc4\x04\x98\xef'\x8e\x1bC\xd6\x18'}:\xc1\x14"
 app.config['CORS_HEADERS'] = 'Content-Type'
 
+login = LoginManager(app)
+login.login_view = '/admin/login'
+
 api = Api(app)
 
 cors = CORS(app)
+
+
+@login.user_loader
+def load_user(id):
+    return User.Admin(User.query_admin(_id=ObjectId(id)))
+
 
 class HelloView(Resource):
     def options(self):
@@ -47,25 +56,31 @@ class ManualRefreshMetricsAndAlerts(Resource):
             return {'Forbiden access to resource'}, 403
 
 
+@app.route('/admin/logout', methods=['GET'])
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('admin_login'))
+
+
+
 @app.route('/admin/', methods=['GET', 'POST'])
+@login_required
 def menu():
-    return f'<a href="{url_for("reg_a_user")}">register a new user</a><br><a href="{url_for("tips_alert_admin")}">Tips and Alerts Admin</a>'
-
-
-@app.route('/admin/tips-alerts', methods=['GET', 'POST'])
-def tips_alert_admin():
-    #TODO: render template by front with js
-    return render_template('admin/login/index.html')
+    return f'<a href="{url_for("reg_a_user")}">register a new user</a>' \
+    f'<br><a href="https://aleksandrkoltsov.github.io/melytix-admin/">Tips and Alerts Admin</a>' \
+    f'<br><a href="{url_for("logout")}">logout</a>'
 
 
 @app.route('/admin/login', methods=['GET', 'POST'])
-def registration():
+def admin_login():
     if request.method == 'POST':
         form = request.form
         login = form.get("login")
         password = form.get("pass")
         if login and password:
-            if login == "Melycat" and password == "789456123321654asdasdqqq&":
+            if User.verify_admin_password(login, password):
+                login_user(User.Admin(User.query_admin(email=login)))
                 return redirect(url_for('menu'))
             else:
                 return render_template('admin/login/index.html', url='/admin/login', message='wrong credentials')
@@ -75,6 +90,7 @@ def registration():
 
 
 @app.route('/admin/reg-a-user', methods=["GET", "POST"])
+@login_required
 def reg_a_user():
     if request.method == 'GET':
         return render_template('admin/login/index.html', url='/admin/reg-a-user')
@@ -89,6 +105,7 @@ def reg_a_user():
             else:
                 return render_template('admin/login/index.html', message='user with that email already exists', url='/admin/reg-a-user')
     return '?'
+
 
 class LoginView(Resource):
 

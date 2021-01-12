@@ -1,12 +1,14 @@
-import pymongo
+from flask_login.mixins import UserMixin
+from pymongo import MongoClient
 import os
 from hashlib import pbkdf2_hmac
 import binascii
 
+
 # Connecting to Mogodb Atlas
 uri = os.environ.get('MONGODB_URI', None)
 
-client = pymongo.MongoClient(uri)
+client = MongoClient(uri)
 
 db = client.heroku_t2hftlhq.users
 
@@ -15,6 +17,13 @@ see Docs/UserDB Structure.txt if there is any questions
 '''
 
 def query(**kwargs):
+    if (user := db.find_one(kwargs)):
+        return user
+    return None
+
+
+def query_admin(**kwargs):
+    db = client.heroku_t2hftlhq.admins
     if (user := db.find_one(kwargs)):
         return user
     return None
@@ -73,6 +82,25 @@ def verify_password(email, inputted_pass):
             return False
     else:
         return 404
+
+
+def verify_admin_password(email, inputted_pass):
+    db = client.heroku_t2hftlhq.admins
+    user = db.find_one({'email': email})
+    if user:
+        salt = user['salt']
+        inputted_pass = pbkdf2_hmac(
+            'sha256',
+            inputted_pass.encode('utf-8'),
+            salt,
+            100000)
+        if user['password'] == inputted_pass:
+            return True
+        else:
+            return False
+    else:
+        return 404
+
 
 
 def get_or_create_token(email):
@@ -161,3 +189,12 @@ def insert_dash_settings(token: str, settings: dict):
         }},
         upsert=False
     )
+
+
+class Admin(UserMixin):
+    def __init__(self, user_dict: dict):
+        self.user_dict = user_dict
+
+    def get_id(self):
+        object_id = self.user_dict.get('_id')
+        return str(object_id)
