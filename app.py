@@ -5,9 +5,13 @@ from flask_cors import CORS
 
 from flask_restful import Resource, Api
 
+from authlib.integrations.flask_client import OAuth
+
 from Systems.Google.views import (GetSearchConsoleDataAPI, GetVerifiedSitesList,
 GoogleAuthLoginApiView, GoogleAuthLoginApiViewMain, GetViewIdDropDown,
 RetrieveGoogleAnalyticsMetrics)
+
+from Systems.Facebook.views import FacebookAuthLoginApiView, RetrieveFacebookMetricsFromBD
 
 from Alerts.views import RetriveUserAlerts
 from Tips.views import RetriveUserTips
@@ -26,6 +30,8 @@ app.config['CORS_HEADERS'] = 'Content-Type'
 api = Api(app)
 
 cors = CORS(app)
+
+oauth = OAuth(app)
 
 class HelloView(Resource):
     def options(self):
@@ -190,6 +196,10 @@ api.add_resource(RetrieveGoogleAnalyticsMetrics, '/get-ga-data', methods=['POST'
 # search console
 api.add_resource(GetVerifiedSitesList, '/get-sites-url', methods=['POST', 'OPTIONS'])
 api.add_resource(GetSearchConsoleDataAPI, '/get-sc-data', methods=['POST', 'OPTIONS'])
+
+# facebook ads manager
+api.add_resource(FacebookAuthLoginApiView, '/facebook-insert-tokens', methods=['POST', 'OPTIONS'])
+api.add_resource(RetrieveFacebookMetricsFromBD, '/facebook-retrieve-metrics', methods=['POST', 'OPTIONS'])
 
 #alerts and tips
 api.add_resource(RetriveUserAlerts, '/get-alerts', methods=['POST', 'OPTIONS'])
