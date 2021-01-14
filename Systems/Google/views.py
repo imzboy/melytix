@@ -11,6 +11,7 @@ from Systems.Google import GoogleAuth, GoogleAnalytics
 from Systems.Google.SearchConsole import get_site_list, make_sc_request
 from Utils import GoogleUtils
 
+
 class GoogleAuthLoginApiView(Resource):
     """
     This View is for google login and registration.
@@ -209,3 +210,5 @@ class RetrieveGoogleAnalyticsMetrics(Resource):
                     return {'error': 'could not fetch view id from google'}, 404
 
         return {'Error': 'Wrong auth token'}, 403
+
+

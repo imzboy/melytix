@@ -181,6 +181,23 @@ def insert_tokens(token: str, access_token: str, refresh_token: str):
     )
 
 
+def f_insert_tokens(token: str, access_token: str):
+    """
+    Insert facebook access_token in db
+
+        Args:
+        token: the token that we use to find the user
+        access_token: the facebook access token
+    """
+    db.find_one_and_update(
+        {'auth_token': token},
+        {'$set': {
+            'tokens': {'f_access_token': access_token}
+        }},
+        upsert=False
+    )
+
+
 def insert_dash_settings(token: str, settings: dict):
     db.find_one_and_update(
         {'auth_token': token},

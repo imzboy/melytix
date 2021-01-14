@@ -1,8 +1,10 @@
 import os
 from celery import Celery
 from Systems.Google.GoogleAnalytics import google_analytics_query
+from Systems.Facebook.FacebookAdsManager import facebook_insights_query
 from Utils.GoogleUtils import GoogleReportsParser
 from user import append_list
+import datetime
 
 from user import query_many
 
@@ -47,9 +49,9 @@ def refresh_metric(users: list):
         token = user['token']
         view_id = user['view_id']
 
-        metrics = google_analytics_query(token, view_id, 'today', 'today')
+        g_metrics = google_analytics_query(token, view_id, 'today', 'today')
 
-        insert_dict = GoogleReportsParser(metrics).parse()
+        insert_dict = GoogleReportsParser(g_metrics).parse()
         for key, value in insert_dict.items():
             append_list(
                 filter={
@@ -58,6 +60,17 @@ def refresh_metric(users: list):
                 append={
                     f'metrics.google_analytics.{key}': value if isinstance(value, int) else value[0]
                     }
+                )
+
+        today = datetime.timedelta.now().strftime('%Y-%m-%d')
+        f_metrics = facebook_insights_query(token, today, today)
+        for campaign, metrics in f_metrics.items():
+            for metric, value in metrics.items():
+                append_list(
+                    filter={
+                        'email': user['email']
+                    },
+                    append={f'connected_system.facebook_insights.{campaign}.{metric}': {'$each': value}}
                 )
 
 
