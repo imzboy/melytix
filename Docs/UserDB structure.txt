@@ -17,13 +17,15 @@ Docs syntax:
     "salt": <binary> (salt that was used to hash the password),
     "auth_token" : <string> (generated uuid token that is used in every api for secure assess),
     "tokens": <dict> (all the assess and refresh tokens used for all connected systems),
-    "connected_systems": <list> (the list of all the systems that user connected)
-    "G_Analytics" : { <dict> (the google analytics data)
-        "viewid" <string> (used to query the google analytics api),
-        "ga_data": { <dict> (all metrics and dates from google analytics)
+    "connected_systems": { <dict> (the list of all the systems that user connected)
+        "google_analytics": {}
+    },
+    "metrics": {
+        "google_analytics" : { <dict> (the google analytics data)
             "ga_~name of the metric" : <list> (the array of metrics) # ga_~name of the metric[i] == ga_dates[i],
             "ga_dates": <list> (the array of dates from google google analytics, contains every day from user registration minus 3 weeks)
-        }
+        },
+        "search_console": {}
     },
     # TODO: add more systems
     "Tips"[ <list> (the generated tips for user)

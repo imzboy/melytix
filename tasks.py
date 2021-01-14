@@ -21,15 +21,16 @@ def refresh_metrics():
     for 10 users by one task
     """
     if (mongo_users := query_many()):
-        step = 10
         users = []  # convert pymongo cursor obj to list
         for user in mongo_users:
-            users.append(
-                {'email': user['email'],
-                 'token': user['auth_token'],
-                 'view_id': user['viewid']})
+            if user.get('metrics'):
+                users.append(
+                    {'email': user['email'],
+                    'token': user['auth_token'],
+                    'view_id': user['viewid']})
 
         # refresh 10 users by one task for more threaded performace
+        step = 10
         for id in range(0, len(users), step):
 	        refresh_metric((users[id: id + step]))
 	        # refresh_metric.delay((users[id: id + step]))

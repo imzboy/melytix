@@ -1,5 +1,3 @@
-from Systems.Google.GoogleAuth import CLIENT_ID, CLIENT_SECRET
-
 
 class GoogleReportsParser:
     # TODO: redo to handle multiple dimesions
@@ -46,18 +44,38 @@ class GoogleReportsParser:
             'ga_dates': []
         }
 
-        for report in self.reports:
+        for row in self.reports[0].get('rows'):
+            metrics['ga_dates'].append(self._parse_date(row.get('dimensions')[0]))
+
+        for i, report in enumerate(self.reports):
             helper_dict = self.create_helper_dict(report)
             names = (item.get('name') for item in helper_dict.values())
             metrics.update({k: [] for k in names})
 
             for row in report.get('data').get('rows'):
-                metrics['ga_dates'].append(self._parse_date(row.get('dimensions')[0]))
-
                 for i, metric in enumerate(row.get('metrics')[0].get('values')):
                     metrics[helper_dict[i].get('name')].append(helper_dict[i].get('type')(metric))
 
         return metrics
+
+
+def prep_dash_metrics(sc_data: list) -> dict:
+    metrics = {
+        'sc_dates': [],
+        'sc_clicks': [],
+        'sc_impressions': [],
+        'sc_ctr': [],
+        'sc_position': [],
+    }
+    # TODO: refactor
+    for row in sc_data['rows']:
+        metrics['sc_dates'].append(row['keys'][0])
+        metrics['sc_clicks'].append(row.get('clicks', 0))
+        metrics['sc_impressions'].append(row.get('impressions', 0))
+        metrics['sc_ctr'].append(row.get('ctr', 0))
+        metrics['sc_position'].append(row.get('position', 0))
+
+    return metrics
 
 
 def find_start_and_end_date(dates, strart_date, end_date):

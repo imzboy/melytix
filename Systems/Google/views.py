@@ -101,7 +101,7 @@ class GetSearchConsoleDataAPI(Resource):
 
                 data = GoogleUtils.prep_dash_metrics(sc_data=response)
 
-                return {'metric': data[request.json['metric']], 'dates': data['sc_dates']}, 200
+                return {'metric': data.get(request.json.get('metric'), []), 'dates': data.get('sc_dates', [])}, 200
 
             return {'Error': 'Wrong auth token'}, 403
 
@@ -166,7 +166,7 @@ class RetrieveGoogleAnalyticsMetrics(Resource):
 
             metric = request.json['metric']
 
-            if user.get('metrics').get('google_analytics'):
+            if user.get('metrics', {}).get('google_analytics'):
 
                 ga_data = user.get('metrics').get('google_analytics')
 
