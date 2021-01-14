@@ -191,6 +191,29 @@ def insert_dash_settings(token: str, settings: dict):
     )
 
 
+def flip_tip_or_alert(token: str, type_: str, id: str):
+    user = db.find_one(
+        {'auth_token': token,
+         f'{type_}s.id': {id}}
+        )
+
+    algorithms_res = user.get(f'{type_}s')
+    alg_bool = False
+
+    for alg in algorithms_res:
+        if alg.get('id') == id:
+            alg_bool = alg.get('active')
+
+
+    db.update_one(
+        {'auth_token': token,
+        f'{type_}s.id': {id}},
+        {'$set': {
+            f'{type_}s.$.active': not alg_bool
+        }}
+    )
+
+
 class Admin(UserMixin):
     def __init__(self, user_dict: dict):
         self.user_dict = user_dict

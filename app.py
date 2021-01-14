@@ -9,7 +9,7 @@ from Systems.Google.views import (GetSearchConsoleDataAPI, GetVerifiedSitesList,
 GoogleAuthLoginApiView, GoogleAuthLoginApiViewMain, GetViewIdDropDown,
 RetrieveGoogleAnalyticsMetrics)
 
-from Alerts.views import RetriveUserAlerts
+from Alerts.views import AlertTipFlipActive, RetriveUserAlerts
 from Tips.views import RetriveUserTips
 
 
@@ -194,7 +194,6 @@ api.add_resource(HelloView, '/', methods=['GET', 'OPTIONS'])
 api.add_resource(LoginView, '/login', methods=['POST', 'OPTIONS'])
 api.add_resource(LogOutView, '/logout', methods=['POST', 'OPTIONS'])
 
-
 #Google login
 api.add_resource(GoogleAuthLoginApiView , '/insert-tokens', methods=['POST', 'OPTIONS'])
 api.add_resource(GoogleAuthLoginApiViewMain, '/insert-tokens-main', methods=['POST', 'OPTIONS'])
@@ -210,6 +209,7 @@ api.add_resource(GetSearchConsoleDataAPI, '/get-sc-data', methods=['POST', 'OPTI
 #alerts and tips
 api.add_resource(RetriveUserAlerts, '/get-alerts', methods=['POST', 'OPTIONS'])
 api.add_resource(RetriveUserTips, '/get-tips', methods=['POST', 'OPTIONS'])
+api.add_resource(AlertTipFlipActive, '/flip', methods=['POST', 'OPTIONS'])
 
 #DashSettings post and get
 api.add_resource(GetCachedDashboardSettings, '/get-dash-settings', methods=['OPTIONS', 'POST'])
