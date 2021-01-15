@@ -195,12 +195,15 @@ class RetrieveGoogleAnalyticsMetrics(Resource):
                 if viewid:
                     User.insert_viewid(token, viewid)
                     ga_data = GoogleAnalytics.google_analytics_query(token, viewid, start_date, end_date)
+                    if ga_data:
 
-                    dash_data = GoogleUtils.GoogleReportsParser(ga_data).parse()
+                        dash_data =  GoogleUtils.GoogleReportsParser(ga_data).parse()
 
-                    GoogleAnalytics.insert_ga_data_in_db(token, dash_data)
+                        GoogleAnalytics.insert_ga_data_in_db(token, dash_data)
 
-                    return {'metric':dash_data[metric], 'dates': dash_data['ga_dates']}, 200
+                        return {'metric':dash_data[metric], 'dates': dash_data['ga_dates']}, 200
+                    else:
+                        return {'Error': 'Google currently unavailable'}, 403
                 else:
                     return {'error': 'could not fetch view id from google'}, 404
 
