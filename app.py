@@ -49,7 +49,7 @@ class HelloView(Resource):
 def refresh():
     refresh_metrics()
 
-    generate_tips_and_alerts()
+    # generate_tips_and_alerts()
     # generate_tips_and_alerts.delay()
     return {'message': 'yes'}
 
