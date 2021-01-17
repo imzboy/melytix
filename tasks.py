@@ -18,14 +18,14 @@ def refresh_metrics():
     Makes list of users from DB and calls method for refreshing metrics
     for 10 users by one task
     """
-    if (mongo_users := query_many()):
+    if (mongo_users := query_many({'metrics': {'$exists': True}})):
         users = []  # convert pymongo cursor obj to list
         for user in mongo_users:
             if user.get('metrics'):
                 users.append(
                     {'email': user['email'],
                     'token': user['auth_token'],
-                    'view_id': user['viewid']})
+                    'view_id': user['metrics']['google_analytics']['viewid']})
 
         # refresh 10 users by one task for more threaded performace
         step = 10
