@@ -44,7 +44,7 @@ class GoogleReportsParser:
             'ga_dates': []
         }
 
-        for row in self.reports[0].get('rows'):
+        for row in self.reports[0].get('data').get('rows'):
             metrics['ga_dates'].append(self._parse_date(row.get('dimensions')[0]))
 
         for i, report in enumerate(self.reports):
