@@ -22,10 +22,10 @@ def refresh_metrics():
         users = []  # convert pymongo cursor obj to list
         for user in mongo_users:
             if user.get('metrics', {}).get("google_analytics", {}).get('viewid')  # TODO: change when db is stable again
-            users.append(
-                {'email': user['email'],
-                'token': user['auth_token'],
-                'view_id': user['metrics']['google_analytics']['viewid']})
+                users.append(
+                    {'email': user['email'],
+                    'token': user['auth_token'],
+                    'view_id': user['metrics']['google_analytics']['viewid']})
 
         # refresh 10 users by one task for more threaded performace
         step = 10
