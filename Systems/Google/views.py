@@ -51,7 +51,7 @@ class GoogleAuthLoginApiViewMain(Resource):
         token = request.json['token']
         if (user := User.query(auth_token=token)):
 
-            uri = 'https://kraftpy.github.io'
+            uri = 'https://melytix.tk'
 
             access_token, refresh_token = GoogleAuth.code_exchange(code, uri)
 
