@@ -21,7 +21,7 @@ def refresh_metrics():
     if (mongo_users := query_many(metrics={'$exists': True})):
         users = []  # convert pymongo cursor obj to list
         for user in mongo_users:
-            if user.get('metrics', {}).get("google_analytics", {}).get('viewid')  # TODO: change when db is stable again
+            if user.get('metrics', {}).get("google_analytics", {}).get('viewid'):  # TODO: change when db is stable again
                 users.append(
                     {'email': user['email'],
                     'token': user['auth_token'],
