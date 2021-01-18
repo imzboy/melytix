@@ -139,7 +139,7 @@ def insert_viewid(token: str, viewid: str):
     db.find_one_and_update(
         {'auth_token': token},
         {'$set': {
-            'metrics.google_analytics.viewid': viewid
+            'connected_systems.google_analytics.viewid': viewid
         }},
         upsert=False
     )
@@ -149,7 +149,7 @@ def insert_site_for_sc(token: str, site_url: str):
     db.find_one_and_update(
         {'auth_token': token},
         {'$set': {
-            'metrics.search_console.site_utl': site_url
+            'connected_systems.search_console.site_utl': site_url
         }},
         upsert=False
     )
