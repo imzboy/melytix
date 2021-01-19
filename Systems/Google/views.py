@@ -25,6 +25,7 @@ class GoogleAuthLoginApiView(Resource):
         token = request.json['token']
         if (user := User.query(auth_token=token)):
 
+
             uri = 'http://localhost:8080'
 
             access_token, refresh_token = GoogleAuth.code_exchange(code, uri)

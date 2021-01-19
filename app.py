@@ -200,7 +200,6 @@ api.add_resource(GoogleAuthLoginApiViewMain, '/insert-tokens-main', methods=['PO
 
 # google analytics
 api.add_resource(GetViewIdDropDown, '/get-select-data', methods=['POST', 'OPTIONS'])
-api.add_resource(PutViewId, '/insert-viewid', methods=['POST', 'OPTIONS'])
 api.add_resource(RetrieveGoogleAnalyticsMetrics, '/get-ga-data', methods=['POST', 'OPTIONS'])
 
 # search console
