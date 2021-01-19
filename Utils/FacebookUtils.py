@@ -223,7 +223,6 @@ dict_helper = {
 
 
 def fill_campaign_metrics(metrics_list, start_date, end_date):
-    campaign_name_in = metrics_list[0].get('campaign_name')
     campaign_metrics_in = copy.deepcopy(dict_helper)
 
     list_of_required_dates = create_list_of_dates(start_date, end_date)
@@ -266,7 +265,7 @@ def fill_campaign_metrics(metrics_list, start_date, end_date):
         fill_metrics_with_zeros(campaign_metrics_in, list_of_required_dates, date_index)
         date_index += 1
 
-    return campaign_name_in, campaign_metrics_in
+    return campaign_metrics_in
 
 
 # fills metrics by 0 if campaign for this day hadn't activity
@@ -278,16 +277,12 @@ def fill_metrics_with_zeros(campaign_metrics_in, list_of_required_dates, date_in
             list_value.append(0)
 
 
-def str_or_number(str):
-    try:
-        res = int(str)
-        return res
-    except ValueError:
-        try:
-            res = float(str)
-            return res
-        except ValueError:
-            return str
+def str_or_number(s: str):
+    if s.isdigit():
+        return int(s)
+    elif s.find('.') != -1:
+        return float(s)
+    return s
 
 
 def create_list_of_dates(start_date, end_date):
