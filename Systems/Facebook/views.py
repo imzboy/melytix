@@ -1,6 +1,5 @@
 from flask_restful import Resource
 from Systems.Facebook.FacebookAdsManager import facebook_insights_query
-from app import oauth
 from flask import request
 import user as User
 import datetime
@@ -8,8 +7,12 @@ import requests
 from facebook_business.api import FacebookAdsApi
 from facebook_business.adobjects.adaccount import AdAccount
 
+from authlib.integrations.flask_client import OAuth
 
-class FacebookChooseAccount(Resource):
+oauth = OAuth()
+
+
+class FacebookGetAccounts(Resource):
     def options(self):
         return {}, 200
 
@@ -18,9 +21,33 @@ class FacebookChooseAccount(Resource):
 
             access_token = user.get('tokens').get('f_access_token')
             r = requests.get(f'https://graph.facebook.com/v9.0/me/adaccounts?access_token={access_token}')
-            act_id = r.json()['data'][0]['id']
             FacebookAdsApi.init(access_token=access_token)
-            my_account = AdAccount(act_id)
+            accounts = []
+            for id in r.json().get('data'):
+                my_account = AdAccount(id.get('id'))
+                accounts.append(dict(my_account.api_get(fields=[AdAccount.Field.name])))
+
+            return accounts, 200
+        else:
+            return {'Error': 'Wrong auth token'}, 403
+
+
+
+class FacebookSetAccount(Resource):
+    def options(self):
+        return {}, 200
+
+    def post(self):
+        if (user := User.query(auth_token=request.json['token'])):
+
+            account_id = request.json['id']
+            User.find_and_update(
+                filter={},
+                update={
+                    'connected_system.facebook_insights.account_id': account_id
+                }
+            )
+
             return {'Message': 'Success'}, 200
 
         return {'Error': 'Wrong auth token'}, 403
@@ -55,7 +82,7 @@ class FacebookAuthLoginApiView(Resource):
             User.find_and_update(
                 filter={},
                 update={
-                    'connected_system.facebook_insights': facebook_insights
+                    'metrics.facebook_insights': facebook_insights
                 }
             )
             return {'Message': 'Success'}, 200
@@ -75,7 +102,7 @@ class RetrieveFacebookMetricsFromBD(Resource):
             for campaign, metrics in facebook_insights.items():
                 temp = {}
                 for metric_name, list_value in metrics.items():
-                    temp.update({metric_name: list_value[:-7]})
+                    temp.update({metric_name: list_value[-7:]})
                 result.update({campaign: temp})
 
             return result, 200

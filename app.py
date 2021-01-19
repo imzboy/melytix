@@ -9,6 +9,10 @@ from Systems.Google.views import (GetSearchConsoleDataAPI, GetVerifiedSitesList,
 GoogleAuthLoginApiView, GoogleAuthLoginApiViewMain, GetViewIdDropDown,
 RetrieveGoogleAnalyticsMetrics)
 
+from Systems.Facebook.views import (FacebookGetAccounts, FacebookSetAccount,
+FacebookAuthLoginApiView, RetrieveFacebookMetricsFromBD, oauth)
+
+
 from Alerts.views import RetriveUserAlerts
 from Tips.views import RetriveUserTips
 
@@ -26,6 +30,8 @@ app.config['CORS_HEADERS'] = 'Content-Type'
 api = Api(app)
 
 cors = CORS(app)
+
+oauth.init_app(app)
 
 class HelloView(Resource):
     def options(self):
@@ -190,6 +196,12 @@ api.add_resource(RetrieveGoogleAnalyticsMetrics, '/get-ga-data', methods=['POST'
 # search console
 api.add_resource(GetVerifiedSitesList, '/get-sites-url', methods=['POST', 'OPTIONS'])
 api.add_resource(GetSearchConsoleDataAPI, '/get-sc-data', methods=['POST', 'OPTIONS'])
+
+# facebook insights
+api.add_resource(FacebookGetAccounts, '/get-fi-accounts', methods=['GET', 'OPTIONS'])
+api.add_resource(FacebookSetAccount, '/insert-fi-account', methods=['POST', 'OPTIONS'])
+api.add_resource(FacebookAuthLoginApiView, '/insert-fi-token', methods=['POST', 'OPTIONS'])
+api.add_resource(RetrieveFacebookMetricsFromBD, '/get-fi-data', methods=['POST', 'OPTIONS'] )
 
 #alerts and tips
 api.add_resource(RetriveUserAlerts, '/get-alerts', methods=['POST', 'OPTIONS'])

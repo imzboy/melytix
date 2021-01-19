@@ -62,7 +62,7 @@ def refresh_metric(users: list):
                     }
                 )
 
-        today = datetime.timedelta.now().strftime('%Y-%m-%d')
+        today = datetime.datetime.now()
         f_metrics = facebook_insights_query(token, today, today)
         for campaign, metrics in f_metrics.items():
             for metric, value in metrics.items():
@@ -70,7 +70,7 @@ def refresh_metric(users: list):
                     filter={
                         'email': user['email']
                     },
-                    append={f'connected_system.facebook_insights.{campaign}.{metric}': {'$each': value}}
+                    append={f'metrics.facebook_insights.{campaign}.{metric}': {'$each': value}}
                 )
 
 

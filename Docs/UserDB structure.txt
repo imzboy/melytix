@@ -18,14 +18,22 @@ Docs syntax:
     "auth_token" : <string> (generated uuid token that is used in every api for secure assess),
     "tokens": <dict> (all the assess and refresh tokens used for all connected systems),
     "connected_systems": { <dict> (the list of all the systems that user connected)
-        "google_analytics": {}
+        "google_analytics": {},
+        "facebook_insights":{
+            "account_id": (account ID in the ads manager, which the user has chosen)
+        }
     },
     "metrics": {
         "google_analytics" : { <dict> (the google analytics data)
             "ga_~name of the metric" : <list> (the array of metrics) # ga_~name of the metric[i] == ga_dates[i],
             "ga_dates": <list> (the array of dates from google google analytics, contains every day from user registration minus 3 weeks)
         },
-        "search_console": {}
+        "search_console": {},
+        "facebook_insights": {
+             "dates": <list> (the array of dates from facebook ads manager, contains every day from user registration minus 3 weeks)
+             "~name of the metric": <list> (the array of metrics) # ~name of the metric[i] == dates[i]
+             }
+        }
     },
     # TODO: add more systems
     "Tips"[ <list> (the generated tips for user)
