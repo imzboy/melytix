@@ -19,6 +19,11 @@ from Systems.Facebook.views import FacebookAuthLoginApiView, RetrieveFacebookMet
 
 from Alerts.views import RetriveUserAlerts
 from Alerts.views import AlertTipFlipActive, RetriveUserAlerts
+from Systems.Facebook.views import (FacebookGetAccounts, FacebookSetAccount,
+FacebookAuthLoginApiView, RetrieveFacebookMetricsFromBD, oauth)
+
+
+from Alerts.views import RetriveUserAlerts
 from Tips.views import RetriveUserTips
 
 
@@ -32,6 +37,9 @@ app = Flask(__name__)
 app.secret_key = b"\x92K\x1a\x0e\x04\xcc\x05\xc8\x1c\xc4\x04\x98\xef'\x8e\x1bC\xd6\x18'}:\xc1\x14"
 app.config['CORS_HEADERS'] = 'Content-Type'
 
+login = LoginManager(app)
+login.login_view = '/admin/login'
+
 api = Api(app)
 
 cors = CORS(app)
@@ -43,8 +51,6 @@ oauth.init_app(app)
 def load_user(id):
     return User.Admin(User.query_admin(_id=ObjectId(id)))
 
-
-oauth = OAuth(app)
 
 class HelloView(Resource):
     def options(self):
@@ -210,15 +216,12 @@ api.add_resource(GoogleAuthLoginApiViewMain, '/insert-tokens-main', methods=['PO
 
 # google analytics
 api.add_resource(GetViewIdDropDown, '/get-select-data', methods=['POST', 'OPTIONS'])
+api.add_resource(PutViewId, '/insert-viewid', methods=['POST', 'OPTIONS'])
 api.add_resource(RetrieveGoogleAnalyticsMetrics, '/get-ga-data', methods=['POST', 'OPTIONS'])
 
 # search console
 api.add_resource(GetVerifiedSitesList, '/get-sites-url', methods=['POST', 'OPTIONS'])
 api.add_resource(GetSearchConsoleDataAPI, '/get-sc-data', methods=['POST', 'OPTIONS'])
-
-# facebook ads manager
-api.add_resource(FacebookAuthLoginApiView, '/facebook-insert-tokens', methods=['POST', 'OPTIONS'])
-api.add_resource(RetrieveFacebookMetricsFromBD, '/facebook-retrieve-metrics', methods=['POST', 'OPTIONS'])
 
 # facebook insights
 api.add_resource(FacebookGetAccounts, '/get-fi-accounts', methods=['GET', 'OPTIONS'])
