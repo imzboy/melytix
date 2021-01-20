@@ -80,7 +80,7 @@ class FacebookAuthLoginApiView(Resource):
 
             # add insights to DB (Create fields)
             User.find_and_update(
-                filter={},
+                filter={'auth_token': request.json['token']},
                 update={
                     'metrics.facebook_insights': facebook_insights
                 }

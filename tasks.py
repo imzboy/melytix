@@ -51,7 +51,7 @@ def refresh_metric(users: list):
 
         metrics = google_analytics_query(token, view_id, 'today', 'today')
 
-        insert_dict = GoogleReportsParser(metrics ).parse()
+        insert_dict = GoogleReportsParser(metrics).parse()
         for key, value in insert_dict.items():
             append_list(
                 filter={
