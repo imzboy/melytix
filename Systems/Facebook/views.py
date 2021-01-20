@@ -42,7 +42,7 @@ class FacebookSetAccount(Resource):
 
             account_id = request.json['id']
             User.find_and_update(
-                filter={},
+                filter={'auth_token': request.json['token']},
                 update={
                     'connected_system.facebook_insights.account_id': account_id
                 }

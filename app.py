@@ -15,17 +15,8 @@ from Systems.Facebook.views import (FacebookGetAccounts, FacebookSetAccount,
 FacebookAuthLoginApiView, RetrieveFacebookMetricsFromBD, oauth)
 
 
-from Systems.Facebook.views import FacebookAuthLoginApiView, RetrieveFacebookMetricsFromBD
-
-from Alerts.views import RetriveUserAlerts
 from Alerts.views import AlertTipFlipActive, RetriveUserAlerts
-from Systems.Facebook.views import (FacebookGetAccounts, FacebookSetAccount,
-FacebookAuthLoginApiView, RetrieveFacebookMetricsFromBD, oauth)
-
-
-from Alerts.views import RetriveUserAlerts
 from Tips.views import RetriveUserTips
-
 
 from flask import Flask, request, render_template, url_for, redirect
 
