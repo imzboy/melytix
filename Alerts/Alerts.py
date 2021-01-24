@@ -65,7 +65,8 @@ lower_than_yesterday = Alert(
     category='idk',
     title='Your sessions are lover than yesterday',
     description='Your sessions are lover than yesterday',
-    analytics_func=sessions_lower
+    analytics_func=sessions_lower,
+    is_human_created=False
 )
 
 
@@ -73,7 +74,8 @@ always_alert = Alert(
     category='Test',
     title='This is test alert',
     description='The test alert',
-    analytics_func=just_true
+    analytics_func=just_true,
+    is_human_created=False
 )
 
 
@@ -81,7 +83,8 @@ crytical_low_ga_users_alert = Alert(
     category='Аналитика ( Google Analytics )',
     title='В "" день количество пользователей критически понизилось по сравнению с другими днями этой недели',
     description='The test alert',
-    analytics_func=crytical_low_ga_users
+    analytics_func=crytical_low_ga_users,
+    is_human_created=False
 )
 
 
@@ -89,7 +92,8 @@ crytical_high_ga_users_alert = Alert(
     category='Аналитика ( Google Analytics )',
     title='В "" день количество пользователей повысилось по сравнению с другими днями этой недели',
     description='The test alert',
-    analytics_func=crytical_high_ga_users
+    analytics_func=crytical_high_ga_users,
+    is_human_created=False
 )
 
 
@@ -97,7 +101,8 @@ crytical_day_ga_users_alert = Alert(
     category='Test',
     title='This is test alert',
     description='The test alert',
-    analytics_func=crytical_day_ga_users
+    analytics_func=crytical_day_ga_users,
+    is_human_created=False
 )
 
 
@@ -105,7 +110,8 @@ path_to_grow_ga_users_alert = Alert(
     category='Аналитика ( Google Analytics )',
     title='На протяжении последних 7 дней трафик последовательно растёт',
     description='Хорошие новости! Вы показываете отличный последовательный рост трафика на вашем сайте с помощью активных каналов привлечения. Задокументируйте план - действий, который был сделан в последние дни для того, чтобы повторить этот успех и усильте текущие активные маркетинговые каналы.',
-    analytics_func=path_to_grow_ga_users
+    analytics_func=path_to_grow_ga_users,
+    is_human_created=False
 )
 
 
@@ -113,7 +119,8 @@ path_to_low_ga_users_alert = Alert(
     category='Аналитика ( Google Analytics )',
     title='На протяжении последних 7 дней трафик последовательно падает',
     description='По данным сервиса Google Analytics количество пользователей главного домена падает на протяжении последних 7 дней. Обратите внимание на позиции сайта в поиске, выключенные или включенные рекламные каналы, а так же на показатель "Trust" вашего домена.',
-    analytics_func=path_to_low_ga_users
+    analytics_func=path_to_low_ga_users,
+    is_human_created=False
 )
 
 # path_to_low_position_keywords_gsc = Alert(

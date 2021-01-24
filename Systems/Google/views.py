@@ -1,15 +1,16 @@
 
 from Utils.GoogleUtils import find_start_and_end_date
 import datetime
-from flask_restful import Resource, Api
+from flask_restful import Resource
 
-from flask import Flask, request
+from flask import request
 
 import user as User
 
 from Systems.Google import GoogleAuth, GoogleAnalytics
 from Systems.Google.SearchConsole import get_site_list, make_sc_request
 from Utils import GoogleUtils
+
 
 class GoogleAuthLoginApiView(Resource):
     """
@@ -23,6 +24,7 @@ class GoogleAuthLoginApiView(Resource):
         code = request.json['code']
         token = request.json['token']
         if (user := User.query(auth_token=token)):
+
 
             uri = 'http://localhost:8080'
 
@@ -51,7 +53,7 @@ class GoogleAuthLoginApiViewMain(Resource):
         token = request.json['token']
         if (user := User.query(auth_token=token)):
 
-            uri = 'https://kraftpy.github.io'
+            uri = 'https://melytix.tk'
 
             access_token, refresh_token = GoogleAuth.code_exchange(code, uri)
 
@@ -100,7 +102,7 @@ class GetSearchConsoleDataAPI(Resource):
 
                 data = GoogleUtils.prep_dash_metrics(sc_data=response)
 
-                return {'metric': data[request.json['metric']], 'dates': data['sc_dates']}, 200
+                return {'metric': data.get(request.json.get('metric'), []), 'dates': data.get('sc_dates', [])}, 200
 
             return {'Error': 'Wrong auth token'}, 403
 
@@ -165,14 +167,18 @@ class RetrieveGoogleAnalyticsMetrics(Resource):
 
             metric = request.json['metric']
 
-            if user.get('G_Analytics'):
+            if user.get('metrics', {}).get('google_analytics', {}).get('ga_dates'):
 
-                ga_data = user.get('G_Analytics').get('ga_data')
+                ga_data = user.get('metrics').get('google_analytics')
 
-                metrics = ga_data[metric][7:]
-                dates = ga_data['ga_dates'][7:]
+                metrics = ga_data.get(metric)
+                dates = ga_data.get('ga_dates')
+                if metric and dates:
+                    metrics = metrics[7:]
+                    dates = dates[7:]
+                    return {'metric': metrics, 'dates': dates}, 200
 
-                return {'metric': metrics, 'dates': dates}, 200
+                return {'message': f'the metric "{metric}" was not found'}, 404
 
             else:
                 # start_date, end_date = request.json['start_date'], request.json['end_date']
@@ -189,15 +195,21 @@ class RetrieveGoogleAnalyticsMetrics(Resource):
                 )
 
                 if viewid:
-                    User.insert_viewid(token, viewid)
                     ga_data = GoogleAnalytics.google_analytics_query(token, viewid, start_date, end_date)
+                    print('GADATA', ga_data)
+                    if ga_data:
+                        dash_data =  GoogleUtils.GoogleReportsParser(ga_data).parse()
+                        print('DASHDATA', dash_data)
 
-                    dash_data = GoogleUtils.GoogleReportsParser(ga_data).parse()
+                        GoogleAnalytics.insert_ga_data_in_db(token, dash_data)
+                        User.insert_viewid(token, viewid)
 
-                    GoogleAnalytics.insert_ga_data_in_db(token, dash_data)
-
-                    return {'metric':dash_data[metric], 'dates': dash_data['ga_dates']}, 200
+                        return {'metric':dash_data[metric], 'dates': dash_data['ga_dates']}, 200
+                    else:
+                        return {'Error': 'Google currently unavailable'}, 403
                 else:
                     return {'error': 'could not fetch view id from google'}, 404
 
         return {'Error': 'Wrong auth token'}, 403
+
+

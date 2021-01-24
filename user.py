@@ -1,15 +1,20 @@
-import pymongo
+from flask_login.mixins import UserMixin
+from pymongo import MongoClient
 import os
 from hashlib import pbkdf2_hmac
 import binascii
 
+
 # Connecting to Mogodb Atlas
 uri = os.environ.get('MONGODB_URI', None)
 
-client = pymongo.MongoClient(uri)
+client = MongoClient(uri)
 
 db = client.heroku_t2hftlhq.users
 
+'''
+see Docs/UserDB Structure.txt if there is any questions
+'''
 
 def query(**kwargs):
     """
@@ -22,6 +27,7 @@ def query(**kwargs):
     return None
 
 
+
 def query_many(**kwargs):
     """
     Finds all users in db, which matches the filter
@@ -29,7 +35,19 @@ def query_many(**kwargs):
             **kwargs:  parameters for users search
     """
     if(user := db.find(kwargs)):
+
+      
+      
+def query_admin(**kwargs):
+    db = client.heroku_t2hftlhq.admins
+    if (user := db.find_one(kwargs)):
         return user
+    return None
+
+
+def query_many(**kwargs):
+    if(users := db.find(kwargs)):
+        return users
     return None
 
 
@@ -41,6 +59,7 @@ def append_list(filter: dict, append: dict):
             append (dict) : data to append
     """
     db.update(
+    db.update_one(
         filter,
         {'$push': append}
     )
@@ -114,6 +133,25 @@ def verify_password(email, inputted_pass):
         return 404
 
 
+def verify_admin_password(email, inputted_pass):
+    db = client.heroku_t2hftlhq.admins
+    user = db.find_one({'email': email})
+    if user:
+        salt = user['salt']
+        inputted_pass = pbkdf2_hmac(
+            'sha256',
+            inputted_pass.encode('utf-8'),
+            salt,
+            100000)
+        if user['password'] == inputted_pass:
+            return True
+        else:
+            return False
+    else:
+        return 404
+
+
+
 def get_or_create_token(email):
     """
     Get or create user's token that is used in every api
@@ -167,7 +205,7 @@ def insert_viewid(token: str, viewid: str):
     db.find_one_and_update(
         {'auth_token': token},
         {'$set': {
-            'G_Analytics.viewid': viewid
+            'connected_systems.google_analytics.viewid': viewid
         }},
         upsert=False
     )
@@ -184,7 +222,7 @@ def insert_site_for_sc(token: str, site_url: str):
     db.find_one_and_update(
         {'auth_token': token},
         {'$set': {
-            'site_utl': site_url
+            'connected_systems.search_console.site_utl': site_url
         }},
         upsert=False
     )
@@ -202,6 +240,7 @@ def get_g_tokens(token: str):
         ).get('tokens', None)
     if tokens:
         return tokens['g_access_token'], tokens['g_refresh_token']
+    return None
 
 
 def insert_tokens(token: str, access_token: str, refresh_token: str):
@@ -223,6 +262,23 @@ def insert_tokens(token: str, access_token: str, refresh_token: str):
     )
 
 
+def f_insert_tokens(token: str, access_token: str):
+    """
+    Insert facebook access_token in db
+
+        Args:
+        token: the token that we use to find the user
+        access_token: the facebook access token
+    """
+    db.find_one_and_update(
+        {'auth_token': token},
+        {'$set': {
+            'tokens': {'f_access_token': access_token}
+        }},
+        upsert=False
+    )
+
+
 def insert_dash_settings(token: str, settings: dict):
     """
     Inserts new user settings for his dashboard.
@@ -238,3 +294,35 @@ def insert_dash_settings(token: str, settings: dict):
         }},
         upsert=False
     )
+
+
+def flip_tip_or_alert(token: str, type_: str, id: str):
+    user = db.find_one(
+        {'auth_token': token,
+         f'{type_}s.id': {id}}
+        )
+
+    algorithms_res = user.get(f'{type_}s')
+    alg_bool = False
+
+    for alg in algorithms_res:
+        if alg.get('id') == id:
+            alg_bool = alg.get('active')
+
+
+    db.update_one(
+        {'auth_token': token,
+        f'{type_}s.id': {id}},
+        {'$set': {
+            f'{type_}s.$.active': not alg_bool
+        }}
+    )
+
+
+class Admin(UserMixin):
+    def __init__(self, user_dict: dict):
+        self.user_dict = user_dict
+
+    def get_id(self):
+        object_id = self.user_dict.get('_id')
+        return str(object_id)

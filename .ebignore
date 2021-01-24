@@ -1,0 +1,12 @@
+.venv/
+.env/
+.env
+__pycache__/
+Systems/__pycache__/
+Alerts/__pycache__/
+Tips/__pycache__/
+Utils/__pycache__/
+venv/
+env/
+.vscode/
+.wenv/
