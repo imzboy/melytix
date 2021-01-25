@@ -9,7 +9,7 @@ from authlib.integrations.flask_client import OAuth
 
 from Systems.Google.views import (GetSearchConsoleDataAPI, GetVerifiedSitesList,
 GoogleAuthLoginApiView, GoogleAuthLoginApiViewMain, GetViewIdDropDown, PutViewId,
-RetrieveGoogleAnalyticsMetrics)
+RetrieveGoogleAnalyticsMetrics, FirstRequestGoogleAnalyticsMetrics)
 
 from Systems.Facebook.views import (FacebookGetAccounts, FacebookSetAccount,
 FacebookAuthLoginApiView, RetrieveFacebookMetricsFromBD, oauth)
@@ -190,6 +190,25 @@ class GetCachedDashboardSettings(Resource):
             return {'Error': 'no credentials provided'}, 403
 
 
+class GetConnectedSystems(Resource):
+    def options(self):
+        return {}, 200
+    def post(self):
+        try:
+            token = request.json['token']
+
+            if (user := User.query(auth_token=token)):
+
+                if(connected_systems := user.get('connected_systems')):
+                    return {**connected_systems}, 200
+                else:
+                    return {}, 200
+
+            return {'Error': 'Wrong auth token'}, 403
+
+        except KeyError:
+            return {'Error': 'no credentials provided'}
+
 
 # URLs declaring --------------------------------
 
@@ -209,6 +228,7 @@ api.add_resource(GoogleAuthLoginApiViewMain, '/insert-tokens-main', methods=['PO
 api.add_resource(GetViewIdDropDown, '/get-select-data', methods=['POST', 'OPTIONS'])
 api.add_resource(PutViewId, '/insert-viewid', methods=['POST', 'OPTIONS'])
 api.add_resource(RetrieveGoogleAnalyticsMetrics, '/get-ga-data', methods=['POST', 'OPTIONS'])
+api.add_resource(FirstRequestGoogleAnalyticsMetrics, '/first-get-ga-data', method=['POST', 'OPTIONS'])
 
 # search console
 api.add_resource(GetVerifiedSitesList, '/get-sites-url', methods=['POST', 'OPTIONS'])
@@ -228,6 +248,9 @@ api.add_resource(AlertTipFlipActive, '/flip', methods=['POST', 'OPTIONS'])
 #DashSettings post and get
 api.add_resource(GetCachedDashboardSettings, '/get-dash-settings', methods=['OPTIONS', 'POST'])
 api.add_resource(CacheDashboardSettings, '/put-dash-settings', methods=['OPTIONS', 'POST'])
+
+#Connected systems get
+api.add_resource(GetConnectedSystems, '/main', methods=['OPTIONS', 'POST'])
 
 #Admin
 api.add_resource(MainManualAnalyzeView, '/admin-api', methods=['OPTIONS', 'POST', 'GET'])
