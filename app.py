@@ -226,7 +226,7 @@ api.add_resource(GoogleAuthLoginApiViewMain, '/insert-tokens-main', methods=['PO
 api.add_resource(GetViewIdDropDown, '/get-select-data', methods=['POST', 'OPTIONS'])
 api.add_resource(PutViewId, '/insert-viewid', methods=['POST', 'OPTIONS'])
 api.add_resource(RetrieveGoogleAnalyticsMetrics, '/get-ga-data', methods=['POST', 'OPTIONS'])
-api.add_resource(FirstRequestGoogleAnalyticsMetrics, '/first-get-ga-data', method=['POST', 'OPTIONS'])
+api.add_resource(FirstRequestGoogleAnalyticsMetrics, '/first-get-ga-data', methods=['POST', 'OPTIONS'])
 
 # search console
 api.add_resource(GetVerifiedSitesList, '/get-sites-url', methods=['POST', 'OPTIONS'])
