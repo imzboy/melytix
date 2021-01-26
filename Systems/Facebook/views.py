@@ -60,7 +60,7 @@ class FacebookAuthLoginApiView(Resource):
     def post(self):
         code = request.json['code']
         token = request.json['token']
-        if (user := User.query(auth_token=token)):
+        if User.query(auth_token=token):
             oauth.register(
                 name='facebook',
                 client_id='2892950844365145',
