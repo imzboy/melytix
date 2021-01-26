@@ -187,17 +187,15 @@ class FirstRequestGoogleAnalyticsMetrics(Resource):
 
     def post(self):
         """
-        This view is responsible for first request to GA
+        This view is responsible for connecting Google Analytics to user
         """
         if (user := User.query(auth_token=request.json['token'])):
             if not user.get('tokens').get('g_access_token'):
                 return {'Error': 'user did not gave access to google yet'}, 404
 
             if user.get('connected_systems', {}).get('google_analytics'):
-                return {'Error': 'user has already connected to the GA'}
+                return {'Error': 'user has already connected to the GA'}, 409
 
-            metric = request.json['metric']
-            # start_date, end_date = request.json['start_date'], request.json['end_date']
             thee_weeks_ago = (datetime.datetime.now() - datetime.timedelta(weeks=3)).strftime('%Y-%m-%d')
 
             start_date, end_date = thee_weeks_ago, 'today'
@@ -207,17 +205,20 @@ class FirstRequestGoogleAnalyticsMetrics(Resource):
             viewid = GoogleAnalytics.g_get_viewid(
                 request.json['account'],
                 request.json['web_property'],
-                token
-            )
+                token)
 
             if viewid:
                 ga_data = GoogleAnalytics.google_analytics_query(token, viewid, start_date, end_date)
                 if ga_data:
                     dash_data =  GoogleUtils.GoogleReportsParser(ga_data).parse()
                     GoogleAnalytics.insert_ga_data_in_db(token, dash_data)
-                    User.connect_system(token, 'google_analytics', {'viewid': viewid, 'web_property': request.json['web_property'], 'account': request.json['account']})
+                    User.connect_system(
+                        token, 'google_analytics',
+                        {'viewid': viewid,
+                        'web_property': request.json['web_property'],
+                        'account': request.json['account']})
 
-                    return {'metric': dash_data[metric], 'dates': dash_data['ga_dates']}, 200
+                    return {'Message': 'success'}, 200
                 else:
                     return {'Error': 'Google currently unavailable'}, 403
             else:

@@ -35,9 +35,10 @@ def query_many(**kwargs):
             **kwargs:  parameters for users search
     """
     if(user := db.find(kwargs)):
+        return user
+    return None
 
-      
-      
+
 def query_admin(**kwargs):
     db = client.heroku_t2hftlhq.admins
     if (user := db.find_one(kwargs)):
@@ -277,7 +278,7 @@ def insert_dash_settings(token: str, settings: dict):
     )
 
 
-def connect_system(token: str, system: str, data: dict):           #(token: str, viewid: str):
+def connect_system(token: str, system: str, data: dict):
     db.find_one_and_update(
         {'auth_token': token},
         {'$set': {

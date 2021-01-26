@@ -73,7 +73,7 @@ def logout():
 @login_required
 def menu():
     return f'<a href="{url_for("reg_a_user")}">register a new user</a>' \
-    f'<br><a href="https://aleksandrkoltsov.github.io/melytix-admin/">Tips and Alerts Admin</a>' \
+    f'<br><a href="https://admin.melytix.tk/">Tips and Alerts Admin</a>' \
     f'<br><a href="{url_for("logout")}">logout</a>' \
     f'<br><a href="/refresh">refresh metrics</a>'
 
