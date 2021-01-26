@@ -145,7 +145,7 @@ class PutViewId(Resource):
                     request.json['web_property'],
                     token
                 )
-                User.connect_system(token, 'google_analytics',{'viewid': viewid, 'web_property': request.json['web_property']})
+                User.connect_system(token, 'google_analytics',{'viewid': viewid, 'web_property': request.json['web_property'], 'account': request.json['account']})
                 return {'Message': 'Success'}, 200
             return {'Error': 'Wrong auth token'}, 403
         except KeyError:
@@ -187,13 +187,13 @@ class FirstRequestGoogleAnalyticsMetrics(Resource):
 
     def post(self):
         """
-        This view is responsible for first request to GA if there is no metrics in the user database
+        This view is responsible for first request to GA
         """
         if (user := User.query(auth_token=request.json['token'])):
             if not user.get('tokens').get('g_access_token'):
                 return {'Error': 'user did not gave access to google yet'}, 404
 
-            if user.get('connected_systems').get('google_analytics'):
+            if user.get('connected_systems', {}).get('google_analytics'):
                 return {'Error': 'user has already connected to the GA'}
 
             metric = request.json['metric']
@@ -212,13 +212,10 @@ class FirstRequestGoogleAnalyticsMetrics(Resource):
 
             if viewid:
                 ga_data = GoogleAnalytics.google_analytics_query(token, viewid, start_date, end_date)
-                print('GADATA', ga_data)
                 if ga_data:
                     dash_data =  GoogleUtils.GoogleReportsParser(ga_data).parse()
-                    print('DASHDATA', dash_data)
-
                     GoogleAnalytics.insert_ga_data_in_db(token, dash_data)
-                    User.connect_system(token, 'google_analytics', {'viewid': viewid, 'web_property': request.json['web_property']})
+                    User.connect_system(token, 'google_analytics', {'viewid': viewid, 'web_property': request.json['web_property'], 'account': request.json['account']})
 
                     return {'metric': dash_data[metric], 'dates': dash_data['ga_dates']}, 200
                 else:

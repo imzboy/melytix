@@ -193,10 +193,9 @@ class GetCachedDashboardSettings(Resource):
 class GetConnectedSystems(Resource):
     def options(self):
         return {}, 200
-    def post(self):
-        try:
-            token = request.json['token']
 
+    def post(self):
+        if(token := request.json.get('token')):
             if (user := User.query(auth_token=token)):
 
                 if(connected_systems := user.get('connected_systems')):
@@ -206,8 +205,7 @@ class GetConnectedSystems(Resource):
 
             return {'Error': 'Wrong auth token'}, 403
 
-        except KeyError:
-            return {'Error': 'no credentials provided'}
+        return {'Error': 'no credentials provided'}
 
 
 # URLs declaring --------------------------------

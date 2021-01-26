@@ -287,16 +287,6 @@ def connect_system(token: str, system: str, data: dict):           #(token: str,
     )
 
 
-def get_connected_systems(token: str):
-    user = db.find_one(
-        {'auth_token':token}
-    )
-    if user:
-        return user.get('connected_systems')
-    else:
-        return None
-
-
 def flip_tip_or_alert(token: str, type_: str, id: str):
     user = db.find_one(
         {'auth_token': token,
