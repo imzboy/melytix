@@ -58,7 +58,6 @@ def append_list(filter: dict, append: dict):
             filter (dict) : parameters for users search
             append (dict) : data to append
     """
-    db.update(
     db.update_one(
         filter,
         {'$push': append}
@@ -193,24 +192,6 @@ def add_scopes(token: str, scope: list):
     )
 
 
-def insert_viewid(token: str, viewid: str):
-    """
-    Inserts by token user's view ID,
-     that used to query the google analytics api.
-     Function does not insert a new document when no match is found.
-        Parameters:
-            token(str) : the token that we use to find the user
-            viewid(str) : new user's view ID
-    """
-    db.find_one_and_update(
-        {'auth_token': token},
-        {'$set': {
-            'connected_systems.google_analytics.viewid': viewid
-        }},
-        upsert=False
-    )
-
-
 def insert_site_for_sc(token: str, site_url: str):
     """
     Finds and inserts by token user's site URL.
@@ -291,6 +272,16 @@ def insert_dash_settings(token: str, settings: dict):
         {'auth_token': token},
         {'$set': {
             'DashSettings': settings
+        }},
+        upsert=False
+    )
+
+
+def connect_system(token: str, system: str, data: dict):           #(token: str, viewid: str):
+    db.find_one_and_update(
+        {'auth_token': token},
+        {'$set': {
+            f'connected_systems.{system}': data
         }},
         upsert=False
     )
