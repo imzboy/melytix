@@ -145,7 +145,14 @@ class PutViewId(Resource):
                     request.json['web_property'],
                     token
                 )
-                User.connect_system(token, 'google_analytics',{'viewid': viewid, 'web_property': request.json['web_property'], 'account': request.json['account']})
+                User.connect_system(
+                    token, 'google_analytics',
+                    {'view_id': viewid,
+                     'account': request.json['account'],
+                     'account_name': request.json['account_name'],
+                     'web_property': request.json['web_property'],
+                     'web_property_name': request.json['web_property_name']})
+
                 return {'Message': 'Success'}, 200
             return {'Error': 'Wrong auth token'}, 403
         except KeyError:
@@ -214,9 +221,11 @@ class FirstRequestGoogleAnalyticsMetrics(Resource):
                     GoogleAnalytics.insert_ga_data_in_db(token, dash_data)
                     User.connect_system(
                         token, 'google_analytics',
-                        {'viewid': viewid,
+                        {'view_id': viewid,
+                        'account': request.json['account'],
+                        'account_name': request.json['account_name'],
                         'web_property': request.json['web_property'],
-                        'account': request.json['account']})
+                        'web_property_name': request.json['web_property_name']})
 
                     return {'Message': 'success'}, 200
                 else:
