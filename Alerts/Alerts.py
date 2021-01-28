@@ -40,8 +40,8 @@ def crytical_day_ga_users(metrics: dict):
 def path_to_grow_ga_users(metrics: dict):
     ga_users = metrics.get('ga_users')
     i = 1
-    for i in range(len(ga_users)):
-        if ga_users[i]<ga_users[i-1]:
+    for i, item in enumerate(ga_users):
+        if item<ga_users[i-1]:
             return False
 
     return True
