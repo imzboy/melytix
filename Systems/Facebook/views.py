@@ -58,19 +58,9 @@ class FacebookAuthLoginApiView(Resource):
         return {}, 200
 
     def post(self):
-        code = request.json['code']
+        access_token = request.json['access_token']
         token = request.json['token']
         if User.query(auth_token=token):
-            oauth.register(
-                name='facebook',
-                client_id='2892950844365145',
-                client_secret='a128271472171c63862424f8d6cd2b6d',
-                access_token_url='https://graph.facebook.com/oauth/access_token',
-                api_base_url='https://www.facebook.com/',
-                client_kwargs={'scope': 'ads_read'}
-            )
-            response = oauth.facebook.authorize_access_token(code=code)
-            access_token = response.get('access_token')
             User.f_insert_tokens(token, access_token)
 
             # request for insights for last 3 weeks
