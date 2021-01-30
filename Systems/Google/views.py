@@ -91,17 +91,20 @@ class GetSearchConsoleDataAPI(Resource):
         return {},200
 
     def post(self):
-
         if (token := request.json['token']):
-            if User.query(auth_token=token):
-
+            if(user := User.query(auth_token=token)):
+                if user.get('connected_systems', {}).get('search_console'):
+                    return {'Error': 'user has already connected to the Search Console'}, 409
                 site_url = request.json['site_url']
-                User.insert_site_for_sc(token, site_url)
+                User.connect_system(
+                    token, 'search_console',
+                    {'site_url': site_url})
 
                 response = make_sc_request(token, site_url, request.json['start_date'], request.json['end_date'])
 
                 data = GoogleUtils.prep_dash_metrics(sc_data=response)
 
+                User.insert_data_in_db(token, 'search_console', data)
                 return {'metric': data.get(request.json.get('metric'), []), 'dates': data.get('sc_dates', [])}, 200
 
             return {'Error': 'Wrong auth token'}, 403
@@ -217,8 +220,8 @@ class FirstRequestGoogleAnalyticsMetrics(Resource):
             if viewid:
                 ga_data = GoogleAnalytics.google_analytics_query(token, viewid, start_date, end_date)
                 if ga_data:
-                    dash_data =  GoogleUtils.GoogleReportsParser(ga_data).parse()
-                    GoogleAnalytics.insert_ga_data_in_db(token, dash_data)
+                    dash_data = GoogleUtils.GoogleReportsParser(ga_data).parse()
+                    User.insert_data_in_db(token, 'google_analytics', dash_data)
                     User.connect_system(
                         token, 'google_analytics',
                         {'view_id': viewid,
