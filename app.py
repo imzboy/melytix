@@ -5,14 +5,13 @@ from bson import ObjectId
 from flask_restful import Resource, Api
 
 from Admin.views import MainManualAnalyzeView
-from authlib.integrations.flask_client import OAuth
 
 from Systems.Google.views import (GetSearchConsoleDataAPI, GetVerifiedSitesList,
 GoogleAuthLoginApiView, GoogleAuthLoginApiViewMain, GetViewIdDropDown, PutViewId,
 RetrieveGoogleAnalyticsMetrics, FirstRequestGoogleAnalyticsMetrics)
 
-from Systems.Facebook.views import (FacebookGetAccounts, FacebookSetAccount,
-FacebookAuthLoginApiView, RetrieveFacebookMetricsFromBD, oauth)
+from Systems.Facebook.views import (FacebookSetAccount,
+FacebookAuthLoginApiView, RetrieveFacebookMetricsFromBD)
 
 
 from Alerts.views import AlertTipFlipActive, RetriveUserAlerts
@@ -34,8 +33,6 @@ login.login_view = '/admin/login'
 api = Api(app)
 
 cors = CORS(app)
-
-oauth.init_app(app)
 
 
 @login.user_loader
@@ -233,7 +230,6 @@ api.add_resource(GetVerifiedSitesList, '/get-sites-url', methods=['POST', 'OPTIO
 api.add_resource(GetSearchConsoleDataAPI, '/get-sc-data', methods=['POST', 'OPTIONS'])
 
 # facebook insights
-api.add_resource(FacebookGetAccounts, '/get-fi-accounts', methods=['GET', 'OPTIONS'])
 api.add_resource(FacebookSetAccount, '/insert-fi-account', methods=['POST', 'OPTIONS'])
 api.add_resource(FacebookAuthLoginApiView, '/insert-fi-token', methods=['POST', 'OPTIONS'])
 api.add_resource(RetrieveFacebookMetricsFromBD, '/get-fi-data', methods=['POST', 'OPTIONS'] )
