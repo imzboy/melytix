@@ -85,10 +85,10 @@ class GetVerifiedSitesList(Resource):
         return {'Error': 'no credentials provided'}, 403
 
 
-class GetSearchConsoleDataAPI(Resource):
+class ConnectSearchConsoleAPI(Resource):
 
     def options(self):
-        return {},200
+        return {}, 200
 
     def post(self):
         if (token := request.json['token']):
@@ -100,12 +100,38 @@ class GetSearchConsoleDataAPI(Resource):
                     token, 'search_console',
                     {'site_url': site_url})
 
-                response = make_sc_request(token, site_url, request.json['start_date'], request.json['end_date'])
+                three_weeks_ago = (datetime.datetime.now() - datetime.timedelta(weeks=3))
+                today = datetime.datetime.now()
+                response = make_sc_request(token, site_url, three_weeks_ago, today)
 
                 data = GoogleUtils.prep_dash_metrics(sc_data=response)
 
                 User.insert_data_in_db(token, 'search_console', data)
-                return {'metric': data.get(request.json.get('metric'), []), 'dates': data.get('sc_dates', [])}, 200
+                return {'Message': 'Success'}, 200
+
+            return {'Error': 'Wrong auth token'}, 403
+
+        return {'Error': 'no credentials provided'}, 403
+
+
+class GetSearchConsoleDataAPI(Resource):
+
+    def options(self):
+        return {},200
+
+    def post(self):
+        if (token := request.json['token']):
+            if(user := User.query(auth_token=token)):
+
+                if not user.get('connected_systems', {}).get('search_console'):
+                    return {'Error': 'Search Console not connected yet'}, 403
+
+                sc_dict_data = user.get('metrics').get('search_console')
+                result = {}
+                for metric_name, data_list in sc_dict_data:
+                    result.update({metric_name: data_list[-7:]})
+
+                return result, 200
 
             return {'Error': 'Wrong auth token'}, 403
 

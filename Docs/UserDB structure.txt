@@ -19,14 +19,12 @@ Docs syntax:
     "tokens": <dict> (all the assess and refresh tokens used for all connected systems),
     "connected_systems": { <dict> (the list of all the systems that user connected)
         "google_analytics": {
-            "token" : str (user token) ,
             "account" : str (user account) ,
             "account_name" : str (name of selected account) ,
             "web_property" : str (selected web_property) ,
             "web_property_name" : str (name of selected web_property)
         },
         "search_console": {
-            "token" : str (user token) ,
             "site_url" : str (selected site URL)
         }
         "facebook_insights":{

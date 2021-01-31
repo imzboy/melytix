@@ -9,7 +9,7 @@ from authlib.integrations.flask_client import OAuth
 
 from Systems.Google.views import (GetSearchConsoleDataAPI, GetVerifiedSitesList,
 GoogleAuthLoginApiView, GoogleAuthLoginApiViewMain, GetViewIdDropDown, PutViewId,
-RetrieveGoogleAnalyticsMetrics, FirstRequestGoogleAnalyticsMetrics)
+RetrieveGoogleAnalyticsMetrics, FirstRequestGoogleAnalyticsMetrics, ConnectSearchConsoleAPI)
 
 from Systems.Facebook.views import (FacebookGetAccounts, FacebookSetAccount,
 FacebookAuthLoginApiView, RetrieveFacebookMetricsFromBD, oauth)
@@ -230,6 +230,7 @@ api.add_resource(FirstRequestGoogleAnalyticsMetrics, '/connect-ga', methods=['PO
 
 # search console
 api.add_resource(GetVerifiedSitesList, '/get-sites-url', methods=['POST', 'OPTIONS'])
+api.add_resource(ConnectSearchConsoleAPI, '/connect-sc', methods=['POST', 'OPTIONS'])
 api.add_resource(GetSearchConsoleDataAPI, '/get-sc-data', methods=['POST', 'OPTIONS'])
 
 # facebook insights
