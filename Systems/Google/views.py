@@ -128,7 +128,7 @@ class GetSearchConsoleDataAPI(Resource):
 
                 sc_dict_data = user.get('metrics').get('search_console')
                 result = {}
-                for metric_name, data_list in sc_dict_data:
+                for metric_name, data_list in sc_dict_data.items():
                     result.update({metric_name: data_list[-7:]})
 
                 return result, 200
