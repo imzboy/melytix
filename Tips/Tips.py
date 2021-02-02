@@ -30,7 +30,7 @@ def growsOfNewUsers(metrics:dict):
     for item in range(len(ctr)):
         if ctr[item] >= ctr[item-1]:
             counter += 1
-        elif  counter == 7:range(len(ctr
+        elif counter == 7:
             return True
         else:
             return False
@@ -226,5 +226,5 @@ LossOfNewUsers = Tip(
 
 
 def return_tips():
-    return [CtrOfAllSearchConsoleUser,GrowsOfNewUsersFunc,LowGAPageViewsPerSessionFunc,LowGAReturningUserFunc,NoGAReturningUserFunc,
+    return [GrowsOfNewUsersFunc,LowGAPageViewsPerSessionFunc,LowGAReturningUserFunc,NoGAReturningUserFunc,
             RightGAReturningUserFunc,RightAVGSessionDurationFunc,LowAVGSessionDurationFunc,NoAVGSessionDurationFunc,LossOfNewUsers]
