@@ -18,7 +18,15 @@ Docs syntax:
     "auth_token" : <string> (generated uuid token that is used in every api for secure assess),
     "tokens": <dict> (all the assess and refresh tokens used for all connected systems),
     "connected_systems": { <dict> (the list of all the systems that user connected)
-        "google_analytics": {},
+        "google_analytics": {
+            "account" : str (user account) ,
+            "account_name" : str (name of selected account) ,
+            "web_property" : str (selected web_property) ,
+            "web_property_name" : str (name of selected web_property)
+        },
+        "search_console": {
+            "site_url" : str (selected site URL)
+        }
         "facebook_insights":{
             "account_id": (account ID in the ads manager, which the user has chosen)
         }

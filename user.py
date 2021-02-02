@@ -192,24 +192,6 @@ def add_scopes(token: str, scope: list):
         upsert=False
     )
 
-
-def insert_site_for_sc(token: str, site_url: str):
-    """
-    Finds and inserts by token user's site URL.
-     Function does not insert a new document when no match is found.
-        Parameters:
-            token (str): the token that we use to find the user
-            site_url (str): new user's site URL
-    """
-    db.find_one_and_update(
-        {'auth_token': token},
-        {'$set': {
-            'connected_systems.search_console.site_utl': site_url
-        }},
-        upsert=False
-    )
-
-
 def get_g_tokens(token: str):
     """
     Secures access by token and finds tokens
@@ -273,6 +255,16 @@ def insert_dash_settings(token: str, settings: dict):
         {'auth_token': token},
         {'$set': {
             'DashSettings': settings
+        }},
+        upsert=False
+    )
+
+
+def insert_data_in_db(token: str, system: str, data: dict):
+    db.find_one_and_update(
+        {'auth_token': token},
+        {'$set': {
+            f'metrics.{system}': data
         }},
         upsert=False
     )

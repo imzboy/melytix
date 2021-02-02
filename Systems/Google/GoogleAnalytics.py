@@ -93,13 +93,3 @@ def g_get_select_data(token: str):
             return accounts
     except HttpError:
         return {'error': 'User does not have any Google Analytics account.'}
-
-
-def insert_ga_data_in_db(token, ga_data):
-    User.db.find_one_and_update(
-        {'auth_token': token},
-        {'$set': {
-            'metrics.google_analytics': ga_data
-        }},
-        upsert=False
-    )
