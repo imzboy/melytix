@@ -1,7 +1,7 @@
 from Tips.Tip import Tip
 
 
-def ctrOfAllSCUser(metrics: dict):
+def ctr_of_all_users(metrics: dict):
     ctr = metrics.get('sc_ctr')
     if ctr:
         counter = 0;
@@ -15,13 +15,13 @@ def ctrOfAllSCUser(metrics: dict):
     return False
 
 
-CtrOfAllSearchConsoleUser = Tip(
+ctr_of_all_search_Console_user = Tip(
     category='SEO',
     title = 'CTR меньше 1 процента, люди не кликают на ваш сниппет в поиске!',
     description = 'На протяжении недели CTR всех ваших объявлений достигает меньше одного процента - поменяйте заголов и описание сниппета в поиске ( изменив <title> и <description> страницы )',
-    analytics_func=ctrOfAllSCUser,
+    analytics_func=ctr_of_all_users,
     is_human_created=False
 )
 
 def return_tips():
-    return [CtrOfAllSearchConsoleUser]
+    return [ctr_of_all_search_Console_user]

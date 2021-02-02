@@ -24,7 +24,7 @@ def crytical_high_ga_users(metrics: dict):
     ga_users = metrics.get('ga_users')
     max_ga_users = ga_users[0]
     for i in range(len(ga_users)):
-        if max_ga_users+(max_ga_users/100*50)<ga_users[i]:
+        if max_ga_users + (max_ga_users / 100 * 50) < ga_users[i]:
             max_ga_users=ga_users[i]
 
     if max_ga_users != ga_users[0]:

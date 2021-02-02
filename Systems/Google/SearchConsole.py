@@ -1,7 +1,5 @@
 from Systems.Google.GoogleAuth import auth_credentials
 
-from user import get_g_tokens
-
 from googleapiclient.discovery import build
 
 def get_site_list(token: str):
