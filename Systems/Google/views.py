@@ -232,7 +232,7 @@ class FirstRequestGoogleAnalyticsMetrics(Resource):
             if user.get('connected_systems', {}).get('google_analytics'):
                 return {'Error': 'user has already connected to the GA'}, 409
 
-            thee_weeks_ago = (datetime.datetime.now() - datetime.timedelta(weeks=3)).strftime('%Y-%m-%d')
+            thee_weeks_ago = (datetime.datetime.now() - datetime.timedelta(weeks=3)).date().isoformat()
 
             start_date, end_date = thee_weeks_ago, 'today'
 
