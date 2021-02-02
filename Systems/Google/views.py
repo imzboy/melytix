@@ -1,15 +1,16 @@
 
 from Utils.GoogleUtils import find_start_and_end_date
 import datetime
-from flask_restful import Resource, Api
+from flask_restful import Resource
 
-from flask import Flask, request
+from flask import request
 
 import user as User
 
 from Systems.Google import GoogleAuth, GoogleAnalytics
 from Systems.Google.SearchConsole import get_site_list, make_sc_request
 from Utils import GoogleUtils
+
 
 class GoogleAuthLoginApiView(Resource):
     """
@@ -23,6 +24,7 @@ class GoogleAuthLoginApiView(Resource):
         code = request.json['code']
         token = request.json['token']
         if (user := User.query(auth_token=token)):
+
 
             uri = 'http://localhost:8080'
 
@@ -51,7 +53,7 @@ class GoogleAuthLoginApiViewMain(Resource):
         token = request.json['token']
         if (user := User.query(auth_token=token)):
 
-            uri = 'https://kraftpy.github.io'
+            uri = 'https://melytix.tk'
 
             access_token, refresh_token = GoogleAuth.code_exchange(code, uri)
 
@@ -83,24 +85,53 @@ class GetVerifiedSitesList(Resource):
         return {'Error': 'no credentials provided'}, 403
 
 
+class ConnectSearchConsoleAPI(Resource):
+
+    def options(self):
+        return {}, 200
+
+    def post(self):
+        if (token := request.json['token']):
+            if(user := User.query(auth_token=token)):
+                if user.get('connected_systems', {}).get('search_console'):
+                    return {'Error': 'user has already connected to the Search Console'}, 409
+                site_url = request.json['site_url']
+                User.connect_system(
+                    token, 'search_console',
+                    {'site_url': site_url})
+
+                three_weeks_ago = (datetime.datetime.now() - datetime.timedelta(weeks=3))
+                today = datetime.datetime.now()
+                response = make_sc_request(token, site_url, three_weeks_ago, today)
+
+                data = GoogleUtils.prep_dash_metrics(sc_data=response)
+
+                User.insert_data_in_db(token, 'search_console', data)
+                return {'Message': 'Success'}, 200
+
+            return {'Error': 'Wrong auth token'}, 403
+
+        return {'Error': 'no credentials provided'}, 403
+
+
 class GetSearchConsoleDataAPI(Resource):
 
     def options(self):
         return {},200
 
     def post(self):
-
         if (token := request.json['token']):
-            if User.query(auth_token=token):
+            if(user := User.query(auth_token=token)):
 
-                site_url = request.json['site_url']
-                User.insert_site_for_sc(token, site_url)
+                if not user.get('connected_systems', {}).get('search_console'):
+                    return {'Error': 'Search Console not connected yet'}, 403
 
-                response = make_sc_request(token, site_url, request.json['start_date'], request.json['end_date'])
+                sc_dict_data = user.get('metrics').get('search_console')
+                result = {}
+                for metric_name, data_list in sc_dict_data.items():
+                    result.update({metric_name: data_list[-7:]})
 
-                data = GoogleUtils.prep_dash_metrics(sc_data=response)
-
-                return {'metric': data[request.json['metric']], 'dates': data['sc_dates']}, 200
+                return result, 200
 
             return {'Error': 'Wrong auth token'}, 403
 
@@ -143,7 +174,14 @@ class PutViewId(Resource):
                     request.json['web_property'],
                     token
                 )
-                User.insert_viewid(token, viewid)
+                User.connect_system(
+                    token, 'google_analytics',
+                    {'view_id': viewid,
+                     'account': request.json['account'],
+                     'account_name': request.json['account_name'],
+                     'web_property': request.json['web_property'],
+                     'web_property_name': request.json['web_property_name']})
+
                 return {'Message': 'Success'}, 200
             return {'Error': 'Wrong auth token'}, 403
         except KeyError:
@@ -156,50 +194,72 @@ class RetrieveGoogleAnalyticsMetrics(Resource):
         return {},200
 
     def post(self):
-        """
-        This view is responsible for first request to GA if there is no metrics in the user database
-        """
+
         if (user := User.query(auth_token=request.json['token'])):
             if not user.get('tokens').get('g_access_token'):
                 return {'Error': 'user did not gave access to google yet'}, 404
 
             metric = request.json['metric']
 
-            if user.get('G_Analytics'):
+            if user.get('metrics', {}).get('google_analytics', {}).get('ga_dates'):
 
-                ga_data = user.get('G_Analytics').get('ga_data')
-                # Filtering only the dates requested
-                start_i, end_i = find_start_and_end_date(ga_data.get('ga_dates'), request.json['start_date'], request.json['end_date'])
+                ga_data = user.get('metrics').get('google_analytics')
 
-                metrics = ga_data[metric][start_i:end_i + 1]
-                dates = ga_data['ga_dates'][start_i:end_i + 1]
+                metrics = ga_data.get(metric)
+                dates = ga_data.get('ga_dates')
+                if metric and dates:
+                    metrics = metrics[7:]
+                    dates = dates[7:]
+                    return {'metric': metrics, 'dates': dates}, 200
 
-                return {'metric': metrics, 'dates': dates}, 200
+                return {'message': f'the metric "{metric}" was not found'}, 404
+        return {'Error': 'Wrong auth token'}, 403
 
-            else:
-                # start_date, end_date = request.json['start_date'], request.json['end_date']
-                thee_weeks_ago = (datetime.datetime.now() - datetime.timedelta(weeks=3)).strftime('%Y-%m-%d')
 
-                start_date, end_date = thee_weeks_ago, 'today'
+class FirstRequestGoogleAnalyticsMetrics(Resource):
 
-                token = request.json['token']
+    def options(self):
+        return {},200
 
-                viewid = GoogleAnalytics.g_get_viewid(
-                    request.json['account'],
-                    request.json['web_property'],
-                    token
-                )
+    def post(self):
+        """
+        This view is responsible for connecting Google Analytics to user
+        """
+        if (user := User.query(auth_token=request.json['token'])):
+            if not user.get('tokens').get('g_access_token'):
+                return {'Error': 'user did not gave access to google yet'}, 404
 
-                if viewid:
-                    User.insert_viewid(token, viewid)
-                    ga_data = GoogleAnalytics.google_analytics_query(token, viewid, start_date, end_date)
+            if user.get('connected_systems', {}).get('google_analytics'):
+                return {'Error': 'user has already connected to the GA'}, 409
 
-                    dash_data = GoogleUtils.prep_dash_metrics(ga_data=ga_data)
+            thee_weeks_ago = (datetime.datetime.now() - datetime.timedelta(weeks=3)).strftime('%Y-%m-%d')
 
-                    GoogleAnalytics.insert_ga_data_in_db(token, dash_data)
+            start_date, end_date = thee_weeks_ago, 'today'
 
-                    return {'metric':dash_data[metric], 'dates': dash_data['ga_dates']}, 200
+            token = request.json['token']
+
+            viewid = GoogleAnalytics.g_get_viewid(
+                request.json['account'],
+                request.json['web_property'],
+                token)
+
+            if viewid:
+                ga_data = GoogleAnalytics.google_analytics_query(token, viewid, start_date, end_date)
+                if ga_data:
+                    dash_data = GoogleUtils.GoogleReportsParser(ga_data).parse()
+                    User.insert_data_in_db(token, 'google_analytics', dash_data)
+                    User.connect_system(
+                        token, 'google_analytics',
+                        {'view_id': viewid,
+                        'account': request.json['account'],
+                        'account_name': request.json['account_name'],
+                        'web_property': request.json['web_property'],
+                        'web_property_name': request.json['web_property_name']})
+
+                    return {'Message': 'success'}, 200
                 else:
-                    return {'error': 'could not fetch view id from google'}, 404
+                    return {'Error': 'Google currently unavailable'}, 403
+            else:
+                return {'error': 'could not fetch view id from google'}, 404
 
         return {'Error': 'Wrong auth token'}, 403

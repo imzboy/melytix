@@ -1,8 +1,10 @@
 import os
 from celery import Celery
 from Systems.Google.GoogleAnalytics import google_analytics_query
-from Utils.GoogleUtils import prep_db_metrics
+from Systems.Facebook.FacebookAdsManager import facebook_insights_query
+from Utils.GoogleUtils import GoogleReportsParser
 from user import append_list
+import datetime
 
 from user import query_many
 
@@ -14,45 +16,71 @@ celery_app = Celery('melytix-celery')
 
 @celery_app.task
 def refresh_metrics():
-    if (mongo_users := query_many(user_type="google_auth")):
-        step = 10
+    """
+    Makes list of users from DB and calls method for refreshing metrics
+    for 10 users by one task
+    """
+    if (mongo_users := query_many(metrics={'$exists': True})):
         users = []  # convert pymongo cursor obj to list
         for user in mongo_users:
-            users.append(
-                {'email': user['email'],
-                 'token': user['auth_token'],
-                 'view_id': user['viewid']})
+            if user.get('connected_systems', {}).get("google_analytics", {}).get('viewid'):  # TODO: change when db is stable again
+                users.append(
+                    {'email': user['email'],
+                    'token': user['auth_token'],
+                    'view_id': user['connected_systems']['google_analytics']['viewid']})
 
         # refresh 10 users by one task for more threaded performace
+        step = 10
         for id in range(0, len(users), step):
-	            refresh_metric((users[id: id + step]))
+	        refresh_metric((users[id: id + step]))
 	        # refresh_metric.delay((users[id: id + step]))
 
 
 @celery_app.task
 def refresh_metric(users: list):
+    """
+    For each user from the list, it makes a request to Google Analytics
+    to get updated metrics for today, and updates these metrics in the DB
+            Parameters:
+                users (list): list of users to update metrics
+    """
     #TODO: in future make this function refresh all system metrics that user connects
     for user in users:
-        print(user)
         token = user['token']
         view_id = user['view_id']
 
         metrics = google_analytics_query(token, view_id, 'today', 'today')
 
-        insert_dict = prep_db_metrics(ga_data=metrics)
-        for key in insert_dict:
+        insert_dict = GoogleReportsParser(metrics).parse()
+        for key, value in insert_dict.items():
             append_list(
                 filter={
                     'email': user['email']
                     },
                 append={
-                    f'G_Analytics.ga_data.{key}': insert_dict[key]
+                    f'metrics.google_analytics.{key}': value if isinstance(value, int) else value[0]
                     }
+                )
+
+        today = datetime.datetime.now()
+        f_metrics = facebook_insights_query(token, today, today)
+        for campaign, metrics in f_metrics.items():
+            for metric, value in metrics.items():
+                append_list(
+                    filter={
+                        'email': user['email']
+                    },
+                    append={f'metrics.facebook_insights.{campaign}.{metric}': {'$each': value}}
                 )
 
 
 @celery_app.task
 def generate_tip(users: list):
+    """
+    Adds tips to the DB for each user from the list if their analytics_func returns True
+            Parameters:
+                users (list): list of users to check metrics of user
+    """
     for user in users:
         for tip in return_tips():
             if tip.analytics_func(user['metrics']):
@@ -63,6 +91,11 @@ def generate_tip(users: list):
 
 @celery_app.task
 def generate_alert(users: list):
+    """
+    Adds alerts to the DB for each user on the list according to their traffic
+                Parameters:
+                users (list): list of users to check traffic
+    """
     for user in users:
         for alert in return_alerts():
             if alert.analytics_func(user['metrics']):
@@ -73,13 +106,16 @@ def generate_alert(users: list):
 
 @celery_app.task
 def generate_tips_and_alerts():
+    """
+    For each user form DB calls methods of generating tips and alerts
+    """
     if (mongo_users := query_many()):
         users = []
         for user in mongo_users:
-            if user.get('G_Analytics'):  # TODO: change this when more systems will be added
+            if user.get('metrics').get('google_analytics'):  # TODO: change this when more systems will be added
                 users.append(
                     {'email': user['email'],
-                    'metrics': user['G_Analytics']['ga_data']}
+                    'metrics': user['metrics']['google_analytics']}
                 )
 
         for id in range(0, len(users), 10):
