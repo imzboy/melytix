@@ -26,12 +26,7 @@ class FacebookSetAccount(Resource):
             facebook_insights = facebook_insights_query(token, three_weeks_ago, today)
 
             # add insights to DB (Create fields)
-            User.find_and_update(
-                filter={'auth_token': request.json['token']},
-                update={
-                    'metrics.facebook_insights': facebook_insights
-                }
-            )
+            User.insert_data_in_db(token, 'facebook_insights', facebook_insights)
 
             return {'Message': 'Success'}, 200
 
@@ -69,7 +64,7 @@ class RetrieveFacebookMetricsFromBD(Resource):
         if (user := User.query(auth_token=request.json['token'])):
 
             result = {}
-            facebook_insights = user.get('connected_system').get('facebook_insights')
+            facebook_insights = user.get('metrics').get('facebook_insights')
             for campaign, metrics in facebook_insights.items():
                 temp = {}
                 for metric_name, list_value in metrics.items():
