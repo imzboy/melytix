@@ -33,7 +33,6 @@ def code_exchange(code: str, uri: str):
 
 def get_google_user_data(g_token: str):
     r = requests.get(f'https://www.googleapis.com/oauth2/v2/userinfo?oauth_token={g_token}')
-    print(r.json())
     try:
         if r.json()['verified_email']:
             return r.json()['email'], r.json()['picture']

@@ -11,8 +11,7 @@ class RetriveUserTips(Resource):
         return {}, 200
 
     def post(self):
-        try:
-            token = request.json['token']
+        if (token := request.json['token']):
             if (user := User.query(auth_token=token)):
 
                 if (tips := user.get('Tips')):
@@ -26,5 +25,4 @@ class RetriveUserTips(Resource):
                 else:
                     return {'Error': 'no tips has been generated'}, 404
 
-        except KeyError:
-            return {'Error': 'no credentials provided'}, 403
+        return {'Error': 'no credentials provided'}, 403

@@ -150,14 +150,12 @@ class GetViewIdDropDown(Resource):
         return {},200
 
     def post(self):
-        try:
-            token = request.json['token']
+        if (token := request.json['token']):
             if User.query(auth_token=token):
                 select_data = GoogleAnalytics.g_get_select_data(token)
                 return select_data, 200
             return {'Error': 'Wrong auth token'}, 403
-        except KeyError:
-            return {'Error': 'no credentials provided'}, 403
+        return {'Error': 'no credentials provided'}, 403
 
 
 class PutViewId(Resource):
@@ -166,8 +164,7 @@ class PutViewId(Resource):
         return {},200
 
     def post(self):
-        try:
-            token = request.json['token']
+        if (token := request.json['token']):
             if User.query(auth_token=token):
                 viewid = GoogleAnalytics.g_get_viewid(
                     request.json['account'],
@@ -184,14 +181,28 @@ class PutViewId(Resource):
 
                 return {'Message': 'Success'}, 200
             return {'Error': 'Wrong auth token'}, 403
-        except KeyError:
-            return {'Error': 'no credentials provided'}, 403
+        return {'Error': 'no credentials provided'}, 403
 
 
 class RetrieveGoogleAnalyticsMetrics(Resource):
 
     def options(self):
         return {},200
+
+    def get(self):
+        metrics=['ga:sessions', 'ga:users', 'ga:pageviews',
+            'ga:pageviewsPerSession', 'ga:avgSessionDuration', 'ga:bounces',
+            'ga:percentNewSessions', 'ga:pageviews', 'ga:timeOnPage', 'ga:pageLoadTime',
+            'ga:avgPageLoadTime', 'ga:transactionsPerSession', 'ga:transactionRevenue'],
+
+        filters=['ga:date', 'ga:browser', 'ga:browserVersion', 'ga:operatingSystem',
+            'ga:browser', 'ga:browserVersion', 'ga:operatingSystemVersion', 'ga:mobileDeviceBranding',
+            'ga:mobileInputSelector', 'ga:mobileDeviceModel', 'ga:mobileDeviceInfo',
+            'ga:deviceCategory', 'ga:browserSize', 'ga:country', 'ga:region', 'ga:city',
+            'ga:language', 'ga:userAgeBracket', 'ga:userGender', 'ga:interestOtherCategory']
+
+        return {"metrics": metrics, "filters": filters}, 200
+
 
     def post(self):
 
@@ -200,12 +211,13 @@ class RetrieveGoogleAnalyticsMetrics(Resource):
                 return {'Error': 'user did not gave access to google yet'}, 404
 
             metric = request.json['metric']
-
+            # filter = request.json['filter']
             if user.get('metrics', {}).get('google_analytics', {}).get('ga_dates'):
 
                 ga_data = user.get('metrics').get('google_analytics')
 
                 metrics = ga_data.get(metric)
+                # metric = metric.get(filter)
                 dates = ga_data.get('ga_dates')
                 if metric and dates:
                     metrics = metrics[7:]
