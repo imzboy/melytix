@@ -16,10 +16,7 @@ class RetriveUserAlerts(Resource):
 
                 if (alerts := user['Alerts']):
 
-                    active_alerts = []
-                    for alert in alerts:
-                        if alert['active']:
-                            active_alerts.append(alert)
+                    return alerts, 200
 
                     return active_alerts, 200
 

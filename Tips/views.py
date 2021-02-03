@@ -16,13 +16,8 @@ class RetriveUserTips(Resource):
 
                 if (tips := user.get('Tips')):
 
-                    active_tips = []
-                    for alert in tips:
-                        if alert['active']:
-                            active_tips.append(alert)
+                    return tips, 200
 
-                    return active_tips, 200
-                else:
-                    return {'Error': 'no tips has been generated'}, 404
+                return {'Error': 'no tips has been generated'}, 404
 
         return {'Error': 'no credentials provided'}, 403
