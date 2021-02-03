@@ -27,7 +27,6 @@ def query(**kwargs):
     return None
 
 
-
 def query_many(**kwargs):
     """
     Finds all users in db, which matches the filter
@@ -280,26 +279,19 @@ def connect_system(token: str, system: str, data: dict):
     )
 
 
-def flip_tip_or_alert(token: str, type_: str, id: str):
-    user = db.find_one(
-        {'auth_token': token,
-         f'{type_}s.id': {id}}
-        )
+def flip_tip_or_alert(token: str, type: str, id: str):
+    user = query(auth_token=token)
+    list_of_data = user.get(f'{type}s')
 
-    algorithms_res = user.get(f'{type_}s')
-    alg_bool = False
+    for item in list_of_data:
+        if item.get('id') == id:
+            item.update({'active': not item.get('active')})
 
-    for alg in algorithms_res:
-        if alg.get('id') == id:
-            alg_bool = alg.get('active')
-
-
-    db.update_one(
-        {'auth_token': token,
-        f'{type_}s.id': {id}},
-        {'$set': {
-            f'{type_}s.$.active': not alg_bool
-        }}
+    db.find_one_and_update(
+        {'auth_token': token},
+        {'$set':
+             {f'{type}s': list_of_data}
+         }
     )
 
 
