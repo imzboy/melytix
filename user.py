@@ -3,18 +3,62 @@ from pymongo import MongoClient
 import os
 from hashlib import pbkdf2_hmac
 import binascii
-
+import inspect
 
 # Connecting to Mogodb Atlas
 uri = os.environ.get('MONGODB_URI', None)
 
 client = MongoClient(uri)
 
-db = client.heroku_t2hftlhq.users
+db = client.heroku_t2hftlhq
 
 '''
 see Docs/UserDB Structure.txt if there is any questions
 '''
+
+class MongoObject(object):
+
+    def __init__(self, **fields):
+        self.db_connection = client.heroku_t2hftlhq.__getattr__(f'{self.__class__.__name__.lower()}s')
+        self.attributes: dict = inspect.getmembers(self, lambda a:not(inspect.isroutine(a)))[0][1]
+
+        for field_name, field_value in fields.values():
+
+            if not field_name in self.attributes.keys():
+                raise Exception(f'The {self.__class__.__name__} does not have field {field_name}')
+
+            if isinstance(field_value, self.attributes.get(field_name)):
+                self.__setattr__(field_name, field_value)
+
+    def query(self, **kwargs):
+        if (mongo_data := db.find_one(kwargs)):
+            return self.__class__(mongo_data)
+        return None
+
+    def query_many(self, **kwargs):
+        """
+        Finds all users in db, which matches the filter
+            Parameters:
+                **kwargs:  parameters for users search
+        """
+        if(mongo_data := db.find(kwargs)):
+            return [self.__class__(data) for data in mongo_data]
+        return None
+
+
+class User(MongoObject):
+    email : str
+    password : bytes
+    salt : bytes
+    auth_token : str
+    tokens : dict
+    connected_systems : dict
+    metrics : dict
+    Tips : list
+    Alerts : list
+    DashSettings : dict
+
+
 
 def query(**kwargs):
     """
