@@ -279,18 +279,18 @@ def connect_system(token: str, system: str, data: dict):
     )
 
 
-def flip_tip_or_alert(token: str, type: str, id: str):
+def flip_tip_or_alert(token: str, type_: str, id_: str):
     user = query(auth_token=token)
-    list_of_data = user.get(f'{type}s')
+    list_of_data = user.get(f'{type_}s')
 
     for item in list_of_data:
-        if item.get('id') == id:
+        if item.get('id') == id_:
             item.update({'active': not item.get('active')})
 
     db.find_one_and_update(
         {'auth_token': token},
         {'$set':
-             {f'{type}s': list_of_data}
+             {f'{type_}s': list_of_data}
          }
     )
 
