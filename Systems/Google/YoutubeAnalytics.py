@@ -25,13 +25,11 @@ class Channel:
 def yt_fill_chanel_class():
     reporting_api = build(serviceName='youtube', version='v3', http=auth_credentials())
     chanel_list = yt_get_chanel(reporting_api)
-    print(chanel_list)
     name = yt_get_title(chanel_list)
     picture = yt_get_chanel_pic(chanel_list)
     vid_playlist = utils_get_uploads(chanel_list)
     stats = utils_get_statistics(chanel_list)
     channel = Channel(name, picture, vid_playlist, stats)
-    print("YT ------- \n", channel.name, '\n', channel.pic, '\n', channel.videos_playlist, '\n', channel.stats, '\n')
     return channel
 
 
@@ -121,7 +119,6 @@ def utils_convert_videos_to_str(videos):
     for _id in videos:
         videos_str = str(videos_str + "," + _id['id'])  # TODO: do another way of conversion. I don't think this is ideal.
     videos_str = videos_str.replace(",", "", 1)  # was ",id,id,id" became "id,id,id"
-    print(videos_str)
     return videos_str
 
 
@@ -164,9 +161,7 @@ def get_all_channel_videos(reporting_api, upload_playlist):
                         "id": response['items'][video]['contentDetails']['videoId']
                     })
             return videos
-        print("videos ", videos)
     except KeyError:
-        print("videos ", videos)
         return videos
 
 

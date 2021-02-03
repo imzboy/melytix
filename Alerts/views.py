@@ -11,14 +11,14 @@ class RetriveUserAlerts(Resource):
         return {}, 200
 
     def post(self):
-
         if (token := request.json['token']):
-
             if (user := User.query(auth_token=token)):
 
                 if (alerts := user['Alerts']):
 
                     return alerts, 200
+
+                    return active_alerts, 200
 
                 return {'Error': 'no alerts has been generated'}, 404
 

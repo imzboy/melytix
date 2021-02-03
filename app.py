@@ -133,19 +133,17 @@ class LogOutView(Resource):
         return {}, 200
 
     def post(self):
-            try:
-                token = request.json['token']
+        if (token := request.json.get('token')):
 
-                if User.query(auth_token=token):
-                    User.find_and_update(
-                        {'auth_token': token},
-                        {'auth_token': None})
-                    return {}, 200
+            if User.query(auth_token=token):
+                User.find_and_update(
+                    {'auth_token': token},
+                    {'auth_token': None})
+                return {}, 200
 
-                return {'Error': 'Wrong auth token'}, 403
+            return {'Error': 'Wrong auth token'}, 403
 
-            except KeyError:
-                return {'Error': 'no credentials provided'}, 403
+        return {'Error': 'no credentials provided'}, 403
 
 
 class CacheDashboardSettings(Resource):
@@ -153,8 +151,7 @@ class CacheDashboardSettings(Resource):
         return {}, 200
 
     def post(self):
-        try:
-            token = request.json['token']
+        if (token := request.json.get('token')):
 
             if User.query(auth_token=token):
                 User.insert_dash_settings(token, request.json['settings'])
@@ -162,8 +159,7 @@ class CacheDashboardSettings(Resource):
 
             return {'Error': 'Wrong auth token'}, 403
 
-        except KeyError:
-            return {'Error': 'no credentials provided'}, 403
+        return {'Error': 'no credentials provided'}, 403
 
 
 class GetCachedDashboardSettings(Resource):
@@ -171,8 +167,7 @@ class GetCachedDashboardSettings(Resource):
         return {}, 200
 
     def post(self):
-        try:
-            token = request.json['token']
+        if (token := request.json['token']):
 
             if (user := User.query(auth_token=token)):
 
@@ -183,8 +178,7 @@ class GetCachedDashboardSettings(Resource):
 
             return {'Error': 'Wrong auth token'}, 403
 
-        except KeyError:
-            return {'Error': 'no credentials provided'}, 403
+        return {'Error': 'no credentials provided'}, 403
 
 
 class GetConnectedSystems(Resource):

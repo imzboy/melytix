@@ -1,7 +1,5 @@
 from Systems.Google.GoogleAuth import auth_credentials
 
-from user import get_g_tokens
-
 from googleapiclient.discovery import build
 
 def get_site_list(token: str):
@@ -17,8 +15,8 @@ def get_site_list(token: str):
 def make_sc_request(token, site_uri, start_date, end_date):
     service = build('webmasters', 'v3', http=auth_credentials(token))
     request = {
-        'startDate': start_date,
-        'endDate': end_date,
+        'startDate': start_date.date().isoformat(),
+        'endDate': end_date.date().isoformat(),
         'dimensions': ['date']
     }
     response = service.searchanalytics().query(siteUrl=site_uri, body=request).execute()

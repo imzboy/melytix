@@ -29,7 +29,8 @@ Docs syntax:
         }
         "facebook_insights":{
             "account_id": (account ID in the ads manager, which the user has chosen)
-        }
+        },
+        "search_console": {}
     },
     "metrics": {
         "google_analytics" : { <dict> (the google analytics data)

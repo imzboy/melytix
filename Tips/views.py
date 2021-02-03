@@ -11,9 +11,7 @@ class RetriveUserTips(Resource):
         return {}, 200
 
     def post(self):
-
         if (token := request.json['token']):
-
             if (user := User.query(auth_token=token)):
 
                 if (tips := user.get('Tips')):

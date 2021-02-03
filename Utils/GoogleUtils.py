@@ -84,7 +84,6 @@ def find_start_and_end_date(dates, strart_date, end_date):
 
     for i, date in enumerate(dates):
         if strart_date == date:
-            print(strart_date, date)
             start_date_index = i
 
         if end_date == date:

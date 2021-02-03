@@ -48,7 +48,7 @@ def google_analytics_query(token, view_id, start_date, end_date):
 
                 dimensions=['ga:date']
                 # 'ga:browser', 'ga:browserVersion', 'ga:operatingSystem',
-                # , 'ga:browser', 'ga:browserVersion', 'ga:operatingSystem',
+                # , 'ga:browser', 'ga:browserVersion',
                 # 'ga:operatingSystemVersion', 'ga:mobileDeviceBranding',
                 # 'ga:mobileInputSelector', 'ga:mobileDeviceModel', 'ga:mobileDeviceInfo',
                 # 'ga:deviceCategory', 'ga:browserSize', 'ga:country', 'ga:region', 'ga:city',
