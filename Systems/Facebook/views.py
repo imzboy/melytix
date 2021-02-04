@@ -15,10 +15,12 @@ class FacebookSetAccount(Resource):
     def post(self):
         
         token = request.json['token']
-        
+        account_id = request.json['id']
+        name = request.json['name']
+
         if (user := User.query(auth_token=token)):
 
-            User.connect_system(token, 'facebook_insights', {'account_id': request.json['id']})
+            User.connect_system(token, 'facebook_insights', {'account_id': account_id, 'name': name})
 
             # request for insights for last 3 weeks
             three_weeks_ago = (datetime.datetime.now() - datetime.timedelta(weeks=3))
@@ -42,16 +44,24 @@ class FacebookAuthLoginApiView(Resource):
         token = request.json['token']
         
         if User.query(auth_token=token):
-            User.f_insert_tokens(token, access_token)
 
+            User.f_insert_tokens(token, access_token)
             r = requests.get(f'https://graph.facebook.com/v9.0/me/adaccounts?access_token={access_token}')
             FacebookAdsApi.init(access_token=access_token)
-            accounts = []
-            for id in r.json().get('data'):
-                my_account = AdAccount(id.get('id'))
-                accounts.append(dict(my_account.api_get(fields=[AdAccount.Field.name])))
+            data = r.json().get('data')
 
-            return accounts, 200
+            if data:
+                accounts = []
+                for id in data:
+                    my_account = AdAccount(id.get('id'))
+                    account_data = dict(my_account.api_get(fields=[AdAccount.Field.name]))
+                    temp_account = {}
+                    for key, value in account_data.items():
+                        temp_account[key] = value if isinstance(value, str) else value.decode('utf-8')
+                    accounts.append(temp_account)
+                return accounts, 200
+
+            return {'Message': 'User has no accounts'}, 200
 
         return {'Error': 'Wrong auth token'}, 403
 
