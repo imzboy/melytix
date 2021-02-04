@@ -4,6 +4,7 @@ import os
 from hashlib import pbkdf2_hmac
 import binascii
 import inspect
+from bson import ObjectId
 
 # Connecting to Mogodb Atlas
 uri = os.environ.get('MONGODB_URI', None)
@@ -16,7 +17,8 @@ db = client.heroku_t2hftlhq
 see Docs/UserDB Structure.txt if there is any questions
 '''
 
-class MongoObject(object):
+class MongoDocument(object):
+    _id : ObjectId
 
     def __init__(self, **fields):
         self.db_connection = client.heroku_t2hftlhq.__getattr__(f'{self.__class__.__name__.lower()}s')
@@ -45,8 +47,18 @@ class MongoObject(object):
             return [self.__class__(data) for data in mongo_data]
         return None
 
+    def save(self):
+        if self.query(_id=self._id):
+            db.find_one_and_update(
+                {"_id":self._id},
+                {'$set': self.__dict__},
+                upsert=False
+            )
+        else:
+            db.insert
 
-class User(MongoObject):
+
+class User(MongoDocument):
     email : str
     password : bytes
     salt : bytes
@@ -57,7 +69,6 @@ class User(MongoObject):
     Tips : list
     Alerts : list
     DashSettings : dict
-
 
 
 def query(**kwargs):
