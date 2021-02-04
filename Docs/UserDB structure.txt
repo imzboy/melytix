@@ -28,7 +28,8 @@ Docs syntax:
             "site_url" : str (selected site URL)
         }
         "facebook_insights":{
-            "account_id": (account ID in the ads manager, which the user has chosen)
+            "account_id": (account ID in the ads manager, which the user has chosen),
+            "name": (the name of the account the user chose)
         },
         "search_console": {}
     },

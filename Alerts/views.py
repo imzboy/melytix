@@ -18,8 +18,6 @@ class RetriveUserAlerts(Resource):
 
                     return alerts, 200
 
-                    return active_alerts, 200
-
                 return {'Error': 'no alerts has been generated'}, 404
 
         return {'Error': 'no credentials provided'}, 403
