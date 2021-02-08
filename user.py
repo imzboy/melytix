@@ -11,40 +11,37 @@ uri = os.environ.get('MONGODB_URI', None)
 
 client = MongoClient(uri)
 
-db = client.heroku_t2hftlhq
+database_name = os.environ.get('DATABASE_NAME', None)
+
+db = client.database_name
 
 '''
 see Docs/UserDB Structure.txt if there is any questions
 '''
 
-class MongoDocument(object):
-    _id : ObjectId
 
-    def __init__(self, **fields):
-        self.db_connection = client.heroku_t2hftlhq.__getattr__(f'{self.__class__.__name__.lower()}s')
-        self.attributes: dict = inspect.getmembers(self, lambda a:not(inspect.isroutine(a)))[0][1]
+class DocQuery(object):
 
-        for field_name, field_value in fields.values():
+    def __init__(self, query_class):
+        self.query_class = query_class
+        self.db_connection = client.heroku_t2hftlhq.__getattr__(f'{query_class.__name__.lower()}s')
 
-            if not field_name in self.attributes.keys():
-                raise Exception(f'The {self.__class__.__name__} does not have field {field_name}')
+    def _load_field_from_db(self, _id :ObjectId, field :str):
+        return self.db_connection.find_one({'_id': _id}, {'_id': 0, field: 1})
 
-            if isinstance(field_value, self.attributes.get(field_name)):
-                self.__setattr__(field_name, field_value)
-
-    def query(self, **kwargs):
-        if (mongo_data := db.find_one(kwargs)):
-            return self.__class__(mongo_data)
+    def get(self, **kwargs):
+        if (mongo_data := self.db_connection.find_one(kwargs, {'_id': 1})):
+            return self.cls(**mongo_data)
         return None
 
-    def query_many(self, **kwargs):
+    def filter(self, **kwargs):
         """
         Finds all users in db, which matches the filter
             Parameters:
                 **kwargs:  parameters for users search
         """
-        if(mongo_data := db.find(kwargs)):
-            return [self.__class__(data) for data in mongo_data]
+        if(mongo_data := db.find(kwargs, {'_id': 1})):
+            return [self.cls(**data) for data in mongo_data]
         return None
 
     def save(self):
@@ -56,6 +53,39 @@ class MongoDocument(object):
             )
         else:
             db.insert
+
+
+class MongoDocument(object):
+    _id : ObjectId
+
+    def __init__(self, **fields):
+        self.attributes: dict = inspect.getmembers(self, lambda a:not(inspect.isroutine(a)))[0][1]
+
+        for field_name, field_value in fields.items():
+
+            if not field_name in self.attributes.keys():
+                raise Exception(f'The {self.__class__.__name__} does not have field {field_name}')
+
+            if isinstance(field_value, self.attributes.get(field_name)):
+                self.__setattr__(field_name, field_value)
+
+        for null_field_key in self.attributes.keys():
+            if isinstance(self.attributes.get(null_field_key), type):
+                self.__setattr__(null_field_key, None)
+
+
+    @classmethod
+    def objects(cls) -> DocQuery:
+        return DocQuery(cls)
+
+    def __getattribute__(self, name: str):
+        attr = self.super().__getattribute__(name)
+        if attr:
+            return attr
+        else:  # load the field from database
+            attr = self.objects()._load_field_from_db(_id=self._id, field=name)  #TODO: check the responce of the call
+
+
 
 
 class User(MongoDocument):
