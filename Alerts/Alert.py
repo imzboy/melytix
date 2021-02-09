@@ -1,5 +1,5 @@
 import uuid
-
+import re
 import datetime
 
 class Alert:
@@ -10,7 +10,7 @@ class Alert:
         self.title = title
         self.description = description
         self.is_human_created = is_human_created
-        self.analytics_func = analytics_func,
+        self.analytics_func = analytics_func
         self.created_at = datetime.datetime.now().strftime('%d.%m.%Y')
 
     def generate(self) -> dict:
@@ -26,3 +26,13 @@ class Alert:
             "created_at": self.created_at,
             "active": True
         }
+
+    def format(self, metrics:dict):
+        res = re.findall(r'{.*?}', self.title)
+        res = [item[1:-1] for item in res]
+        items_func = [getattr(self, item) for item in res]
+        items = []
+        for it in items_func:
+            items.append(it(metrics))
+        self.title = self.title.format(**dict(zip(res, items)))
+

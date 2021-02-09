@@ -99,6 +99,7 @@ def generate_alert(users: list):
     for user in users:
         for alert in return_alerts():
             if alert.analytics_func(user['metrics']):
+                alert.format(user['metrics'])
                 append_list(
                     {'email': user['email']},
                     {"Alerts": alert.generate()})
