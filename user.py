@@ -45,12 +45,6 @@ def query_admin(**kwargs):
     return None
 
 
-def query_many(**kwargs):
-    if(users := db.find(kwargs)):
-        return users
-    return None
-
-
 def append_list(filter: dict, append: dict):
     """
     Append data to users selected with a filter
@@ -291,7 +285,7 @@ def flip_tip_or_alert(token: str, type: str, id: str):
         {'auth_token': token},
         {'$set':
              {f'{type}s': list_of_data}
-         }
+        }
     )
 
 

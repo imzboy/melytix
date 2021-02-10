@@ -29,37 +29,6 @@ def generate_report_body(view_id: str, start_date: str, end_date: str, metrics: 
     return report_requests
 
 
-# Google analytics query and setup
-def google_analytics_query(token, view_id, start_date, end_date):
-    # Google Analytics v4 api setup to make a request to google analytics
-    api_client = build(serviceName='analyticsreporting', version='v4', http=auth_credentials(token))
-    # Max of 10 metrics and 7 dimesions in one report body
-    response = api_client.reports().batchGet(
-        body={
-            'reportRequests': generate_report_body(
-                view_id=view_id,
-                start_date=start_date,
-                end_date=end_date,
-
-                metrics=['ga:sessions', 'ga:users', 'ga:pageviews',
-                'ga:pageviewsPerSession', 'ga:avgSessionDuration', 'ga:bounces',
-                'ga:percentNewSessions', 'ga:pageviews', 'ga:timeOnPage', 'ga:pageLoadTime',
-                'ga:avgPageLoadTime', 'ga:transactionsPerSession', 'ga:transactionRevenue'],
-
-                dimensions=['ga:date']
-                # 'ga:browser', 'ga:browserVersion', 'ga:operatingSystem',
-                # , 'ga:browser', 'ga:browserVersion',
-                # 'ga:operatingSystemVersion', 'ga:mobileDeviceBranding',
-                # 'ga:mobileInputSelector', 'ga:mobileDeviceModel', 'ga:mobileDeviceInfo',
-                # 'ga:deviceCategory', 'ga:browserSize', 'ga:country', 'ga:region', 'ga:city',
-                # 'ga:language', 'ga:userAgeBracket', 'ga:userGender', 'ga:interestOtherCategory'
-                # ]  # TODO: take metrics and dimesions to admin, so an admin could add more
-            )
-        }).execute()
-    # data = dump_data_for_melytips(response)
-    return response
-
-
 def g_get_viewid(account, web_property, token):
     service = build(serviceName='analytics', version='v3', http=auth_credentials(token))
     profiles = service.management().profiles().list(
