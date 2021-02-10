@@ -27,12 +27,13 @@ class Alert:
             "active": True
         }
 
-    def format(self, metrics:dict):
-        res = re.findall(r'{.*?}', self.title)
-        res = [item[1:-1] for item in res]
-        items_func = [getattr(self, item) for item in res]
+    def format(self, metrics: dict, field: str):
+        tags = re.findall(r'{.*?}', getattr(self, field))
+        tags = [item[1:-1] for item in tags]
+        items_func = [getattr(self, item) for item in tags]
         items = []
         for it in items_func:
             items.append(it(metrics))
-        self.title = self.title.format(**dict(zip(res, items)))
+        self.__dict__[field] = getattr(self, field).format(**dict(zip(tags, items)))
+
 
