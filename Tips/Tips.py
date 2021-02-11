@@ -35,6 +35,7 @@ grows_of_new_users = Tip(
 )
 
 
+# GA_TIP
 def low_ga_page_views_per_session_func(metrics: dict):
     weekly_views = metrics.get('ga_pageViewsPerSession', [])[-7:]
     for item in weekly_views:
@@ -57,6 +58,7 @@ low_ga_page_views_per_session = Tip(
 )
 
 
+# GA_TIP
 def low_ga_returning_user_func(metrics : dict):
     weekly_returning = metrics.get('ga_ReturningUser', [])[-7:]
     average = sum(weekly_returning)/7
@@ -73,6 +75,7 @@ low_ga_returning_user = Tip(
 )
 
 
+# GA_TIP
 def no_ga_returning_user_func(metrics:dict):
     weekly_returning = metrics.get('ga_ReturningUser', [])[-7:]
     average = sum(weekly_returning) / 7
@@ -91,6 +94,7 @@ no_ga_returning_user = Tip(
 )
 
 
+# GA_TIP
 def right_ga_returning_user_func(metrics: dict):
     weekly_returning = metrics.get('ga_ReturningUser', [])[-7:]
     average = sum(weekly_returning) / 7
@@ -106,6 +110,7 @@ right_ga_returning_user = Tip(
 )
 
 
+# GA_TIP
 def right_avg_session_duration_func(metrics: dict):
     session_duration = metrics.get('ga_avgSessionDuration', [])[-7:]
     average = sum(session_duration) / 7
@@ -122,6 +127,7 @@ right_avg_session_duration = Tip(
 )
 
 
+# GA_TIP
 def low_avg_session_duration_func(metrics:dict):
     session_duration = metrics.get('ga_avgSessionDuration', [])[-7:]
     average = sum(session_duration) / 7
@@ -137,6 +143,7 @@ low_avg_session_duration = Tip(
 )
 
 
+# GA_TIP
 def no_avg_session_duration_func(metrics: dict):
     session_duration = metrics.get('ga_avgSessionDuration', [])[-7:]
     average = sum(session_duration) / 7
@@ -153,6 +160,7 @@ no_avg_session_duration = Tip(
 )
 
 
+# GA_TIP
 def loss_of_new_users_func(metrics:dict):
     new_users = metrics.get('ga_NewUser', [])[-7:]
     return new_users and sorted(new_users, reverse=True) == new_users
@@ -164,6 +172,256 @@ loss_of_new_users = Tip(
     description='На протяжении недели зафиксировано падение новых уникальных пользователей. '
                 'Проверьте состояние каналов маркетинга для исправления и повышения данной метрики для увеличения показателей ранжирования сайта и новой уникальной конверсии.',
     analytics_func=loss_of_new_users_func
+)
+
+
+#TIPS version 0.03
+# GA_TIP
+def critical_load_time(metrics: dict):
+    week_slice = metrics.get('ga_avgPageLoadTime')[-7:]
+    if week_slice:
+        for item in week_slice:
+            if item > 3:
+                return True
+    return False
+
+
+crytical_ga_avg_page_load_time = Tip(
+    category='Analytics',
+    title='Скорость загрузки страницы не оптимизирована!',
+    description='Скорость загрузки ваших страниц сайта не оптимизирована. В данный момент средний показатель составляет больше 3-ёх секунд, что недопустимо для поисковых систем, а главное Ваших поведенческих показателей пользователей. Данная метрика отрицательно влияет на ваши показатели в ранжировании и конверсии. Постарайтесь сократить ненужный код на сайте, а так же кэшировать изображения на вашем сайте для улучшения данного показателя.',
+    analytics_func=critical_load_time
+)
+
+
+# GA_TIP
+def avg_load_time(metrics: dict):
+    week_slice = metrics.get('ga_avgPageLoadTime')[-7:]
+    if week_slice:
+        for item in week_slice:
+            if item > 2:
+                return True
+    return False
+
+
+avg_ga_avg_page_load_time = Tip(
+    category='Analytics',
+    title='Скорость загрузки оптимизирована недостаточно.',
+    description='Скорость загрузки ваших страниц сайта не оптимизирована в полной мере. В данный момент средний показатель составляет больше 2-ёх секунд, что не даёт максимальной эффективности для поисковых систем, а главное Ваших поведенческих показателей пользователей. Данная метрика отрицательно влияет на ваши показатели в ранжировании и конверсии. Постарайтесь сократить ненужный код на сайте, а так же кэшировать изображения на вашем сайте для улучшения данного показателя.',
+    analytics_func=avg_load_time
+)
+
+
+# GA_TIP
+def critical_time_on_page(metrics: dict):
+    week_slice = metrics.get('ga_timeOnPage')[-7:]
+    if week_slice:
+        for item in week_slice:
+            if item < 10:
+                return True
+    return False
+
+
+crytical_ga_time_on_page = Tip(
+    category='Analytics',
+    title='Пользователи не задерживаются на вашем сайте.',
+    description='Пользователи не задерживаются на вашем сайте. Причиной ухудшения данной метрики может быть несколько событий: на сайт приводится нерелевантный трафик, страницы сайта долго прогружаются, интуитивно пользователю не понравился дизайн вашего сайта. Постарайтесь исправить хотя бы одно из этих событий, а Melytix.ai в автоматическом режиме снова измерит Ваши показатели!',
+    analytics_func=critical_time_on_page
+)
+
+
+# GA_TIP
+def low_time_on_page(metrics: dict):
+    week_slice = metrics.get('timeOnPage')[-7:]
+    if week_slice:
+        for item in week_slice:
+            if item < 30:
+                return True
+    return False
+
+
+low_ga_time_on_page = Tip(
+    category='Analytics',
+    title='Пользователи задерживаются на вашем сайте слишком мало.',
+    description='Пользователи задерживаются на вашем сайте слишком мало. Причиной ухудшения данной метрики может быть несколько событий: на сайт приводится нерелевантный трафик, страницы сайта долго прогружаются. Постарайтесь исправить хотя бы одно из этих событий, а Melytix.ai в автоматическом режиме снова измерит Ваши показатели!',
+    analytics_func=low_time_on_page
+)
+
+# ------------------------------
+
+def mobile_device_branding(metrics: dict):
+    all_mobile_devices = metrics.get('mobileDeviceBranding')
+    if all_mobile_devices:
+        name_of_popular_device = ''
+        max_result = 0
+        for name, data in all_mobile_devices:
+            weekly_sum = sum(data[-7:])
+            if max_result < weekly_sum:
+                max_result = weekly_sum
+                name_of_popular_device = name
+        return name_of_popular_device
+    return None
+
+
+mobileDeviceBrandingTip = Tip(
+    category='Analytics, Целевая Аудитория',
+    title='Ваша целевая аудитория пользуется устройством “mobilDevice”',  # Как вписать сюда название устройства?
+    description='Ваша целевая аудитория пользуется устройством “mobilDevice”. Внимательно просмотрите дизайн вашего сайта под модели мобильных устройств данного бренда. Так же, при настройках рекламных кампаний направляйте большую часть ( 60% ) рекламного бюджета на устройства данного типа.',
+    analytics_func=mobile_device_branding
+)
+
+
+def popular_browser(metrics: dict):
+    ga_analytics = metrics.get('google_analytics')
+    if ga_analytics:
+        all_browsers = ga_analytics.get('browser')
+        name_of_popular_browser = ''
+        if all_browsers:
+            max_result = 0
+            for name, data in all_browsers:
+                weekly_sum = sum(data[-7:])
+                if max_result < weekly_sum:
+                    max_result = weekly_sum
+                    name_of_popular_browser = name
+        else:
+            return None
+        all_versions = ga_analytics.get('browserVersion')
+        version_of_browser = ''
+        if all_versions:
+            max_counter = 0
+            list_of_versions = list(all_versions[name_of_popular_browser])
+            set_of_versions = set(list_of_versions)
+            for version in set_of_versions:
+                if list_of_versions.count(version) > max_counter:
+                    max_counter = list_of_versions.count(version)
+                    version_of_browser = version
+        else:
+            return None
+        return [name_of_popular_browser, version_of_browser]
+    return None
+
+
+browserTip = Tip(
+    category='Analytics, Целевая Аудитория',
+    title='Ваша целевая аудитория пользуется браузером - “browser”',    # Как вместо "browser" написать название популярного браузера (переменную)?
+    description='Ваша целевая аудитория пользуется браузером - “browser”. Внимательно просмотрите дизайн вашего сайта под этот браузер. Внимательно осмотрите вывод всех ваших элементов сайта на данную версию браузера - “ga_browserVersion”', #Как вместо ga_browserVersion вывести версию браузера?
+    analytics_func=popular_browser
+)
+
+
+# Что из себя представляет ga_browserSize
+def popular_device(metrics: dict):
+    ga_analytics = metrics.get('google_analytics')
+    if ga_analytics:
+        all_devices = ga_analytics.get('deviceCategory')
+        name_of_popular_device = ''
+        if all_devices:
+            max_result = 0
+            for name, data in all_devices:
+                weekly_sum = sum(data[-7:])
+                if max_result < weekly_sum:
+                    max_result = weekly_sum
+                    name_of_popular_device = name
+            return name_of_popular_device
+    return None
+
+
+deviceCategory = Tip(
+    category='Analytics, Целевая Аудитория',
+    title='Ваша целевая аудитория пользуется девайсом -  “deviceCategory” ( переменная )',
+    description='Ваша целевая аудитория пользуется девайсом -  “deviceCategory”. Проверьте адаптивность дизайна вашего сайта под данный тип устройства. Внимательно проверьте видимость и размер всех элементов для данного размера типа устройства - “ga_browserSize”. Заметьте, что на вашу конверсию может влиять, даже размер и цвет кнопки поэтому важные элементы вашей функциональности сайты должны быть выделены и видны для пользователя на данном типе устройства.',
+    analytics_func=popular_device
+)
+
+
+def minor_languages(metrics: dict):
+    ga_analytics = metrics.get('google_analytics')
+    if ga_analytics:
+        all_languages = ga_analytics.get('language')
+        if all_languages:
+            main_language = ''
+            max_data = 0.0
+            total = 0.0
+            for language, data in all_languages:
+                current_lang_data = sum(data[-7:])
+                total += current_lang_data
+                if current_lang_data > max_data:
+                    main_language = language
+                    max_data = current_lang_data
+            if max_data / total > 0.8:
+                result = ''
+                set_of_languages = set(all_languages.keys())
+                set_of_languages.discard(main_language)
+                for lang in set_of_languages:
+                    result += lang
+                    result += ', '
+                result = result[:-2]
+                return [main_language, result]  # Возвращаю 2 строки
+            else:
+                return [main_language, None]
+
+
+languageTip = Tip(
+    category='Analytics, Целевая Аудитория',
+    title=' Ваша целевая аудитория общается не только на “основном языке” ( переменная основного языка )',
+    description='Ваша целевая аудитория общается не только на “основном языке” ( переменная основного языка ). Заметьте, ваша основная целевая аудитория использует не только “основной язык”, но ещё и “другие языки” ( переменные названий других языков ). Создайте мультиязычную версию сайта или же проверьте её наличие и грамотный перевод. Это влияет на вашу конверсию!',
+    analytics_func=minor_languages
+)
+
+
+def public_interests(metrics: dict):
+    ga_analytics = metrics.get('google_analytics')
+    if ga_analytics:
+        all_interests = ga_analytics.get('interestOtherCategory')
+        if all_interests:
+            set_of_interests = set(all_interests.keys())
+            result = ''
+            for item in set_of_interests:
+                result += item
+                result += ', '
+            result = result[:-2]
+            return result    # Возвращаю 1 строку, где все категории
+    return None
+
+
+interestOtherCategoryTip = Tip(
+    category='Analytics, Целевая Аудитория',
+    title='Используйте интересы вашей аудитории в настройках таргетированной рекламы в Facebook, Instagram!',
+    description='Melytix.ai провёл анализ Ваших пользователей и выявил важные интересы, которые относятся к вашей целевой аудитории, а именно - (перечисление переменных названий  интересов ). Используйте именно эти интересы для точного попадания в Вашу целевую аудиторию, а система проанализируют повышение Вашей конверсии после появления новых рекламных кампаний.',
+    analytics_func=public_interests
+)
+
+
+def popular_cities(metrics: dict):
+    ga_analytics = metrics.get('google_analytics')
+    if ga_analytics:
+        all_cities = ga_analytics.get('city')
+        if all_cities:
+            dict_of_cities = {}
+            for city, data in all_cities:
+                sum_data = sum(data[-7:])
+                if sum_data in dict_of_cities:
+                    dict_of_cities[sum_data].append(city)
+                else:
+                    dict_of_cities[sum_data] = [city, ]
+            result = ''
+            counter = 0
+            reversed_sorted_keys = sorted(dict_of_cities, reverse=True)
+            for key in reversed_sorted_keys:
+                counter += len(dict_of_cities[key])
+                for name in dict_of_cities[key][:3]:
+                    result += name
+                    result += ', '
+                if counter >= 3:
+                    return result
+    return  None
+
+
+extraCityTip = Tip(
+    category='Analytics, Целевая Аудитория',
+    title='Основные города - ( список городов из переменных ) дают Вам больше всего конверсий!',
+    description='Melytix.ai провёл анализ Ваших пользователей и выявил самые популярные города, которые дают Вам больше всего конверсий! Настройте точечные рекламные кампании с гипер - локаций на данные города, чтобы снизить стоимость лида вашей рекламной кампании и повысить ваши конверсии!',
+    analytics_func=popular_cities
 )
 
 
