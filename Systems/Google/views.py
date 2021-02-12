@@ -1,15 +1,13 @@
-
-from Utils.GoogleUtils import find_start_and_end_date
 import datetime
-from flask_restful import Resource
 
 from flask import request
+from flask_restful import Resource
 
 import user as User
-
 from Systems.Google import GoogleAuth, GoogleAnalytics
 from Systems.Google.SearchConsole import get_site_list, make_sc_request
 from Utils import GoogleUtils
+from tasks import google_analytics_query_all
 
 
 class GoogleAuthLoginApiView(Resource):
@@ -17,14 +15,14 @@ class GoogleAuthLoginApiView(Resource):
     This View is for google login and registration.
     kinda needs a refactoring...
     """
+
     def options(self):
-        return {},200
+        return {}, 200
 
     def post(self):
         code = request.json['code']
         token = request.json['token']
         if (user := User.query(auth_token=token)):
-
 
             uri = 'http://localhost:8080'
 
@@ -45,8 +43,9 @@ class GoogleAuthLoginApiViewMain(Resource):
     This View is for getting assess to google systems.
     kinda needs a refactoring...
     """
+
     def options(self):
-        return {},200
+        return {}, 200
 
     def post(self):
         code = request.json['code']
@@ -70,7 +69,7 @@ class GoogleAuthLoginApiViewMain(Resource):
 class GetVerifiedSitesList(Resource):
 
     def options(self):
-        return {},200
+        return {}, 200
 
     def post(self):
 
@@ -92,7 +91,7 @@ class ConnectSearchConsoleAPI(Resource):
 
     def post(self):
         if (token := request.json['token']):
-            if(user := User.query(auth_token=token)):
+            if (user := User.query(auth_token=token)):
                 if user.get('connected_systems', {}).get('search_console'):
                     return {'Error': 'user has already connected to the Search Console'}, 409
                 site_url = request.json['site_url']
@@ -117,11 +116,11 @@ class ConnectSearchConsoleAPI(Resource):
 class GetSearchConsoleDataAPI(Resource):
 
     def options(self):
-        return {},200
+        return {}, 200
 
     def post(self):
         if (token := request.json['token']):
-            if(user := User.query(auth_token=token)):
+            if (user := User.query(auth_token=token)):
 
                 if not user.get('connected_systems', {}).get('search_console'):
                     return {'Error': 'Search Console not connected yet'}, 403
@@ -144,10 +143,11 @@ class GetSearchConsoleDataAPI(Resource):
         1. Utils yt api respose prep_dash_metrics
         Optional - complete YoutubeAnalytics.py"""
 
+
 class GetViewIdDropDown(Resource):
 
     def options(self):
-        return {},200
+        return {}, 200
 
     def post(self):
         if (token := request.json['token']):
@@ -161,7 +161,7 @@ class GetViewIdDropDown(Resource):
 class PutViewId(Resource):
 
     def options(self):
-        return {},200
+        return {}, 200
 
     def post(self):
         if (token := request.json['token']):
@@ -187,22 +187,21 @@ class PutViewId(Resource):
 class RetrieveGoogleAnalyticsMetrics(Resource):
 
     def options(self):
-        return {},200
+        return {}, 200
 
     def get(self):
-        metrics=['ga:sessions', 'ga:users', 'ga:pageviews',
-            'ga:pageviewsPerSession', 'ga:avgSessionDuration', 'ga:bounces',
-            'ga:percentNewSessions', 'ga:pageviews', 'ga:timeOnPage', 'ga:pageLoadTime',
-            'ga:avgPageLoadTime', 'ga:transactionsPerSession', 'ga:transactionRevenue'],
+        metrics = ['ga:sessions', 'ga:users', 'ga:pageviews',
+                   'ga:pageviewsPerSession', 'ga:avgSessionDuration', 'ga:bounces',
+                   'ga:percentNewSessions', 'ga:pageviews', 'ga:timeOnPage', 'ga:pageLoadTime',
+                   'ga:avgPageLoadTime', 'ga:transactionsPerSession', 'ga:transactionRevenue'],
 
-        filters=['ga:date', 'ga:browser', 'ga:browserVersion', 'ga:operatingSystem',
-            'ga:browser', 'ga:browserVersion', 'ga:operatingSystemVersion', 'ga:mobileDeviceBranding',
-            'ga:mobileInputSelector', 'ga:mobileDeviceModel', 'ga:mobileDeviceInfo',
-            'ga:deviceCategory', 'ga:browserSize', 'ga:country', 'ga:region', 'ga:city',
-            'ga:language', 'ga:userAgeBracket', 'ga:userGender', 'ga:interestOtherCategory']
+        filters = ['ga:date', 'ga:browser', 'ga:browserVersion', 'ga:operatingSystem',
+                   'ga:browser', 'ga:browserVersion', 'ga:operatingSystemVersion', 'ga:mobileDeviceBranding',
+                   'ga:mobileInputSelector', 'ga:mobileDeviceModel', 'ga:mobileDeviceInfo',
+                   'ga:deviceCategory', 'ga:browserSize', 'ga:country', 'ga:region', 'ga:city',
+                   'ga:language', 'ga:userAgeBracket', 'ga:userGender', 'ga:interestOtherCategory']
 
         return {"metrics": metrics, "filters": filters}, 200
-
 
     def post(self):
 
@@ -231,7 +230,7 @@ class RetrieveGoogleAnalyticsMetrics(Resource):
 class FirstRequestGoogleAnalyticsMetrics(Resource):
 
     def options(self):
-        return {},200
+        return {}, 200
 
     def post(self):
         """
@@ -244,9 +243,9 @@ class FirstRequestGoogleAnalyticsMetrics(Resource):
             if user.get('connected_systems', {}).get('google_analytics'):
                 return {'Error': 'user has already connected to the GA'}, 409
 
-            thee_weeks_ago = (datetime.datetime.now() - datetime.timedelta(weeks=3)).date().isoformat()
+            three_weeks_ago = (datetime.datetime.now() - datetime.timedelta(weeks=3)).date().isoformat()
 
-            start_date, end_date = thee_weeks_ago, 'today'
+            start_date, end_date = three_weeks_ago, 'today'
 
             token = request.json['token']
 
@@ -256,22 +255,16 @@ class FirstRequestGoogleAnalyticsMetrics(Resource):
                 token)
 
             if viewid:
-                ga_data = GoogleAnalytics.google_analytics_query(token, viewid, start_date, end_date)
-                if ga_data:
-                    dash_data = GoogleUtils.GoogleReportsParser(ga_data).parse()
-                    User.insert_data_in_db(token, 'google_analytics', dash_data)
-                    User.connect_system(
-                        token, 'google_analytics',
-                        {'view_id': viewid,
-                        'account': request.json['account'],
-                        'account_name': request.json['account_name'],
-                        'web_property': request.json['web_property'],
-                        'web_property_name': request.json['web_property_name']})
-
-                    return {'Message': 'success'}, 200
-                else:
-                    return {'Error': 'Google currently unavailable'}, 403
-            else:
-                return {'error': 'could not fetch view id from google'}, 404
+                google_analytics_query_all.delay(token, viewid, start_date, end_date)
+                User.connect_system(
+                    token, 'google_analytics',
+                    {'view_id': viewid,
+                     'account': request.json['account'],
+                     'account_name': request.json['account_name'],
+                     'web_property': request.json['web_property'],
+                     'web_property_name': request.json['web_property_name']})
+                return {'Message': 'success'}, 200
+        else:
+            return {'error': 'could not fetch view id from google'}, 404
 
         return {'Error': 'Wrong auth token'}, 403
