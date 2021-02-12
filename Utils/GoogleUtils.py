@@ -1,9 +1,10 @@
 
 class GoogleReportsParser:
-    # TODO: redo to handle multiple dimesions
     """A class for parsing google analytics reports"""
-    def __init__(self, reports: dict):
+
+    def __init__(self, reports: dict, time_range: dict):
         self.reports = reports.get('reports')
+        self.time_range = time_range
         self.types = {
             'INTEGER': int,
             'FLOAT': float,
@@ -20,43 +21,69 @@ class GoogleReportsParser:
                1(index of the metric):{
                    'type': int/float
                    'name': ga_sessions(or similar)
-                    }}
+                    }
+           }
         """
         helper_dict = {}
         metric_entries = report.get('columnHeader').get('metricHeader').get('metricHeaderEntries')
         for i, metric in enumerate(metric_entries):
             helper_dict[i] = {
-                'name' : metric.get('name').replace(':', "_"),
+                'name': metric.get('name').replace(':', "_"),
                 'type': self.types.get(metric.get('type'))
             }
+        return helper_dict
+
+    def create_metrics_dict(self):
+        """ Create dict with all metrics """
+        helper_dict = {}
+        metric_entries = self.reports[0].get('columnHeader').get('metricHeader').get('metricHeaderEntries')
+
+        for metric in metric_entries:
+            metric_name = metric.get('name').replace(':', "_")
+            helper_dict[metric_name] = {}
 
         return helper_dict
 
-
     def _parse_date(self, date: str):
-        """formats a date to match YYYY-MM-DD format"""
+        """ Formats a date to match YYYY-MM-DD format """
         return date[0:4] + "-" + date[4:6] + "-" + date[6:8]
 
+    def fill_metrics_by_zero(self, report: dict):
+        """ Initialize each unique dimension with a list with zeros in a range of dates """
+        result = {}
+        prev_dimension = report.get('data').get('rows')[0].get('dimensions')[0]
+        result.update({prev_dimension: [0] * len(self.time_range)})
+
+        for row in report.get('data').get('rows'):
+            current_dimension = row.get('dimensions')[0]
+            if current_dimension != prev_dimension:
+                result.update({current_dimension: [0] * len(self.time_range)})
+                prev_dimension = current_dimension
+
+        return result
 
     def parse(self):
+        result = self.create_metrics_dict()
 
-        metrics = {
-            'ga_dates': []
-        }
+        for report in self.reports:
 
-        for row in self.reports[0].get('data').get('rows'):
-            metrics['ga_dates'].append(self._parse_date(row.get('dimensions')[0]))
-
-        for i, report in enumerate(self.reports):
             helper_dict = self.create_helper_dict(report)
-            names = (item.get('name') for item in helper_dict.values())
-            metrics.update({k: [] for k in names})
 
-            for row in report.get('data').get('rows'):
-                for i, metric in enumerate(row.get('metrics')[0].get('values')):
-                    metrics[helper_dict[i].get('name')].append(helper_dict[i].get('type')(metric))
+            for i, data_of_metric in helper_dict.items():
+                metric_name = data_of_metric.get('name')
+                metric_type = data_of_metric.get('type')
+                current_dimension = report.get('columnHeader').get('dimensions')[0].replace(':', "_")
+                dimensions = self.fill_metrics_by_zero(report)
 
-        return metrics
+                for row in report.get('data').get('rows'):
+                    dimension = row.get('dimensions')[0]
+                    date = self._parse_date(row.get('dimensions')[1])
+                    index_of_data = self.time_range.get(date)
+                    (dimensions.get(dimension))[index_of_data] = metric_type(row.get('metrics')[0].get('values')[i])
+
+                result[metric_name].update({current_dimension: dimensions})
+
+        return result
 
 
 def prep_dash_metrics(sc_data: list) -> dict:

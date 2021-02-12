@@ -1,5 +1,5 @@
 import copy
-import datetime
+from datetime import datetime, timedelta
 
 from facebook_business.adobjects.adsinsights import AdsInsights
 
@@ -286,13 +286,20 @@ def str_or_number(s: str):
 
 
 def create_list_of_dates(start_date, end_date):
+    if start_date == 'today': start_date = datetime.now().date()
+    elif isinstance(start_date, str): start_date = (datetime.strptime(start_date, "%Y-%m-%d")).date()
+    if end_date == 'today': end_date = datetime.now().date()
+    elif isinstance(end_date, str): end_date = (datetime.strptime(end_date, "%Y-%m-%d")).date()
+
     dates = []
     base = start_date
     i = 0
     while base != end_date:
         dates.append(base.strftime('%Y-%m-%d'))
         i += 1
-        base = (start_date + datetime.timedelta(days=i))
+        base = (start_date + timedelta(days=i))
+    dates.append(end_date.strftime('%Y-%m-%d'))
+
     return dates
 
 
