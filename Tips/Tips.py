@@ -4,7 +4,7 @@ from Tips.Tip import Tip
 # TIPS version 0.01
 # SC_TIP
 def ctr_of_all_users(metrics: dict):
-    all_ctr = metrics.get('sc_ctr')
+    all_ctr = metrics.get('sc_ctr', [])[-7:]
     res = len([i for i in all_ctr if i < 1])
     return res/len(all_ctr) > 0.4
 
@@ -12,7 +12,8 @@ def ctr_of_all_users(metrics: dict):
 ctr_of_all_search_console_user = Tip(
     category='SEO',
     title = 'CTR меньше 1 процента, люди не кликают на ваш сниппет в поиске!',
-    description = 'На протяжении недели CTR всех ваших объявлений достигает меньше одного процента - поменяйте заголов и описание сниппета в поиске ( изменив <title> и <description> страницы )',
+    description = 'На протяжении недели CTR всех ваших объявлений достигает меньше одного процента - поменяйте '
+                  'заголов и описание сниппета в поиске ( изменив <title> и <description> страницы )',
     analytics_func=ctr_of_all_users,
     is_human_created=False
 )
@@ -21,23 +22,23 @@ ctr_of_all_search_console_user = Tip(
 # TIPS version 0.02
 # GA_TIPS
 def grows_of_new_users_func(metrics:dict):
-    new_users = metrics.get('ga_NewUser', [])[-7:]
+    new_users = metrics.get('ga_NewUser', {}).get('total', [])[-7:]
     return new_users and sorted(new_users) == new_users
 
 
 grows_of_new_users = Tip(
     category='Analytics',
     title='Приток новых уникальных пользователей на этой неделе сохранился и растёт последовательно!',
-    description='На протяжении недели зафиксирован положительный прирост новых уникальных пользователей.'
-                'Сохраните настройки каналов маркетинга для дальнейшего повышения роста новых пользователей. '
-                'Сохраните настройки каналов маркетинга для дальнейшего повышения роста новых пользователей, который влияет но повышение показателя уникальной конверсии!',
+    description='На протяжении недели зафиксирован положительный прирост новых уникальных пользователей. Сохраните '
+                'настройки каналов маркетинга для дальнейшего повышения роста новых пользователей, который влияет но '
+                'повышение показателя уникальной конверсии!',
     analytics_func=grows_of_new_users_func
 )
 
 
 # GA_TIP
 def low_ga_page_views_per_session_func(metrics: dict):
-    weekly_views = metrics.get('ga_pageViewsPerSession', [])[-7:]
+    weekly_views = metrics.get('ga_pageViewsPerSession', {}).get('total', [])[-7:]
     for item in weekly_views:
         if item < 1.5:
             return True
@@ -53,14 +54,15 @@ low_ga_page_views_per_session = Tip(
                 '1.Неудобно расположено меню для пользователей. '
                 '2. Пользователей направляют рекламой на не релевантную страницу. '
                 '3. Контент на странице не интересен приходящему трафику. '
-                'Советуем изменить страницы входа пользователя, проверить настройки меню и навигации на вашем сайте, пересмотреть настройки рекламы привлечения трафика.',
+                'Советуем изменить страницы входа пользователя, проверить настройки меню и навигации на вашем сайте, '
+                'пересмотреть настройки рекламы привлечения трафика.',
     analytics_func=low_ga_page_views_per_session_func
 )
 
 
 # GA_TIP
 def low_ga_returning_user_func(metrics : dict):
-    weekly_returning = metrics.get('ga_ReturningUser', [])[-7:]
+    weekly_returning = metrics.get('ga_ReturningUser', {}).get('total', [])[-7:]
     average = sum(weekly_returning)/7
     return 0.25 < average < 0.5
 
@@ -69,15 +71,16 @@ low_ga_returning_user = Tip(
     category='Analytics',
     title='Пользователи не активно возвращаются на главный домен.',
     description='На протяжении недели пользователи не возвращаются на вашу страницу. '
-                'Проверьте настройки вашего ремаркетинга и ретаргетинга, увеличьте частоту показа вашей рекламы для возвраты трафика, '
-                'а также просмотрите показатель “CTR” ваших объявлений для полного решения проблем в процессе возвращения вашего трафика.',
+                'Проверьте настройки вашего ремаркетинга и ретаргетинга, увеличьте частоту показа вашей рекламы для '
+                'возвраты трафика, а также просмотрите показатель “CTR” ваших объявлений для полного решения проблем '
+                'в процессе возвращения вашего трафика.',
     analytics_func=low_ga_returning_user_func
 )
 
 
 # GA_TIP
 def no_ga_returning_user_func(metrics:dict):
-    weekly_returning = metrics.get('ga_ReturningUser', [])[-7:]
+    weekly_returning = metrics.get('ga_ReturningUser', {}).get('total', [])[-7:]
     average = sum(weekly_returning) / 7
     return average < 0.25
 
@@ -88,7 +91,8 @@ no_ga_returning_user = Tip(
     description='На протяжении недели пользователи не возвращаются на вашу страницу. '
                 'Более 55% онлайн бизнесов настраивают ремаркетинг и ретаргетинг для рекламы своего сайта. '
                 'Это позволяет проекту быть всегда “на слуху” у пользователя!'
-                'Используйте технологию ремаркетинга в Google Adwords или Yandex Direct, а также протестируйте ретаргетинг в социальных для возврата пользователей '
+                'Используйте технологию ремаркетинга в Google Adwords или Yandex Direct, а также протестируйте '
+                'ретаргетинг в социальных для возврата пользователей '
                 'на сайт - это сможет повысить количество повторяющихся продаж, а также поднимет вашу конверсию.',
     analytics_func=no_ga_returning_user_func
 )
@@ -96,7 +100,7 @@ no_ga_returning_user = Tip(
 
 # GA_TIP
 def right_ga_returning_user_func(metrics: dict):
-    weekly_returning = metrics.get('ga_ReturningUser', [])[-7:]
+    weekly_returning = metrics.get('ga_ReturningUser', {}).get('total', [])[-7:]
     average = sum(weekly_returning) / 7
     return average > 0.8
 
@@ -104,15 +108,16 @@ def right_ga_returning_user_func(metrics: dict):
 right_ga_returning_user = Tip(
     category='Analytics',
     title='Вы отлично возвращаете пользователей на ваш главный домен.',
-    description='Вы отлично возвращаете пользователей на ваш сайт, это повышает показатель вашей конверсии и повторяющихся успехов в ваших бизнес - целях. '
-                'Советуем повысить бюджет вашей ремаркетинговой или ретаргетинговой рекламы в целях усиление данного канала и повышения важных для бизнеса метрик!',
+    description='Вы отлично возвращаете пользователей на ваш сайт, это повышает показатель вашей конверсии и '
+                'повторяющихся успехов в ваших бизнес - целях. Советуем повысить бюджет вашей ремаркетинговой или '
+                'ретаргетинговой рекламы в целях усиление данного канала и повышения важных для бизнеса метрик!',
     analytics_func=right_ga_returning_user_func
 )
 
 
 # GA_TIP
 def right_avg_session_duration_func(metrics: dict):
-    session_duration = metrics.get('ga_avgSessionDuration', [])[-7:]
+    session_duration = metrics.get('ga_avgSessionDuration', {}).get('total', [])[-7:]
     average = sum(session_duration) / 7
     return average > 1.3
 
@@ -129,7 +134,7 @@ right_avg_session_duration = Tip(
 
 # GA_TIP
 def low_avg_session_duration_func(metrics:dict):
-    session_duration = metrics.get('ga_avgSessionDuration', [])[-7:]
+    session_duration = metrics.get('ga_avgSessionDuration', {}).get('total', [])[-7:]
     average = sum(session_duration) / 7
     return 1.0 < average < 1.5
 
@@ -137,15 +142,16 @@ def low_avg_session_duration_func(metrics:dict):
 low_avg_session_duration = Tip(
     category='Analytics',
     title='В показателе средней продолжительности сеанса вы меньше, чем 35% сайтов.',
-    description='Средняя продолжительность сеансов - один из главных поведенческих факторов ранжирования вашего главного домена в поисковике.'
-                ' Постарайтесь удержать внимание Вашего пользователя на сайте дольше, чем есть сейчас - добавив больше навигационных подсказок пути пользователя на вашей странице.',
+    description='Средняя продолжительность сеансов - один из главных поведенческих факторов ранжирования вашего '
+                'главного домена в поисковике.Постарайтесь удержать внимание Вашего пользователя на сайте дольше, '
+                'чем есть сейчас - добавив больше навигационных подсказок пути пользователя на вашей странице.',
     analytics_func=low_avg_session_duration_func
 )
 
 
 # GA_TIP
 def no_avg_session_duration_func(metrics: dict):
-    session_duration = metrics.get('ga_avgSessionDuration', [])[-7:]
+    session_duration = metrics.get('ga_avgSessionDuration', {}).get('total', [])[-7:]
     average = sum(session_duration) / 7
     return average < 1.0
 
@@ -153,16 +159,18 @@ def no_avg_session_duration_func(metrics: dict):
 no_avg_session_duration = Tip(
     category='Analytics',
     title='В показателе средней продолжительности сеанса вы меньше, чем 85% сайтов',
-    description='Средняя продолжительность сеансов - один из главных поведенческих факторов ранжирования вашего главного домена в поисковике. '
-                'Постарайтесь удержать внимание Вашего пользователя на сайте дольше, чем есть сейчас - добавив больше навигационных подсказок '
-                'пути пользователя на вашей странице. А также проверьте настройки ваших маркетинговых каналов по привлечению трафика - релевантный ли трафик заходит к вам на сайт?',
+    description='Средняя продолжительность сеансов - один из главных поведенческих факторов ранжирования вашего '
+                'главного домена в поисковике. '
+                'Постарайтесь удержать внимание Вашего пользователя на сайте дольше, чем есть сейчас - добавив больше '
+                'навигационных подсказок пути пользователя на вашей странице. '
+                'А также проверьте настройки ваших маркетинговых каналов по привлечению трафика - релевантный ли трафик заходит к вам на сайт?',
     analytics_func=no_avg_session_duration_func
 )
 
 
 # GA_TIP
 def loss_of_new_users_func(metrics:dict):
-    new_users = metrics.get('ga_NewUser', [])[-7:]
+    new_users = metrics.get('ga_NewUser', {}).get('total', [])[-7:]
     return new_users and sorted(new_users, reverse=True) == new_users
 
 
@@ -170,7 +178,8 @@ loss_of_new_users = Tip(
     category ='Analytics',
     title='Приток новых уникальных пользователей на этой неделе упал!',
     description='На протяжении недели зафиксировано падение новых уникальных пользователей. '
-                'Проверьте состояние каналов маркетинга для исправления и повышения данной метрики для увеличения показателей ранжирования сайта и новой уникальной конверсии.',
+                'Проверьте состояние каналов маркетинга для исправления и повышения данной метрики для увеличения '
+                'показателей ранжирования сайта и новой уникальной конверсии.',
     analytics_func=loss_of_new_users_func
 )
 
@@ -178,72 +187,82 @@ loss_of_new_users = Tip(
 #TIPS version 0.03
 # GA_TIP
 def critical_load_time(metrics: dict):
-    week_slice = metrics.get('ga_avgPageLoadTime')[-7:]
-    if week_slice:
-        for item in week_slice:
-            if item > 3:
-                return True
+    week_slice = metrics.get('ga_avgPageLoadTime', {}).get('total', [])[-7:]
+    for item in week_slice:
+        if item > 3:
+            return True
     return False
 
 
 crytical_ga_avg_page_load_time = Tip(
     category='Analytics',
     title='Скорость загрузки страницы не оптимизирована!',
-    description='Скорость загрузки ваших страниц сайта не оптимизирована. В данный момент средний показатель составляет больше 3-ёх секунд, что недопустимо для поисковых систем, а главное Ваших поведенческих показателей пользователей. Данная метрика отрицательно влияет на ваши показатели в ранжировании и конверсии. Постарайтесь сократить ненужный код на сайте, а так же кэшировать изображения на вашем сайте для улучшения данного показателя.',
+    description='Скорость загрузки ваших страниц сайта не оптимизирована. В данный момент средний показатель '
+                'составляет больше 3-ёх секунд, что недопустимо для поисковых систем, а главное Ваших поведенческих '
+                'показателей пользователей. Данная метрика отрицательно влияет на ваши показатели в ранжировании и '
+                'конверсии. Постарайтесь сократить ненужный код на сайте, а так же кэшировать изображения на вашем '
+                'сайте для улучшения данного показателя.',
     analytics_func=critical_load_time
 )
 
 
 # GA_TIP
 def avg_load_time(metrics: dict):
-    week_slice = metrics.get('ga_avgPageLoadTime')[-7:]
-    if week_slice:
-        for item in week_slice:
-            if item > 2:
-                return True
+    week_slice = metrics.get('ga_avgPageLoadTime', {}).get('total', [])[-7:]
+    for item in week_slice:
+        if item > 2:
+            return True
     return False
 
 
 avg_ga_avg_page_load_time = Tip(
     category='Analytics',
     title='Скорость загрузки оптимизирована недостаточно.',
-    description='Скорость загрузки ваших страниц сайта не оптимизирована в полной мере. В данный момент средний показатель составляет больше 2-ёх секунд, что не даёт максимальной эффективности для поисковых систем, а главное Ваших поведенческих показателей пользователей. Данная метрика отрицательно влияет на ваши показатели в ранжировании и конверсии. Постарайтесь сократить ненужный код на сайте, а так же кэшировать изображения на вашем сайте для улучшения данного показателя.',
+    description='Скорость загрузки ваших страниц сайта не оптимизирована в полной мере. В данный момент средний '
+                'показатель составляет больше 2-ёх секунд, что не даёт максимальной эффективности для поисковых '
+                'систем, а главное Ваших поведенческих показателей пользователей. Данная метрика отрицательно влияет '
+                'на ваши показатели в ранжировании и конверсии. Постарайтесь сократить ненужный код на сайте, '
+                'а так же кэшировать изображения на вашем сайте для улучшения данного показателя.',
     analytics_func=avg_load_time
 )
 
 
 # GA_TIP
 def critical_time_on_page(metrics: dict):
-    week_slice = metrics.get('ga_timeOnPage')[-7:]
-    if week_slice:
-        for item in week_slice:
-            if item < 10:
-                return True
+    week_slice = metrics.get('ga_timeOnPage', {}).get('total', [])[-7:]
+    for item in week_slice:
+        if item < 10:
+            return True
     return False
 
 
 crytical_ga_time_on_page = Tip(
     category='Analytics',
     title='Пользователи не задерживаются на вашем сайте.',
-    description='Пользователи не задерживаются на вашем сайте. Причиной ухудшения данной метрики может быть несколько событий: на сайт приводится нерелевантный трафик, страницы сайта долго прогружаются, интуитивно пользователю не понравился дизайн вашего сайта. Постарайтесь исправить хотя бы одно из этих событий, а Melytix.ai в автоматическом режиме снова измерит Ваши показатели!',
+    description='Пользователи не задерживаются на вашем сайте. Причиной ухудшения данной метрики может быть несколько '
+                'событий: на сайт приводится нерелевантный трафик, страницы сайта долго прогружаются, интуитивно '
+                'пользователю не понравился дизайн вашего сайта. Постарайтесь исправить хотя бы одно из этих событий, '
+                'а Melytix.ai в автоматическом режиме снова измерит Ваши показатели!',
     analytics_func=critical_time_on_page
 )
 
 
 # GA_TIP
 def low_time_on_page(metrics: dict):
-    week_slice = metrics.get('timeOnPage')[-7:]
-    if week_slice:
-        for item in week_slice:
-            if item < 30:
-                return True
+    week_slice = metrics.get('timeOnPage', {}).get('total', [])[-7:]
+    for item in week_slice:
+        if item < 30:
+            return True
     return False
 
 
 low_ga_time_on_page = Tip(
     category='Analytics',
     title='Пользователи задерживаются на вашем сайте слишком мало.',
-    description='Пользователи задерживаются на вашем сайте слишком мало. Причиной ухудшения данной метрики может быть несколько событий: на сайт приводится нерелевантный трафик, страницы сайта долго прогружаются. Постарайтесь исправить хотя бы одно из этих событий, а Melytix.ai в автоматическом режиме снова измерит Ваши показатели!',
+    description='Пользователи задерживаются на вашем сайте слишком мало. Причиной ухудшения данной метрики может быть '
+                'несколько событий: на сайт приводится нерелевантный трафик, страницы сайта долго прогружаются. '
+                'Постарайтесь исправить хотя бы одно из этих событий, а Melytix.ai в автоматическом режиме снова '
+                'измерит Ваши показатели!',
     analytics_func=low_time_on_page
 )
 
