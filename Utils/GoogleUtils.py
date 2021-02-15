@@ -2,9 +2,9 @@
 class GoogleReportsParser:
     """A class for parsing google analytics reports"""
 
-    def __init__(self, reports: dict, time_range: dict):
+    def __init__(self, reports: dict, time_range: list):
         self.reports = reports.get('reports')
-        self.time_range = time_range
+        self.time_range = {date: i for i, date in enumerate(time_range)}
         self.types = {
             'INTEGER': int,
             'FLOAT': float,
@@ -40,7 +40,7 @@ class GoogleReportsParser:
 
         for metric in metric_entries:
             metric_name = metric.get('name').replace(':', "_")
-            helper_dict[metric_name] = {}
+            helper_dict[metric_name] = {'total': [0] * len(self.time_range)}
 
         return helper_dict
 
@@ -79,7 +79,9 @@ class GoogleReportsParser:
                     dimension = row.get('dimensions')[0]
                     date = self._parse_date(row.get('dimensions')[1])
                     index_of_data = self.time_range.get(date)
-                    (dimensions.get(dimension))[index_of_data] = metric_type(row.get('metrics')[0].get('values')[i])
+                    metric_value = metric_type(row.get('metrics')[0].get('values')[i])
+                    dimensions.get(dimension)[index_of_data] = metric_value
+                    result[metric_name].get('total')[index_of_data] += metric_value
 
                 result[metric_name].update({current_dimension: dimensions})
 
