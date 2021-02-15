@@ -162,4 +162,4 @@ class SiteParser(object):
 
 
     def parse(self):
-        
+        pass
