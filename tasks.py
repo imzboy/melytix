@@ -159,7 +159,7 @@ def google_analytics_query(report: list, start_date, end_date, token):
         # if this is the first request to GA
         if len(dates) > 1:
             insert_data_in_db(token, f'google_analytics.{metric}', metric_value)
-            append_list(token, {f'metrics.google_analytics.dates': dates})
+            append_list(token, {f'metrics.google_analytics.ga_dates': dates})
 
         # everyday request
         else:
@@ -174,7 +174,7 @@ def google_analytics_query(report: list, start_date, end_date, token):
                         }
                     )
             # append date
-            append_list(token, {'metrics.google_analytics.dates': dates[0]})
+            append_list(token, {'metrics.google_analytics.ga_dates': dates[0]})
 
 
 

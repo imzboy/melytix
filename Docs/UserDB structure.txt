@@ -38,7 +38,8 @@ Docs syntax:
             "ga_~name of the metric" : {   # ga_~name of the metric[i] == ga_dates[i]
                 "ga_~name of the dimension": {
                     "~name of sub dimension": <list> (the array of metrics)
-                }
+                },
+                "total": <list> (the total for a metric value is computed totaling the metrics by each dimension)
             }
             "ga_dates": <list> (the array of dates from google google analytics, contains every day from user registration minus 3 weeks)
         },
