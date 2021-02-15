@@ -90,11 +90,14 @@ def generate_alert(users: list):
                 users (list): list of users to check traffic
     """
     for user in users:
-        for alert in return_alerts():
-            if alert.analytics_func(user['metrics']):
-                append_list(
-                    {'email': user['email']},
-                    {"Alerts": alert.generate()})
+        if (user_metrics := user.get('metrics', {}).get('google_analytics')):
+            for alert in return_alerts():
+                if alert.analytics_func(user_metrics):
+                    alert.format(user_metrics, 'title')
+                    alert.format(user_metrics, 'description')
+                    append_list(
+                        {'email': user['email']},
+                        {"Alerts": alert.generate()})
 
 
 @celery_app.task
