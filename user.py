@@ -79,13 +79,12 @@ class MongoDocument(object):
         return DocQuery(cls)
 
     def __getattribute__(self, name: str):
-        attr = self.super().__getattribute__(name)
+        attr = object.__getattribute__(self, name)
         if attr:
             return attr
         else:  # load the field from database
             attr = self.objects()._load_field_from_db(_id=self._id, field=name)  #TODO: check the responce of the call
-
-
+            return attr
 
 
 class User(MongoDocument):
