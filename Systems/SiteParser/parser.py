@@ -118,7 +118,7 @@ class SiteParser(object):
 
     # Выгружаем теги <iframe> кол-во
     @property
-    def tag_iframe_count(self):
+    def iframe_count(self):
         return len(self.soup.find_all("iframe"))
 
 
