@@ -9,7 +9,7 @@ from Systems.Google.GoogleAuth import auth_credentials
 from Tips.Tips import return_tips
 from Utils.GoogleUtils import GoogleReportsParser
 from Utils.FacebookUtils import create_list_of_dates
-from user import append_list, query_many, insert_data_in_db
+from user import User
 from googleapiclient.discovery import build
 
 
@@ -23,10 +23,10 @@ def refresh_metrics():
     Makes list of users from DB and calls method for refreshing metrics
     for 10 users by one task
     """
-    if (mongo_users := query_many(metrics={'$exists': True})):
+    if (mongo_users := User.filter(metrics={'$exists': True})):
         users = []  # convert pymongo cursor obj to list
         for user in mongo_users:
-            if user.get('connected_systems', {}).get("google_analytics", {}).get(
+            if user.connected_systems.get("google_analytics", {}).get(
                     'viewid'):  # TODO: change when db is stable again
                 users.append(
                     {'email': user['email'],
@@ -59,11 +59,9 @@ def refresh_metric(users: list):
         f_metrics = facebook_insights_query(token, today, today)
         for campaign, metrics in f_metrics.items():
             for metric, value in metrics.items():
-                append_list(
-                    filter={
-                        'email': user['email']
-                    },
-                    append={f'metrics.facebook_insights.{campaign}.{metric}': {'$each': value}}
+                User.append_list(
+                    {'email': user['email']},
+                    {f'metrics.facebook_insights.{campaign}.{metric}': {'$each': value}}
                 )
 
 
@@ -76,12 +74,12 @@ def generate_tip(users: list):
     """
     for user in users:
         for tip in return_tips():
-            if tip.analytics_func(user['metrics']):
-                append_list(
+            if tip.analytics_func(user.metrics):
+                User.append_list(
                     {'email': user['email']},
                     {"Tips": tip.generate()})
 
-
+ 
 @celery_app.task
 def generate_alert(users: list):
     """
@@ -90,13 +88,13 @@ def generate_alert(users: list):
                 users (list): list of users to check traffic
     """
     for user in users:
-        if (user_metrics := user.get('metrics', {}).get('google_analytics')):
+        if (user_metrics := user.metrics.get('google_analytics')):
             for alert in return_alerts():
                 if alert.analytics_func(user_metrics):
                     alert.format(user_metrics, 'title')
                     alert.format(user_metrics, 'description')
-                    append_list(
-                        {'email': user['email']},
+                    User.append_list(
+                        {'email': user.email},
                         {"Alerts": alert.generate()})
 
 
@@ -105,10 +103,10 @@ def generate_tips_and_alerts():
     """
     For each user form DB calls methods of generating tips and alerts
     """
-    if (mongo_users := query_many()):
+    if (mongo_users := User.filter()):
         users = []
         for user in mongo_users:
-            if user.get('metrics').get('google_analytics'):  # TODO: change this when more systems will be added
+            if user.metrics.get('google_analytics'):  # TODO: change this when more systems will be added
                 users.append(
                     {'email': user['email'],
                      'metrics': user['metrics']['google_analytics']}
@@ -161,14 +159,14 @@ def google_analytics_query(report: list, start_date, end_date, token):
     for metric, metric_value in parsed_response.items():
         # if this is the first request to GA
         if len(dates) > 1:
-            insert_data_in_db(token, f'google_analytics.{metric}', metric_value)
-            append_list(token, {f'metrics.google_analytics.ga_dates': dates})
+            User.insert_data_in_db(token, f'google_analytics.{metric}', metric_value)
+            User.append_list(token, {f'metrics.google_analytics.ga_dates': dates})
 
         # everyday request
         else:
             for dimension, dimension_value in metric_value.items():
                 for sub_dimension, value in dimension_value.items():
-                    append_list(
+                    User.append_list(
                         filter={
                             'auth_token': token
                         },
@@ -177,7 +175,7 @@ def google_analytics_query(report: list, start_date, end_date, token):
                         }
                     )
             # append date
-            append_list(token, {'metrics.google_analytics.ga_dates': dates[0]})
+            User.append_list(token, {'metrics.google_analytics.ga_dates': dates[0]})
 
 
 

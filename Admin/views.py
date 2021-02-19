@@ -1,7 +1,7 @@
 from flask.globals import request
 from Alerts.Alert import Alert
 from Tips.Tip import Tip
-from user import append_list, query_many
+from user import User
 
 from flask_restful import Resource
 
@@ -13,7 +13,7 @@ class MainManualAnalyzeView(Resource):
 
     def get(self):
         all_users = []
-        for user in query_many():
+        for user in User.filter():
             user.pop('_id', None)
             user.pop('password', None)
             user.pop('salt', None)
@@ -42,7 +42,7 @@ class MainManualAnalyzeView(Resource):
             is_human_created=is_human_created,
             analytics_func=None
         )
-        append_list(
+        User.append_list(
             {'email': user_email},
             {type_: item.generate()})
         return {'message': 'success'}, 200

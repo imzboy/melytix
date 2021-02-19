@@ -1,11 +1,11 @@
 from facebook_business.adobjects.adaccount import AdAccount
 from facebook_business.api import FacebookAdsApi
-import user as User
+from user import User
 from Utils.FacebookUtils import fields, fill_campaign_metrics
 
 
 def facebook_insights_query(token, start_date, end_date):
-    if (user := User.query(auth_token=token)):
+    if (user := User.get(auth_token=token)):
 
         if(access_token := user.get('tokens').get('f_access_token')):
 

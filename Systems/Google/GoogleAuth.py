@@ -1,4 +1,4 @@
-from user import get_g_tokens, query
+from user import User
 
 from oauth2client import client as oauth_client
 import httplib2 as lib2
@@ -27,8 +27,8 @@ def code_exchange(code: str, uri: str):
         return access_token, refresh_token
 
     else:
-        user = query(tokens={'g_access_token':access_token})
-        return user.get('tokens').get('g_access_token'), user.get('tokens').get('g_refresh_token')
+        user = User.get(tokens={'g_access_token':access_token})
+        return user.tokens.get('g_access_token'), user.tokens.get('g_refresh_token')
 
 
 def get_google_user_data(g_token: str):
@@ -42,7 +42,7 @@ def get_google_user_data(g_token: str):
 
 
 def auth_credentials(token):
-    access_token, refresh_token = get_g_tokens(token)
+    access_token, refresh_token = User.get_g_tokens(token)
 
     credentials = oauth_client.GoogleCredentials(
         access_token=access_token,

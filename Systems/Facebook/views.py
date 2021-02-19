@@ -1,7 +1,7 @@
 from flask_restful import Resource
 from Systems.Facebook.FacebookAdsManager import facebook_insights_query
 from flask import request
-import user as User
+from user import User
 import datetime
 import requests
 from facebook_business.api import FacebookAdsApi
@@ -13,12 +13,12 @@ class FacebookSetAccount(Resource):
         return {}, 200
 
     def post(self):
-        
+
         token = request.json['token']
         account_id = request.json['id']
         name = request.json['name']
 
-        if (user := User.query(auth_token=token)):
+        if (user := User.get(auth_token=token)):
 
             User.connect_system(token, 'facebook_insights', {'account_id': account_id, 'name': name})
 
@@ -42,8 +42,8 @@ class FacebookAuthLoginApiView(Resource):
     def post(self):
         access_token = request.json['access_token']
         token = request.json['token']
-        
-        if User.query(auth_token=token):
+
+        if User.get(auth_token=token):
 
             User.f_insert_tokens(token, access_token)
             r = requests.get(f'https://graph.facebook.com/v9.0/me/adaccounts?access_token={access_token}')
@@ -71,10 +71,10 @@ class RetrieveFacebookMetricsFromBD(Resource):
         return {}, 200
 
     def post(self):
-        if (user := User.query(auth_token=request.json['token'])):
+        if (user := User.get(auth_token=request.json['token'])):
 
             result = {}
-            facebook_insights = user.get('metrics').get('facebook_insights')
+            facebook_insights = user.metrics.get('facebook_insights')
             for campaign, metrics in facebook_insights.items():
                 temp = {}
                 for metric_name, list_value in metrics.items():

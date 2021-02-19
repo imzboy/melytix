@@ -1,3 +1,4 @@
+from Utils.decorators import user_auth
 from flask_restful import Resource, Api
 
 from flask import Flask, request
@@ -10,14 +11,11 @@ class RetriveUserTips(Resource):
     def options(self):
         return {}, 200
 
+    @user_auth
     def post(self):
-        if (token := request.json['token']):
-            if (user := User.query(auth_token=token)):
 
-                if (tips := user.get('Tips')):
+        if (tips := request.user.Tips):
 
-                    return tips, 200
+            return tips, 200
 
-                return {'Error': 'no tips has been generated'}, 404
-
-        return {'Error': 'no credentials provided'}, 403
+        return {'Error': 'no tips has been generated'}, 404

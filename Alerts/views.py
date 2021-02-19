@@ -2,7 +2,7 @@ from flask_restful import Resource
 
 from flask import request
 
-import user as User
+from user import User
 
 
 class RetriveUserAlerts(Resource):
@@ -12,9 +12,9 @@ class RetriveUserAlerts(Resource):
 
     def post(self):
         if (token := request.json['token']):
-            if (user := User.query(auth_token=token)):
+            if (user := User.get(auth_token=token)):
 
-                if (alerts := user['Alerts']):
+                if (alerts := user.Alerts):
 
                     return alerts, 200
 
