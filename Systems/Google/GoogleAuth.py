@@ -31,16 +31,6 @@ def code_exchange(code: str, uri: str):
         return user.get('tokens').get('g_access_token'), user.get('tokens').get('g_refresh_token')
 
 
-def get_google_user_data(g_token: str):
-    r = requests.get(f'https://www.googleapis.com/oauth2/v2/userinfo?oauth_token={g_token}')
-    try:
-        if r.json()['verified_email']:
-            return r.json()['email'], r.json()['picture']
-        return {'Error': 'user email is not verified'}, 403
-    except TypeError:
-        return {'Error': r.text}, 403
-
-
 def auth_credentials(token):
     access_token, refresh_token = get_g_tokens(token)
 

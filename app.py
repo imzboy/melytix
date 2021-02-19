@@ -1,3 +1,4 @@
+from Utils.decorators import user_auth
 from flask_login import LoginManager, login_required, login_user, logout_user
 from flask_cors import CORS
 from bson import ObjectId
@@ -132,71 +133,44 @@ class LogOutView(Resource):
     def options(self):
         return {}, 200
 
+    @user_auth
     def post(self):
-        if (token := request.json.get('token')):
-
-            if User.query(auth_token=token):
-                User.find_and_update(
-                    {'auth_token': token},
-                    {'auth_token': None})
-                return {}, 200
-
-            return {'Error': 'Wrong auth token'}, 403
-
-        return {'Error': 'no credentials provided'}, 403
+        User.find_and_update(
+            {'auth_token': request.user.get('token')},
+            {'auth_token': None})
+        return {}, 200
 
 
 class CacheDashboardSettings(Resource):
     def options(self):
         return {}, 200
 
+    @user_auth
     def post(self):
-        if (token := request.json.get('token')):
-
-            if User.query(auth_token=token):
-                User.insert_dash_settings(token, request.json['settings'])
-                return {'Message': 'Success'}, 200
-
-            return {'Error': 'Wrong auth token'}, 403
-
-        return {'Error': 'no credentials provided'}, 403
+        User.insert_dash_settings(request.user.get('token'), request.json['settings'])
+        return {'Message': 'Success'}, 200
 
 
 class GetCachedDashboardSettings(Resource):
     def options(self):
         return {}, 200
 
+    @user_auth
     def post(self):
-        if (token := request.json['token']):
+        if (settings := request.user.get('DashSettings')):
+            return {'settings': settings}, 200
+        return {'Error': 'user has no Dash settings inserted'}, 404
 
-            if (user := User.query(auth_token=token)):
-
-                if (settings := user.get('DashSettings')):
-                    return {'settings': settings}, 200
-                else:
-                    return {'Error': 'user has no Dash settings inserted'}, 404
-
-            return {'Error': 'Wrong auth token'}, 403
-
-        return {'Error': 'no credentials provided'}, 403
-
-
-class GetConnectedSystems(Resource):
+class MainView(Resource):
     def options(self):
         return {}, 200
 
+    @user_auth
     def post(self):
-        if(token := request.json.get('token')):
-            if (user := User.query(auth_token=token)):
+        if(connected_systems := request.user.get('connected_systems')):
+            return {**connected_systems}, 200
 
-                if(connected_systems := user.get('connected_systems')):
-                    return {**connected_systems}, 200
-                else:
-                    return {}, 200
-
-            return {'Error': 'Wrong auth token'}, 403
-
-        return {'Error': 'no credentials provided'}
+        return {}, 200
 
 
 # URLs declaring --------------------------------
@@ -239,7 +213,7 @@ api.add_resource(GetCachedDashboardSettings, '/get-dash-settings', methods=['OPT
 api.add_resource(CacheDashboardSettings, '/put-dash-settings', methods=['OPTIONS', 'POST'])
 
 #Connected systems get
-api.add_resource(GetConnectedSystems, '/main', methods=['OPTIONS', 'POST'])
+api.add_resource(MainView, '/main', methods=['OPTIONS', 'POST'])
 
 #Admin
 api.add_resource(MainManualAnalyzeView, '/admin-api', methods=['OPTIONS', 'POST', 'GET'])
