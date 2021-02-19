@@ -27,12 +27,19 @@ class Alert:
             "active": True
         }
 
-    def format(self, metrics:dict):
-        res = re.findall(r'{.*?}', self.title)
-        res = [item[1:-1] for item in res]
-        items_func = [getattr(self, item) for item in res]
+    def format(self, metrics: dict, field: str):
+        """
+            Inserts values into places { ... } in text of title or description.
+            Metrics are used to calculate user`s values
+        :param metrics: users metrics from db.
+        :param field: field that will be formatting ( ONLY title or description)
+        """
+        tags = re.findall(r'{.*?}', getattr(self, field))
+        tags = [item[1:-1] for item in tags]
+        items_func = [getattr(self, item) for item in tags]
         items = []
         for it in items_func:
-            items.append(it(metrics))
-        self.title = self.title.format(**dict(zip(res, items)))
+            items.append(it(metrics)) # Call functions for calculating values { ... }
+        self.__dict__[field] = getattr(self, field).format(**dict(zip(tags, items)))
+
 
