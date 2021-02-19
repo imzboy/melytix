@@ -7,12 +7,12 @@ from flask_restful import Resource, Api
 
 from Admin.views import MainManualAnalyzeView
 
-from Systems.Google.views import (GetSearchConsoleDataAPI, GetVerifiedSitesList,
+from Systems.Google.views import (GetVerifiedSitesList,
 GoogleAuthLoginApiView, GoogleAuthLoginApiViewMain, GetViewIdDropDown, PutViewId,
-RetrieveGoogleAnalyticsMetrics, FirstRequestGoogleAnalyticsMetrics, ConnectSearchConsoleAPI)
+FirstRequestGoogleAnalyticsMetrics, ConnectSearchConsoleAPI, google_analytics_metrics, search_console_metrics)
 
 from Systems.Facebook.views import (FacebookSetAccount,
-FacebookAuthLoginApiView, RetrieveFacebookMetricsFromBD)
+FacebookAuthLoginApiView, facebook_insights_metrics)
 
 
 from Alerts.views import AlertTipFlipActive, RetriveUserAlerts
@@ -167,9 +167,18 @@ class MainView(Resource):
 
     @user_auth
     def post(self):
-        return_dict = {}
-        return_dict.update(request.user.connected_systems)
-        return {**return_dict}, 200
+        connected_systems = request.user.connected_systems
+        if connected_systems.get('facebook_insights'):
+            connected_systems['facebook_insights']['campaigns'] = list(request.user.metrics.get('facebook_insights',{}).keys())
+
+        if connected_systems.get('google_analytics'):
+            try:  # TODO: for now coz it can return a list
+                connected_systems['google_analytics']['filters'] = request.user.metrics.get('google_analytics').get('ga_sessions').keys()
+            except:
+                print('nope')
+
+
+        return {**connected_systems}, 200
 
 
 
@@ -178,8 +187,14 @@ class DashboardWidgetView(Resource):
     def options(self):
         return {}, 200
 
+    @user_auth
     def post(self):
-        pass
+        '''
+        uses globals to find a function for getting metrics out of a system
+        name a function that retrives metrics from db '{system_name same as in db}_metrics'
+        '''
+        system = request.json.get('system')
+        return globals().get(f'{system}_metrics')(request)
 
 
 # URLs declaring --------------------------------
@@ -199,18 +214,15 @@ api.add_resource(GoogleAuthLoginApiViewMain, '/insert-tokens-main', methods=['PO
 # google analytics
 api.add_resource(GetViewIdDropDown, '/get-select-data', methods=['POST', 'OPTIONS'])
 api.add_resource(PutViewId, '/insert-viewid', methods=['POST', 'OPTIONS'])
-api.add_resource(RetrieveGoogleAnalyticsMetrics, '/get-ga-data', methods=['POST', 'OPTIONS'])
 api.add_resource(FirstRequestGoogleAnalyticsMetrics, '/connect-ga', methods=['POST', 'OPTIONS'])
 
 # search console
 api.add_resource(GetVerifiedSitesList, '/get-sites-url', methods=['POST', 'OPTIONS'])
 api.add_resource(ConnectSearchConsoleAPI, '/connect-sc', methods=['POST', 'OPTIONS'])
-api.add_resource(GetSearchConsoleDataAPI, '/get-sc-data', methods=['POST', 'OPTIONS'])
 
 # facebook insights
 api.add_resource(FacebookSetAccount, '/insert-fi-account', methods=['POST', 'OPTIONS'])
 api.add_resource(FacebookAuthLoginApiView, '/insert-fi-token', methods=['POST', 'OPTIONS'])
-api.add_resource(RetrieveFacebookMetricsFromBD, '/get-fi-data', methods=['POST', 'OPTIONS'] )
 
 #alerts and tips
 api.add_resource(RetriveUserAlerts, '/get-alerts', methods=['POST', 'OPTIONS'])

@@ -101,24 +101,18 @@ class ConnectSearchConsoleAPI(Resource):
 
 
 
-class GetSearchConsoleDataAPI(Resource):
+def search_console_metrics(request):
+    if not request.user.connected_systems.get('search_console'):
+        return {'Error': 'Search Console not connected yet'}, 403
 
-    def options(self):
-        return {}, 200
+    sc_dict_data = request.user.metrics.get('search_console')
+    metric_name = request.json.get('metric')
+    metrics = sc_dict_data.get(metric_name)
+    dates = sc_dict_data.get('sc_dates')
 
-    @user_auth
-    def post(self):
-
-        if not request.user.connected_systems.get('search_console'):
-            return {'Error': 'Search Console not connected yet'}, 403
-
-        sc_dict_data = request.user.metrics.get('search_console')
-        result = {}
-        for metric_name, data_list in sc_dict_data.items():
-            result.update({metric_name: data_list[-7:]})
-
-        return result, 200
-
+    if metrics and dates:
+        return {'metrics': metrics[-7:], 'dates': dates[-7:]}
+    return {'Message': f'Metric {metric_name} not found'}, 404
 
 """ to be able to query all 3 systems and give all metrics to a dashboard need TODO:
 
@@ -161,46 +155,23 @@ class PutViewId(Resource):
         return {'Message': 'Success'}, 200
 
 
-class RetrieveGoogleAnalyticsMetrics(Resource):
+def google_analytics_metrics(request):
+    if not request.user.tokens.get('g_access_token'):
+        return {'Error': 'user did not gave access to google yet'}, 404
 
-    def options(self):
-        return {}, 200
+    metric = request.json['metric']
+    # filter = request.json['filter']
+    if request.user.metrics.get('google_analytics', {}).get('ga_dates'):
 
-    def get(self):
-        metrics = ['ga:sessions', 'ga:users', 'ga:pageviews',
-                   'ga:pageviewsPerSession', 'ga:avgSessionDuration', 'ga:bounces',
-                   'ga:percentNewSessions', 'ga:pageviews', 'ga:timeOnPage', 'ga:pageLoadTime',
-                   'ga:avgPageLoadTime', 'ga:transactionsPerSession', 'ga:transactionRevenue'],
+        ga_data = request.user.metrics.get('google_analytics')
 
-        filters = ['ga:date', 'ga:browser', 'ga:browserVersion', 'ga:operatingSystem',
-                   'ga:browser', 'ga:browserVersion', 'ga:operatingSystemVersion', 'ga:mobileDeviceBranding',
-                   'ga:mobileInputSelector', 'ga:mobileDeviceModel', 'ga:mobileDeviceInfo',
-                   'ga:deviceCategory', 'ga:browserSize', 'ga:country', 'ga:region', 'ga:city',
-                   'ga:language', 'ga:userAgeBracket', 'ga:userGender', 'ga:interestOtherCategory']
+        metrics = ga_data.get(metric)
+        # metric = metric.get(filter)
+        dates = ga_data.get('ga_dates')
+        if metric and dates:
+            return {'metric': metrics[-7:], 'dates': dates[-7:]}, 200
 
-        return {"metrics": metrics, "filters": filters}, 200
-
-    @user_auth
-    def post(self):
-
-        if not request.user.tokens.get('g_access_token'):
-            return {'Error': 'user did not gave access to google yet'}, 404
-
-        metric = request.json['metric']
-        # filter = request.json['filter']
-        if request.user.metrics.get('google_analytics', {}).get('ga_dates'):
-
-            ga_data = request.user.metrics.get('google_analytics')
-
-            metrics = ga_data.get(metric)
-            # metric = metric.get(filter)
-            dates = ga_data.get('ga_dates')
-            if metric and dates:
-                metrics = metrics[7:]
-                dates = dates[7:]
-                return {'metric': metrics, 'dates': dates}, 200
-
-        return {'message': f'the metric "{metric}" was not found'}, 404
+    return {'message': f'the metric "{metric}" was not found'}, 404
 
 
 class FirstRequestGoogleAnalyticsMetrics(Resource):

@@ -7,9 +7,9 @@ from Utils.FacebookUtils import fields, fill_campaign_metrics
 def facebook_insights_query(token, start_date, end_date):
     if (user := User.get(auth_token=token)):
 
-        if(access_token := user.get('tokens').get('f_access_token')):
+        if(access_token := user.tokens.get('f_access_token')):
 
-            if(account_id := user.get('connected_systems').get('facebook_insights').get('account_id')):
+            if(account_id := user.connected_systems.get('facebook_insights').get('account_id')):
                 FacebookAdsApi.init(access_token=access_token)
                 my_account = AdAccount(account_id)
                 campaigns = my_account.get_campaigns()

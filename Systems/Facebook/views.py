@@ -66,21 +66,14 @@ class FacebookAuthLoginApiView(Resource):
         return {'Error': 'Wrong auth token'}, 403
 
 
-class RetrieveFacebookMetricsFromBD(Resource):
-    def options(self):
-        return {}, 200
+def facebook_insights_metrics(request):
+    user = request.user
 
-    def post(self):
-        if (user := User.get(auth_token=request.json['token'])):
+    facebook_insights = user.metrics.get('facebook_insights')
+    campaign = request.json.get('campaign')
+    metric_name = request.json.get('metric')
+    dates = facebook_insights.get('dates')
+    metrics = facebook_insights.get(campaign, {}).get(metric_name)
 
-            result = {}
-            facebook_insights = user.metrics.get('facebook_insights')
-            for campaign, metrics in facebook_insights.items():
-                temp = {}
-                for metric_name, list_value in metrics.items():
-                    temp.update({metric_name: list_value[-7:]})
-                result.update({campaign: temp})
-
-            return result, 200
-
-        return {'Error': 'Wrong auth token'}, 403
+    if metrics and dates:
+        return {'metrics': metrics[-7:], 'dates': dates[-7:]}, 200

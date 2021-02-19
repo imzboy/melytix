@@ -3,7 +3,7 @@ Note: We are using mongo db as our main database so the structure will be in mon
 
 Docs syntax:
     # - comment
-    ~ - all matching cases
+    ~ - non strict keys description
     () - variable description
     <> - variable type (int/string/hash/etc.)
 
@@ -31,7 +31,10 @@ Docs syntax:
             "account_id": (account ID in the ads manager, which the user has chosen),
             "name": (the name of the account the user chose)
         },
-        "search_console": {}
+        "search_console": {
+            "sc_dates" <list> (the list of dates),
+            "sc_~name of the metric": <list> (search console metrics)
+        }
     },
     "metrics": {
         "google_analytics" : { <dict> (the google analytics data)
@@ -46,8 +49,10 @@ Docs syntax:
         "search_console": {},
         "facebook_insights": {
              "dates": <list> (the array of dates from facebook ads manager, contains every day from user registration minus 3 weeks)
-             "~name of the metric": <list> (the array of metrics) # ~name of the metric[i] == dates[i]
-             }
+             "~campaign name": {
+                "~name of the metric": <list> (the array of metrics) # ~name of the metric[i] == dates[i]
+            }
+        }
         }
     },
     # TODO: add more systems
