@@ -83,6 +83,7 @@ class MongoDocument(object):
         )
 
     def __getattribute__(self, name: str):
+<<<<<<< HEAD
         if name == 'data':
             return object.__getattribute__(self, name)
 
@@ -90,6 +91,14 @@ class MongoDocument(object):
 
     def __str__(self) -> str:
         return f'<{self.__class__.__name__} {str(self._id)}>'
+=======
+        attr = object.__getattribute__(self, name)
+        if attr:
+            return attr
+        else:  # load the field from database
+            attr = self.objects()._load_field_from_db(_id=self._id, field=name)  #TODO: check the responce of the call
+            return attr
+>>>>>>> 760e4555cb2254a7f0108cb2edb4143aa8f54224
 
 
 class User(MongoDocument):
