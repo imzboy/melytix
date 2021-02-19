@@ -1,10 +1,11 @@
 from flask_login.mixins import UserMixin
 from pymongo import MongoClient
+from pymongo.results import InsertOneResult
 import os
 from hashlib import pbkdf2_hmac
 import binascii
 import inspect
-from bson import ObjectId
+from bson import ObjectId, objectid
 
 # Connecting to Mogodb Atlas
 uri = os.environ.get('MONGODB_URI', None)
@@ -20,75 +21,79 @@ see Docs/UserDB Structure.txt if there is any questions
 '''
 
 
-class DocQuery(object):
+class MongoDocument(object):
 
-    def __init__(self, query_class):
-        self.query_class = query_class
-        self.db_connection = client.heroku_t2hftlhq.__getattr__(f'{query_class.__name__.lower()}s')
+    def __init__(self, data:dict):
+        self.data = data
 
-    def _load_field_from_db(self, _id :ObjectId, field :str):
-        return self.db_connection.find_one({'_id': _id}, {'_id': 0, field: 1})
+    @classmethod
+    def db(cls):
+        return db.__getattr__(f'{cls.__name__.lower()}s')
 
-    def get(self, **kwargs):
-        if (mongo_data := self.db_connection.find_one(kwargs, {'_id': 1})):
-            return self.cls(**mongo_data)
+    @classmethod
+    def get(cls, **kwargs):
+        if (mongo_data := cls.db().find(kwargs)):
+            if mongo_data.count() == 1:
+                return cls(mongo_data[0])
+            raise Exception(
+                f'{cls.__name__}.get() returned more than one element. It returned {mongo_data.count()}!')
         return None
 
-    def filter(self, **kwargs):
+    @classmethod
+    def filter(cls, **kwargs):
         """
         Finds all users in db, which matches the filter
             Parameters:
-                **kwargs:  parameters for users search
+                **kwargs:  parameters for search
         """
-        if(mongo_data := db.find(kwargs, {'_id': 1})):
-            return [self.cls(**data) for data in mongo_data]
+        if(mongo_data := cls.db().find(kwargs)):
+            return [cls(data) for data in mongo_data]
         return None
 
-    def save(self):
-        if self.query(_id=self._id):
-            db.find_one_and_update(
-                {"_id":self._id},
-                {'$set': self.__dict__},
-                upsert=False
-            )
-        else:
-            db.insert
-
-
-class MongoDocument(object):
-    _id : ObjectId
-
-    def __init__(self, **fields):
-        self.attributes: dict = inspect.getmembers(self, lambda a:not(inspect.isroutine(a)))[0][1]
-
-        for field_name, field_value in fields.items():
-
-            if not field_name in self.attributes.keys():
-                raise Exception(f'The {self.__class__.__name__} does not have field {field_name}')
-
-            if isinstance(field_value, self.attributes.get(field_name)):
-                self.__setattr__(field_name, field_value)
-
-        for null_field_key in self.attributes.keys():
-            if isinstance(self.attributes.get(null_field_key), type):
-                self.__setattr__(null_field_key, None)
-
+    @classmethod
+    def create(cls, **kwargs) -> InsertOneResult:
+        return cls.db().insert_one(kwargs)
 
     @classmethod
-    def objects(cls) -> DocQuery:
-        return DocQuery(cls)
+    def update_one(cls, filter, update):
+        """
+        Finds and updates user data.
+        Function does not insert a new document when no match is found.
+            Parameters:
+                filter (dict): parameters for user search
+                update (dict): updated user`s data
+        """
+        cls.db().find_one_and_update(
+            filter,
+            {'$set': update},
+            upsert=False
+        )
+
+    @classmethod
+    def append_list(cls, filter: dict, append: dict):
+        """
+        Append data to users selected with a filter
+            Parameters:
+                filter (dict) : parameters for search
+                append (dict) : data to append
+        """
+        cls.db().update_one(
+            filter,
+            {'$push': append}
+        )
 
     def __getattribute__(self, name: str):
-        attr = self.super().__getattribute__(name)
-        if attr:
-            return attr
-        else:  # load the field from database
-            attr = self.objects()._load_field_from_db(_id=self._id, field=name)  #TODO: check the responce of the call
+        if name == 'data':
+            return object.__getattribute__(self, name)
 
+        return self.data.get(name)
 
+    def __str__(self) -> str:
+        return f'<{self.__class__.__name__} {str(self._id)}>'
 
 
 class User(MongoDocument):
+    _id : ObjectId
     email : str
     password : bytes
     salt : bytes
@@ -99,6 +104,96 @@ class User(MongoDocument):
     Tips : list
     Alerts : list
     DashSettings : dict
+
+    def __str__(self) -> str:
+        return f'<User {self.email}>'
+
+    @classmethod
+    def register(cls, email: str, password: str):
+        """
+        Hashes the password and register one new user in the database.
+            Parameters:
+                email (str): new user`s email
+                password (str): new user`s string representation of password
+        """
+        salt = os.urandom(24)
+        password = pbkdf2_hmac('sha256', password.encode('utf-8'), salt, 100000)
+        result = cls.create(email=email, password=password, salt=salt)
+        return result
+
+    @classmethod
+    def verify_password(cls, email, inputted_pass):
+        """
+        Hashes and checks the inputted password,
+            Parameters:
+                email (str): user`s email
+                inputted_pass (str): user`s inputted password
+        """
+        if (user := cls.get({'email': email})):
+            salt = user.salt
+            if user.password == pbkdf2_hmac(
+                'sha256',
+                inputted_pass.encode('utf-8'),
+                salt,
+                100000):
+                return True
+        return False
+
+    @classmethod
+    def get_or_create_token(cls, email) -> str:
+        """
+        Get or create user's token that is used in every api
+        for secure assess. If token was found - return token,
+        else - creates and assigns to the user.
+        Function does not insert a new document when no match is found.
+            Parameter:
+                email (str): user`s email
+        """
+        user = User.get({'email': email})
+
+        if (token := user.auth_token):
+            return token
+
+        token = binascii.hexlify(os.urandom(20)).decode()
+        db.find_one_and_update(
+            {'email': email},
+            {'$set': {
+                'auth_token': token
+            }},
+            upsert=False
+        )
+        return token
+
+
+class Admin(UserMixin, MongoDocument):
+    _id : ObjectId
+    email : str
+    password : bytes
+    salt : bytes
+
+    def __str__(self) -> str:
+        return f'<Admin {self.email}>'
+
+    def get_id(self):
+        return str(self._id)
+
+    @classmethod
+    def verify_password(cls, email, inputted_pass):
+        """
+        Hashes and checks the inputted password,
+            Parameters:
+                email (str): user`s email
+                inputted_pass (str): user`s inputted password
+        """
+        if (user := cls.get({'email': email})):
+            salt = user.salt
+            if user.password == pbkdf2_hmac(
+                'sha256',
+                inputted_pass.encode('utf-8'),
+                salt,
+                100000):
+                return True
+        return False
 
 
 def query(**kwargs):
@@ -175,21 +270,6 @@ def register(email: str, password: str) -> None:
         'email': email,
         'password': password,
         'salt': salt,
-    })
-
-def register_from_google(email: str, picture: str):
-    """
-    Registers a user using data taken from Google.
-        Parameters:
-            email (str): new user`s email
-            picture (str):  user picture
-    """
-    if db.find_one({'email': email}):
-        return None  # the user already exists
-    db.insert_one({
-        'email': email,
-        'picture': picture,
-        'user_type': 'google_auth'
     })
 
 
@@ -378,12 +458,3 @@ def flip_tip_or_alert(token: str, type_: str, id_: str):
              {f'{type_}s': list_of_data}
          }
     )
-
-
-class Admin(UserMixin):
-    def __init__(self, user_dict: dict):
-        self.user_dict = user_dict
-
-    def get_id(self):
-        object_id = self.user_dict.get('_id')
-        return str(object_id)
