@@ -16,12 +16,7 @@ class RetriveUserAlerts(Resource):
 
                 if (alerts := user['Alerts']):
 
-                    active_alerts = []
-                    for alert in alerts:
-                        if alert['active']:
-                            active_alerts.append(alert)
-
-                    return active_alerts, 200
+                    return alerts, 200
 
                 return {'Error': 'no alerts has been generated'}, 404
 

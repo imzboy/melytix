@@ -1,64 +1,12 @@
 from Alerts.Alert import Alert
 
 
+# TEST_ALERT
 def sessions_lower(metrics: dict):
-    if metrics.get('ga_sessions')[len(metrics['ga_sessions']) - 1] < metrics.get('ga_sessions')[len(metrics['ga_sessions']) - 2]:
-        return True
+    if(all_sessions := metrics.get('ga_sessions', {}).get('total')):
+        if (len(all_sessions) > 1):
+            return all_sessions[-1] < all_sessions[-2]
     return False
-
-
-def crytical_low_ga_users(metrics: dict):
-    ga_users = metrics.get('ga_users')
-    min_ga_users = ga_users[0]
-    for i in range(len(ga_users)):
-        if min_ga_users+(min_ga_users/100*30)<ga_users[i]:
-            min_ga_users=ga_users[i]
-
-    if min_ga_users != ga_users[0]:
-        return True
-    else:
-        return False
-
-
-def crytical_high_ga_users(metrics: dict):
-    ga_users = metrics.get('ga_users')
-    max_ga_users = ga_users[0]
-    for i in range(len(ga_users)):
-        if max_ga_users+(max_ga_users/100*50)<ga_users[i]:
-            max_ga_users=ga_users[i]
-
-    if max_ga_users != ga_users[0]:
-        return True
-    else:
-        return False
-
-
-def crytical_day_ga_users(metrics: dict):
-    pass
-
-
-def path_to_grow_ga_users(metrics: dict):
-    ga_users = metrics.get('ga_users')
-    i = 1
-    for i in range(len(ga_users)):
-        if ga_users[i]<ga_users[i-1]:
-            return False
-
-    return True
-
-
-def path_to_low_ga_users(metrics: dict):
-    ga_users = metrics.get('ga_users')
-    i = 1
-    for i in range(len(ga_users)):
-        if ga_users[i]>ga_users[i-1]:
-            return False
-
-    return True
-
-
-def just_true(metrics: dict):
-    return True
 
 
 lower_than_yesterday = Alert(
@@ -69,36 +17,63 @@ lower_than_yesterday = Alert(
 )
 
 
-always_alert = Alert(
-    category='Test',
-    title='This is test alert',
-    description='The test alert',
-    analytics_func=just_true
-)
+# TEST_ALERT
+def critical_low_ga_users(metrics: dict):
+    if(ga_users := metrics.get('ga_users', {}).get('total')):
+        ga_users = ga_users[-7:]
+        min_ga_users = min(ga_users)
+        average_users = sum(ga_users) - min_ga_users
+        average_users = average_users / 6
+        return min_ga_users < average_users*0.7
+    return False
 
 
-crytical_low_ga_users_alert = Alert(
+def day_low_ga_users(metrics: dict):
+    if(ga_users := metrics.get('ga_users', {}).get('total')):
+        ga_users = ga_users[-7:]
+        return ga_users.index(min(ga_users)) + 1
+
+
+critical_low_ga_users_alert = Alert(
     category='Аналитика ( Google Analytics )',
-    title='В "" день количество пользователей критически понизилось по сравнению с другими днями этой недели',
+    title='В {day} день количество пользователей критически понизилось по сравнению с другими днями этой недели',
     description='The test alert',
-    analytics_func=crytical_low_ga_users
+    analytics_func=critical_low_ga_users
 )
+critical_low_ga_users_alert.day = day_low_ga_users
 
 
-crytical_high_ga_users_alert = Alert(
+# TEST_ALERT
+def critical_high_ga_users(metrics: dict):
+    if(ga_users := metrics.get('ga_users', {}).get('total')):
+        ga_users = ga_users[-7:]
+        max_ga_users = max(ga_users)
+        average_users = sum(ga_users) - max_ga_users
+        average_users = average_users / 6
+        return max_ga_users > average_users * 1.5
+
+
+def day_high_ga_users(metrics: dict):
+    if(ga_users := metrics.get('ga_users', {}).get('total')):
+        ga_users = ga_users[-7:]
+        return ga_users.index(max(ga_users)) + 1
+
+
+critical_high_ga_users_alert = Alert(
     category='Аналитика ( Google Analytics )',
-    title='В "" день количество пользователей повысилось по сравнению с другими днями этой недели',
+    title='В {day} день количество пользователей повысилось по сравнению с другими днями этой недели',
     description='The test alert',
-    analytics_func=crytical_high_ga_users
+    analytics_func=critical_high_ga_users
 )
+critical_high_ga_users_alert.day = day_high_ga_users
 
 
-crytical_day_ga_users_alert = Alert(
-    category='Test',
-    title='This is test alert',
-    description='The test alert',
-    analytics_func=crytical_day_ga_users
-)
+# ALERTS 0.02
+# GA_ALERT
+def path_to_grow_ga_users(metrics: dict):
+    if (ga_users := metrics.get('ga_users', {}).get('total')):
+        ga_users = ga_users[-7:]
+        return sorted(ga_users) == ga_users
 
 
 path_to_grow_ga_users_alert = Alert(
@@ -109,6 +84,13 @@ path_to_grow_ga_users_alert = Alert(
 )
 
 
+# GA_ALERT
+def path_to_low_ga_users(metrics: dict):
+    if (ga_users := metrics.get('ga_users', {}).get('total')):
+        ga_users = ga_users[-7:]
+        return sorted(ga_users, reverse=True) == ga_users
+
+
 path_to_low_ga_users_alert = Alert(
     category='Аналитика ( Google Analytics )',
     title='На протяжении последних 7 дней трафик последовательно падает',
@@ -116,143 +98,113 @@ path_to_low_ga_users_alert = Alert(
     analytics_func=path_to_low_ga_users
 )
 
-# path_to_low_position_keywords_gsc = Alert(
-#     category='Test',
-#     title='This is test alert',
-#     description='The test alert',
-#     analytics_func=path_to_low_position_keywords_gsc
-# )
 
-# path_to_grow_position_keywords_gsc = Alert(
-#     category='Test',
-#     title='This is test alert',
-#     description='The test alert',
-#     analytics_func=path_to_grow_position_keywords_gsc
-# )
-
-# noncritical_alert_with_errors_pages_index_gsc = Alert(
-#     category='Test',
-#     title='This is test alert',
-#     description='The test alert',
-#     analytics_func=noncritical_alert_with_errors_pages_index_gsc
-# )
-
-# critical_alert_with_errors_pages_index_gsc = Alert(
-#     category='Test',
-#     title='This is test alert',
-#     description='The test alert',
-#     analytics_func=critical_alert_with_errors_pages_index_gsc
-# )
-
-def gaBouncecCryticalFunc(metrics:dict):
-    ctr = metrics.get('ga_bounces')
-    array = 0
-    for i in range(len(ctr)):
-        array +=ctr[i]
-        if i==7:
-            if array/7>50:
-                return True
-            else:
-                return False
+# TEST_ALERT
+def just_true(metrics: dict):
+    return True
 
 
-gaBouncecCrytical = Alert(
+always_alert = Alert(
+    category='Test',
+    title='This is test alert',
+    description='The test alert',
+    analytics_func=just_true
+)
+
+
+# GA_ALERT
+def ga_bounces_crytical_func(metrics:dict):
+    if(week_ga_bounces_list := metrics.get('ga_bounces', {}).get('total')):
+        week_ga_bounces_list = week_ga_bounces_list[-7:]
+        weekly_sum = sum(week_ga_bounces_list)
+        return weekly_sum/7 > 50
+
+
+ga_bounces_crytical = Alert(
     category=' Analytics',
     title='Средний показатель отказов по сайту повысился больше, чем 50%, что неприемлемо для поисковых систем Google и Yandex',
     description='Средний показатель отказов на сайте вырос и сейчас он больше, чем 50%. Ваше ранжирование в поисковой системе понижается, а клиенты проводят меньше времени на сайте, чем возможно. Проверьте посадочные страницы на которые вы привлекаете трафик при первом касании с клиентом.',
-    analytics_func=gaBouncecCryticalFunc
+    analytics_func=ga_bounces_crytical_func
 )
 
 
-def GABouncecBadFunc(metrics:dict):
-    ctr = metrics.get('ga_bounces')
-    array = 0
-    for i in range(len(ctr)):
-        array +=ctr[i]
-        if i==7:
-            if 50>array/7>25:
-                return True
-            else:
-                return False
+# GA_ALERT
+def ga_bounces_bad_func(metrics:dict):
+    if(week_ga_bounces_list := metrics.get('ga_bounces',{}).get('total')):
+        week_ga_bounces_list = week_ga_bounces_list[-7:]
+        weekly_sum = sum(week_ga_bounces_list)
+        return 25 < weekly_sum/7 < 50
 
 
-GABouncecBad = Alert(
+ga_bounces_bad = Alert(
     category=' Analytics',
     title='Средний показатель отказов по сайту больше, чем 25% что неприемлемо для ваших клиентов и поисковых систем Google и Yandex',
     description='Средний показатель отказов на сайте вырос и сейчас он больше, чем 25%. Ваше ранжирование в поисковой системе понижается, а клиенты проводят меньше времени на сайте, чем возможно. Проверьте посадочные страницы на которые вы привлекаете трафик при первом касании с клиентом, а так же скорость загрузки страницы и глубину просмотра страницы.',
-    analytics_func=GABouncecBadFunc
+    analytics_func=ga_bounces_bad_func
 )
 
-
-def GABouncecCryticalDayBadFunc(metrics:dict):
-    ctr = metrics.get('ga_bounces')
-    count = 0
-    day = 0
-    for i in range(len(ctr)):
-        day+=1
-        if ctr[i]>50:
-            count+=1
-        elif day ==7:
-            if count>0:
+# GA_ALERT
+def ga_bounces_crytical_day_bad_func(metrics: dict):
+    if(week_ga_bounces_list := metrics.get('ga_bounces', {}).get('total')):
+        week_ga_bounces_list = week_ga_bounces_list[-7:]
+        for item in week_ga_bounces_list:
+            if item > 50:
                 return True
-            else:
-                return False
+    return False
 
 
-GABouncecCryticalDayBad = Alert(
+def day_ga_bounces_crytical(metrics: dict):
+    if (week_ga_bounces_list := metrics.get('ga_bounces', {}).get('total', [])[-7:]):
+        for item in week_ga_bounces_list:
+            if item > 50:
+                return week_ga_bounces_list.index(item) + 1
+    return ""
+
+
+ga_bounces_crytical_day_bad = Alert(
     category=' Analytics',
-    title='Показатель отказов по сайту повысился больше, чем 50% в “N” ( N - день в котором произошёл критический момент )',
-    description='В “N” день на вашем сайте был замечен показатель больше, чем 50% - это плохая новость для Вас, но с помощью неё можно проанализировать все маркетинговые каналы'
+    title='Показатель отказов по сайту повысился больше, чем 50% в {day} ( {day} - день в котором произошёл критический момент )',
+    description='В {day} день на вашем сайте был замечен показатель больше, чем 50% - это плохая новость для Вас, но с помощью неё можно проанализировать все маркетинговые каналы'
                 ' и понять какой канал привёл нерелеватный трафик, которых не “зацепила” посадочная страница. Проведите анализ '
                 'с помощью сводки Google Analytics - Источники трафика сравнивая показатель с “Bounce Rate” ( рус. Показатель Отказов ).',
-    analytics_func=GABouncecCryticalDayBadFunc
+    analytics_func=ga_bounces_crytical_day_bad_func
 )
-
-def GAPathToLowReturningUserFunc(metrics:dict):
-    ctr = metrics.get('ga_ReturningUser')
-    count = 0
-    for i in range(len(ctr)):
-        if ctr[i]<=ctr[i-1]:
-            count+=1
-            if count == 7:
-                return True
-        else:
-            return False
+ga_bounces_crytical_day_bad.day = day_ga_bounces_crytical
 
 
+# GA_ALERT
+def ga_path_to_low_returning_user_func(metrics:dict):
+    if(returning_users := metrics.get('ga_ReturningUser', {}).get('total')):
+        returning_users = returning_users[-7:]
+        return sorted(returning_users, reverse=True) == returning_users
 
-GAPathToLowReturningUser = Alert(
+
+ga_path_to_low_returning_user = Alert(
     category=' Analytics',
     title='Показатель возврата пользователей на сайт падает с каждым днём на протяжении последних 7 дней.',
     description='Похоже новые пользователи не возвращаются к Вам на сайт. Проверьте актуальность источников вашего ремаркетинга или ретаргетинга . Возврат пользователей это важная метрика Вашей конверсии и показатель ранжирования для поисковых систем. '
                 'Обновите ваши креативы на ваших кампаниях нацеленных на возврат пользователей - скорее всего, они утратили актуальность.',
-    analytics_func=GAPathToLowReturningUserFunc
+    analytics_func=ga_path_to_low_returning_user_func
 )
 
 
-def GAPathToGrowReturningUserFunc(metrics:dict):
-    ctr = metrics.get('ga_ReturningUser')
-    count = 0
-    for i in range(len(ctr)):
-        if ctr[i]>=ctr[i-1]:
-            count+=1
-            if count == 7:
-                return True
-        else:
-            return False
+#GA_ALERT
+def ga_path_to_grow_returning_user_func(metrics:dict):
+    if(returning_users := metrics.get('ga_ReturningUser', {}).get('total')):
+        returning_users = returning_users[-7:]
+        return sorted(returning_users) == returning_users
 
 
-GAPathToGrowReturningUser = Alert(
+ga_path_to_grow_returning_user = Alert(
     category=' Analytics',
     title='Показатель возврата пользователей на сайт возрастает с каждым днём на протяжении последних 7 дней.',
     description='Отличная работа! Каналы вашего ремаркетинга показывают отличные показатели и растут за последние 7 дней возвращая'
                 'всё больше и больше пользователей! Это позитивно складывается на вашей конверсии и ранжировании ваших сниппетов в поисковой системе.',
-    analytics_func=GAPathToGrowReturningUserFunc
+    analytics_func=ga_path_to_grow_returning_user_func
 )
 
 
 def return_alerts():
-    return [lower_than_yesterday, always_alert, crytical_low_ga_users_alert,
-    crytical_high_ga_users_alert, crytical_day_ga_users_alert, path_to_grow_ga_users_alert,
-    path_to_low_ga_users_alert,gaBouncecCrytical,GABouncecBad,GABouncecCryticalDayBad,GAPathToLowReturningUser,
-    GAPathToGrowReturningUser]
+    return [lower_than_yesterday, always_alert, critical_low_ga_users_alert, critical_high_ga_users_alert,
+            path_to_grow_ga_users_alert, path_to_low_ga_users_alert, ga_bounces_crytical,
+            ga_bounces_bad,ga_bounces_crytical_day_bad,ga_path_to_low_returning_user, ga_path_to_grow_returning_user]
