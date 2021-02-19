@@ -105,20 +105,21 @@ def search_console_metrics(request):
     if not request.user.connected_systems.get('search_console'):
         return {'Error': 'Search Console not connected yet'}, 403
 
+    start_date = request.json.get('start_date')
+    end_date = request.json.get('end_date')
+
+
     sc_dict_data = request.user.metrics.get('search_console')
     metric_name = request.json.get('metric')
-    metrics = sc_dict_data.get(metric_name)
+    metric = sc_dict_data.get(metric_name)
     dates = sc_dict_data.get('sc_dates')
 
-    if metrics and dates:
-        return {'metrics': metrics[-7:], 'dates': dates[-7:]}
-    return {'Message': f'Metric {metric_name} not found'}, 404
+    start_date = request.json.get('start_date')
+    end_date = request.json.get('end_date')
+    start_date, end_date = GoogleUtils.find_start_and_end_date(dates, start_date, end_date)
 
-""" to be able to query all 3 systems and give all metrics to a dashboard need TODO:
-
-    ~Youtube
-        1. Utils yt api respose prep_dash_metrics
-        Optional - complete YoutubeAnalytics.py"""
+    if metric and dates:
+        return {'metric': metric[start_date:end_date], 'dates': dates[start_date:end_date]}, 200
 
 
 class GetViewIdDropDown(Resource):
@@ -160,6 +161,9 @@ def google_analytics_metrics(request):
         return {'Error': 'user did not gave access to google yet'}, 404
 
     metric = request.json['metric']
+    start_date = request.json.get('start_date')
+    end_date = request.json.get('end_date')
+
     # filter = request.json['filter']
     if request.user.metrics.get('google_analytics', {}).get('ga_dates'):
 
@@ -168,8 +172,9 @@ def google_analytics_metrics(request):
         metrics = ga_data.get(metric)
         # metric = metric.get(filter)
         dates = ga_data.get('ga_dates')
+        start_date, end_date = GoogleUtils.find_start_and_end_date(dates, start_date, end_date)
         if metric and dates:
-            return {'metric': metrics[-7:], 'dates': dates[-7:]}, 200
+            return {'metric': metrics[start_date:end_date], 'dates': dates[start_date:end_date]}, 200
 
     return {'message': f'the metric "{metric}" was not found'}, 404
 

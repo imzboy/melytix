@@ -1,3 +1,4 @@
+from Utils import GoogleUtils
 from flask_restful import Resource
 from Systems.Facebook.FacebookAdsManager import facebook_insights_query
 from flask import request
@@ -73,7 +74,10 @@ def facebook_insights_metrics(request):
     campaign = request.json.get('campaign')
     metric_name = request.json.get('metric')
     dates = facebook_insights.get('dates')
-    metrics = facebook_insights.get(campaign, {}).get(metric_name)
+    metric = facebook_insights.get(campaign, {}).get(metric_name)
 
-    if metrics and dates:
-        return {'metrics': metrics[-7:], 'dates': dates[-7:]}, 200
+    start_date = request.json.get('start_date')
+    end_date = request.json.get('end_date')
+    start_date, end_date = GoogleUtils.find_start_and_end_date(dates, start_date, end_date)
+    if metric and dates:
+        return {'metric': metric[start_date:end_date], 'dates': dates[start_date:end_date]}, 200
