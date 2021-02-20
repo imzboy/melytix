@@ -6,7 +6,7 @@ import os
 from hashlib import pbkdf2_hmac
 import binascii
 from bson import ObjectId
-
+from datetime import datetime as dt
 
 # Connecting to Mogodb Atlas
 uri = os.environ.get('MONGODB_URI', None)
@@ -21,6 +21,8 @@ see Docs/UserDB Structure.txt if there is any questions
 
 
 class MongoDocument(object):
+    _id : ObjectId
+    created_at : str
 
     def __init__(self, data : dict):
         self.data = data
@@ -68,6 +70,7 @@ class MongoDocument(object):
 
     @classmethod
     def create(cls, **kwargs) -> InsertOneResult:
+        kwargs['created_at'] = dt.now().date().isoformat()
         return cls.db().insert_one(kwargs)
 
     @classmethod
@@ -107,7 +110,6 @@ class MongoDocument(object):
 
 
 class User(MongoDocument):
-    _id : ObjectId
     email : str
     password : bytes
     salt : bytes
@@ -132,7 +134,7 @@ class User(MongoDocument):
         """
         salt = os.urandom(24)
         password = pbkdf2_hmac('sha256', password.encode('utf-8'), salt, 100000)
-        result = cls.create(email=email, password=password, salt=salt)
+        result = User.create(email=email, password=password, salt=salt)
         return result
 
     @classmethod
@@ -256,7 +258,6 @@ class User(MongoDocument):
 
 
 class Admin(UserMixin, MongoDocument):
-    _id : ObjectId
     email : str
     password : bytes
     salt : bytes

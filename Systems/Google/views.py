@@ -90,9 +90,10 @@ class ConnectSearchConsoleAPI(Resource):
             request.token, 'search_console',
             {'site_url': site_url})
 
-        three_weeks_ago = (datetime.datetime.now() - datetime.timedelta(weeks=3))
-        today = datetime.datetime.now()
-        response = make_sc_request(request.token, site_url, three_weeks_ago, today)
+        start_date = request.user.created_at
+        end_date = datetime.datetime.now()
+        #TODO: log the time of the api exec
+        response = make_sc_request(request.token, site_url, start_date, end_date)
 
         data = GoogleUtils.prep_dash_metrics(sc_data=response)
 
@@ -195,9 +196,9 @@ class FirstRequestGoogleAnalyticsMetrics(Resource):
         if request.user.connected_systems.get('google_analytics'):
             return {'Error': 'user has already connected to the GA'}, 409
 
-        three_weeks_ago = (datetime.datetime.now() - datetime.timedelta(weeks=3)).date().isoformat()
-
-        start_date, end_date = three_weeks_ago, 'today'
+        start_date = request.user.created_at
+        end_date = datetime.datetime.now().date().isoformat()
+        #TODO: log the time of the api exec
 
         token = request.json['token']
 

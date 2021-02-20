@@ -24,9 +24,10 @@ class FacebookSetAccount(Resource):
             User.connect_system(token, 'facebook_insights', {'account_id': account_id, 'name': name})
 
             # request for insights for last 3 weeks
-            three_weeks_ago = (datetime.datetime.now() - datetime.timedelta(weeks=3))
-            today = datetime.datetime.now()
-            facebook_insights = facebook_insights_query(token, three_weeks_ago, today)
+            start_date = user.created_at
+            end_date = datetime.datetime.now().date().isoformat()
+            #TODO: log the time of the api exec
+            facebook_insights = facebook_insights_query(token, start_date, end_date)
 
             # add insights to DB (Create fields)
             User.insert_data_in_db(token, 'facebook_insights', facebook_insights)
