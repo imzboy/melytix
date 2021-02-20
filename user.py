@@ -6,7 +6,7 @@ import os
 from hashlib import pbkdf2_hmac
 import binascii
 from bson import ObjectId
-from datetime import datetime as dt
+from datetime import datetime, timedelta
 
 # Connecting to Mogodb Atlas
 uri = os.environ.get('MONGODB_URI', None)
@@ -70,7 +70,7 @@ class MongoDocument(object):
 
     @classmethod
     def create(cls, **kwargs) -> InsertOneResult:
-        kwargs['created_at'] = dt.now().date().isoformat()
+        kwargs['parse_from_date'] = (datetime.now() - timedelta(days=60)).date().isoformat()
         return cls.db().insert_one(kwargs)
 
     @classmethod

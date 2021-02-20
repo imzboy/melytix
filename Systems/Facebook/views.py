@@ -24,7 +24,7 @@ class FacebookSetAccount(Resource):
             User.connect_system(token, 'facebook_insights', {'account_id': account_id, 'name': name})
 
             # request for insights for last 3 weeks
-            start_date = user.created_at
+            start_date = user.parse_from_date
             end_date = datetime.datetime.now().date().isoformat()
             #TODO: log the time of the api exec
             facebook_insights = facebook_insights_query(token, start_date, end_date)

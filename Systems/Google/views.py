@@ -90,7 +90,7 @@ class ConnectSearchConsoleAPI(Resource):
             request.token, 'search_console',
             {'site_url': site_url})
 
-        start_date = request.user.created_at
+        start_date = request.user.parse_from_date
         end_date = datetime.datetime.now()
         #TODO: log the time of the api exec
         response = make_sc_request(request.token, site_url, start_date, end_date)
@@ -196,7 +196,7 @@ class FirstRequestGoogleAnalyticsMetrics(Resource):
         if request.user.connected_systems.get('google_analytics'):
             return {'Error': 'user has already connected to the GA'}, 409
 
-        start_date = request.user.created_at
+        start_date = request.user.parse_from_date
         end_date = datetime.datetime.now().date().isoformat()
         #TODO: log the time of the api exec
 
