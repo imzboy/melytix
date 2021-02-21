@@ -1,3 +1,5 @@
+from analytics.base import MetricAnalyzer
+from Utils.utils import inheritors
 import datetime
 
 from celery import Celery
@@ -9,7 +11,7 @@ from Systems.Google.GoogleAuth import auth_credentials
 from Tips.Tips import return_tips
 from Utils.GoogleUtils import GoogleReportsParser
 from Utils.FacebookUtils import create_list_of_dates
-from user import User
+from user.models import User
 from googleapiclient.discovery import build
 
 
@@ -66,36 +68,11 @@ def refresh_metric(users: list):
 
 
 @celery_app.task
-def generate_tip(users: list):
-    """
-    Adds tips to the DB for each user from the list if their analytics_func returns True
-            Parameters:
-                users (list): list of users to check metrics of user
-    """
+def generate_tip_or_alert(users:list):
+    analytics = inheritors(MetricAnalyzer)
     for user in users:
-        for tip in return_tips():
-            if tip.analytics_func(user.metrics):
-                User.append_list(
-                    {'email': user['email']},
-                    {"Tips": tip.generate()})
-
- 
-@celery_app.task
-def generate_alert(users: list):
-    """
-    Adds alerts to the DB for each user on the list according to their traffic
-                Parameters:
-                users (list): list of users to check traffic
-    """
-    for user in users:
-        if (user_metrics := user.metrics.get('google_analytics')):
-            for alert in return_alerts():
-                if alert.analytics_func(user_metrics):
-                    alert.format(user_metrics, 'title')
-                    alert.format(user_metrics, 'description')
-                    User.append_list(
-                        {'email': user.email},
-                        {"Alerts": alert.generate()})
+        for analytics_class in analytics:
+            analytics_class(user.get('metrics')).analyze(user.get('_id'))
 
 
 @celery_app.task
@@ -103,20 +80,10 @@ def generate_tips_and_alerts():
     """
     For each user form DB calls methods of generating tips and alerts
     """
-    if (mongo_users := User.filter()):
-        users = []
-        for user in mongo_users:
-            if user.metrics.get('google_analytics'):  # TODO: change this when more systems will be added
-                users.append(
-                    {'email': user['email'],
-                     'metrics': user['metrics']['google_analytics']}
-                )
-
-        for id in range(0, len(users), 10):
-            # generate_alert.delay((users[id: id + 10]))
-            generate_alert((users[id: id + 10]))
-            # generate_tip.delay((users[id: id + 10]))
-            generate_tip((users[id: id + 10]))
+    users = User.filter_only(metrics={'$exists': True}, fields={'_id':True, 'metrics':True})
+    step = 10
+    for i in range(0, len(users), step):
+        generate_tip_or_alert.delay(users[i:i+step])
 
 
 @celery_app.task
