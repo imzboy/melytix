@@ -1,6 +1,6 @@
 from facebook_business.adobjects.adaccount import AdAccount
 from facebook_business.api import FacebookAdsApi
-from user import User
+from user.models import User
 from Utils.FacebookUtils import fields, fill_campaign_metrics
 
 

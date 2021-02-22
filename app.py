@@ -1,243 +1,121 @@
 from Utils.decorators import user_auth
-from flask_login import LoginManager, login_required, login_user, logout_user
+
 from flask_cors import CORS
-from bson import ObjectId
 
 from flask_restful import Resource, Api
 
-from Admin.views import MainManualAnalyzeView
+from Systems.Google.views import google_analytics_metrics, search_console_metrics
 
-from Systems.Google.views import (GetVerifiedSitesList,
-GoogleAuthLoginApiView, GoogleAuthLoginApiViewMain, GetViewIdDropDown, PutViewId,
-FirstRequestGoogleAnalyticsMetrics, ConnectSearchConsoleAPI, google_analytics_metrics, search_console_metrics)
+from Systems.Facebook.views import facebook_insights_metrics
+import config
 
-from Systems.Facebook.views import (FacebookSetAccount,
-FacebookAuthLoginApiView, facebook_insights_metrics)
+from flask import Flask, request
 
+from user.models import User
 
-from Alerts.views import AlertTipFlipActive, RetriveUserAlerts
-from Tips.views import RetriveUserTips
 
-from flask import Flask, request, render_template, url_for, redirect
+from Admin.views import api_bp, admin
+from user.views import user_bp
+from analytics.views import algorithms_bp
+from Systems.Google.views import google_bp
+from Systems.Facebook.views import facebook_insg_bp
 
-from tasks import refresh_metrics, generate_tips_and_alerts
 
-from user import User, Admin
+def create_app():
+    app = Flask(__name__)
+    app.secret_key = b"\x92K\x1a\x0e\x04\xcc\x05\xc8\x1c\xc4\x04\x98\xef'\x8e\x1bC\xd6\x18'}:\xc1\x14"
+    app.config['CORS_HEADERS'] = 'Content-Type'
+    app.config.from_object('config')
 
-app = Flask(__name__)
-app.secret_key = b"\x92K\x1a\x0e\x04\xcc\x05\xc8\x1c\xc4\x04\x98\xef'\x8e\x1bC\xd6\x18'}:\xc1\x14"
-app.config['CORS_HEADERS'] = 'Content-Type'
+    api = Api(app)
 
-login = LoginManager(app)
-login.login_view = '/admin/login'
+    cors = CORS(app)
 
-api = Api(app)
+    app.register_blueprint(api_bp)
+    app.register_blueprint(admin)
+    app.register_blueprint(user_bp)
+    app.register_blueprint(google_bp)
+    app.register_blueprint(facebook_insg_bp)
+    app.register_blueprint(algorithms_bp)
 
-cors = CORS(app)
 
+    @app.route('/')
+    def hello_world():
+        return 'Hello, World!'
 
-@login.user_loader
-def load_user(id):
-    return Admin(Admin.get(_id=ObjectId(id)))
+    class CacheDashboardSettings(Resource):
+        def options(self):
+            return {}, 200
 
+        @user_auth
+        def post(self):
 
-class HelloView(Resource):
-    def options(self):
-        return {}, 200
+            User.insert_dash_settings(request.user.token, request.json.get('settings'))
+            return {'Message': 'Success'}, 200
 
-    def get(self):
-        return {'Hello': 'World'}
 
+    class GetCachedDashboardSettings(Resource):
+        def options(self):
+            return {}, 200
 
-@app.route('/refresh', methods=['GET'])
-@login_required
-def refresh():
-    refresh_metrics()
+        @user_auth
+        def post(self):
+            if (settings := request.user.DashSettings):
 
-    # generate_tips_and_alerts()
-    # generate_tips_and_alerts.delay()
-    return {'message': 'yes'}
+                return {'settings': settings}, 200
 
+            return {'Error': 'user has no Dash settings inserted'}, 404
 
-@app.route('/admin/logout', methods=['GET'])
-@login_required
-def logout():
-    logout_user()
-    return redirect(url_for('admin_login'))
 
+    class MainView(Resource):
+        def options(self):
+            return {}, 200
 
+        @user_auth
+        def post(self):
+            connected_systems = request.user.connected_systems
+            if connected_systems.get('facebook_insights'):
+                connected_systems['facebook_insights']['campaigns'] = list(request.user.metrics.get('facebook_insights',{}).keys())
 
-@app.route('/admin/', methods=['GET', 'POST'])
-@login_required
-def menu():
-    return f'<a href="{url_for("reg_a_user")}">register a new user</a>' \
-    f'<br><a href="https://admin.melytix.tk/">Tips and Alerts Admin</a>' \
-    f'<br><a href="{url_for("logout")}">logout</a>' \
-    f'<br><a href="/refresh">refresh metrics</a>'
+            if connected_systems.get('google_analytics'):
+                try:  # TODO: for now coz it can return a list
+                    connected_systems['google_analytics']['filters'] = request.user.metrics.get('google_analytics').get('ga_sessions').keys()
+                except:
+                    print('nope')
 
 
-@app.route('/admin/login', methods=['GET', 'POST'])
-def admin_login():
-    if request.method == 'POST':
-        form = request.form
-        login = form.get("login")
-        password = form.get("pass")
-        if login and password:
-            if User.verify_admin_password(login, password):
-                login_user(Admin(Admin.get(email=login)))
-                return redirect(url_for('menu'))
-            else:
-                return render_template('admin/login/index.html', url='/admin/login', message='wrong credentials')
-    elif request.method == 'GET':
-        return render_template('admin/login/index.html', url='/admin/login')
-    return '?'
+            return {**connected_systems}, 200
 
 
-@app.route('/admin/reg-a-user', methods=["GET", "POST"])
-@login_required
-def reg_a_user():
-    if request.method == 'GET':
-        return render_template('admin/login/index.html', url='/admin/reg-a-user')
-    elif request.method == 'POST':
-        form = request.form
-        email = form.get("login")
-        password = form.get("pass")
-        if email and password:
-            if not User.get(email=email):
-                User.register(email, password)
-                return render_template('admin/login/index.html', message='success', url='/admin/reg-a-user')
-            else:
-                return render_template('admin/login/index.html', message='user with that email already exists', url='/admin/reg-a-user')
-    return '?'
 
+    class DashboardWidgetView(Resource):
 
-class LoginView(Resource):
+        def options(self):
+            return {}, 200
 
-    def options(self):
-        return {},200
+        @user_auth
+        def post(self):
+            '''
+            uses globals to find a function for getting metrics out of a system
+            name a function that retrives metrics from db '{system_name same as in db}_metrics'
+            '''
+            system = request.json.get('system')
+            return globals().get(f'{system}_metrics')(request)
 
-    def post(self):
-        email = request.json['email']
-        password = request.json['password']
-        if User.verify_password(email, password):
-            return {'token': User.get_or_create_token(email)}
-        return {'Error': 'wrong password'}
 
+    #DashSettings post and get
+    api.add_resource(GetCachedDashboardSettings, '/get-dash-settings', methods=['OPTIONS', 'POST'])
+    api.add_resource(CacheDashboardSettings, '/put-dash-settings', methods=['OPTIONS', 'POST'])
 
-class LogOutView(Resource):
+    #DashBoard widget
+    api.add_resource(DashboardWidgetView, '/get-widget-data', methods=['OPTIONS', 'POST'])
 
-    def options(self):
-        return {}, 200
+    #Main api
+    api.add_resource(MainView, '/main', methods=['OPTIONS', 'POST'])
 
-    @user_auth
-    def post(self):
-        User.update_one(
-            {'auth_token': request.user.token},
-            {'auth_token': None})
-        return {'Message': 'User logout'}, 200
 
+    return app
 
-class CacheDashboardSettings(Resource):
-    def options(self):
-        return {}, 200
 
-    @user_auth
-    def post(self):
-
-        User.insert_dash_settings(request.user.token, request.json.get('settings'))
-        return {'Message': 'Success'}, 200
-
-
-class GetCachedDashboardSettings(Resource):
-    def options(self):
-        return {}, 200
-
-    @user_auth
-    def post(self):
-        if (settings := request.user.DashSettings):
-
-            return {'settings': settings}, 200
-
-        return {'Error': 'user has no Dash settings inserted'}, 404
-
-
-class MainView(Resource):
-    def options(self):
-        return {}, 200
-
-    @user_auth
-    def post(self):
-        connected_systems = request.user.connected_systems
-        if connected_systems.get('facebook_insights'):
-            connected_systems['facebook_insights']['campaigns'] = list(request.user.metrics.get('facebook_insights',{}).keys())
-
-        if connected_systems.get('google_analytics'):
-            try:  # TODO: for now coz it can return a list
-                connected_systems['google_analytics']['filters'] = request.user.metrics.get('google_analytics').get('ga_sessions').keys()
-            except:
-                print('nope')
-
-
-        return {**connected_systems}, 200
-
-
-
-class DashboardWidgetView(Resource):
-
-    def options(self):
-        return {}, 200
-
-    @user_auth
-    def post(self):
-        '''
-        uses globals to find a function for getting metrics out of a system
-        name a function that retrives metrics from db '{system_name same as in db}_metrics'
-        '''
-        system = request.json.get('system')
-        return globals().get(f'{system}_metrics')(request)
-
-
-# URLs declaring --------------------------------
-
-# simple test
-api.add_resource(HelloView, '/', methods=['GET', 'OPTIONS'])
-
-#Login end points
-# api.add_resource(RegistrationView, '/registration', methods=['POST', 'OPTIONS'])
-api.add_resource(LoginView, '/login', methods=['POST', 'OPTIONS'])
-api.add_resource(LogOutView, '/logout', methods=['POST', 'OPTIONS'])
-
-#Google login
-api.add_resource(GoogleAuthLoginApiView , '/insert-tokens', methods=['POST', 'OPTIONS'])
-api.add_resource(GoogleAuthLoginApiViewMain, '/insert-tokens-main', methods=['POST', 'OPTIONS'])
-
-# google analytics
-api.add_resource(GetViewIdDropDown, '/get-select-data', methods=['POST', 'OPTIONS'])
-api.add_resource(PutViewId, '/insert-viewid', methods=['POST', 'OPTIONS'])
-api.add_resource(FirstRequestGoogleAnalyticsMetrics, '/connect-ga', methods=['POST', 'OPTIONS'])
-
-# search console
-api.add_resource(GetVerifiedSitesList, '/get-sites-url', methods=['POST', 'OPTIONS'])
-api.add_resource(ConnectSearchConsoleAPI, '/connect-sc', methods=['POST', 'OPTIONS'])
-
-# facebook insights
-api.add_resource(FacebookSetAccount, '/insert-fi-account', methods=['POST', 'OPTIONS'])
-api.add_resource(FacebookAuthLoginApiView, '/insert-fi-token', methods=['POST', 'OPTIONS'])
-
-#alerts and tips
-api.add_resource(RetriveUserAlerts, '/get-alerts', methods=['POST', 'OPTIONS'])
-api.add_resource(RetriveUserTips, '/get-tips', methods=['POST', 'OPTIONS'])
-api.add_resource(AlertTipFlipActive, '/flip', methods=['POST', 'OPTIONS'])
-
-#DashSettings post and get
-api.add_resource(GetCachedDashboardSettings, '/get-dash-settings', methods=['OPTIONS', 'POST'])
-api.add_resource(CacheDashboardSettings, '/put-dash-settings', methods=['OPTIONS', 'POST'])
-
-#DashBoard widget
-api.add_resource(DashboardWidgetView, '/get-widget-data', methods=['OPTIONS', 'POST'])
-
-#Main api
-api.add_resource(MainView, '/main', methods=['OPTIONS', 'POST'])
-
-#Admin
-api.add_resource(MainManualAnalyzeView, '/admin-api', methods=['OPTIONS', 'POST', 'GET'])
+app=create_app()
+app.run(host='0.0.0.0', debug=True)

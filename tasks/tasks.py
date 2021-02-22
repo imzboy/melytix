@@ -1,25 +1,19 @@
-from analytics.base import MetricAnalyzer
+import celery
+from analytics.base import MetricAnalyzer, MetricNotFoundException
 from Utils.utils import inheritors
 import datetime
 
-from celery import Celery
-
-from Alerts.Alerts import return_alerts
 from Systems.Facebook.FacebookAdsManager import facebook_insights_query
 from Systems.Google.GoogleAnalytics import generate_report_body
 from Systems.Google.GoogleAuth import auth_credentials
-from Tips.Tips import return_tips
 from Utils.GoogleUtils import GoogleReportsParser
 from Utils.FacebookUtils import create_list_of_dates
 from user.models import User
 from googleapiclient.discovery import build
+from tasks import celery
 
 
-
-celery_app = Celery('melytix-celery')
-
-
-@celery_app.task
+@celery.task
 def refresh_metrics():
     """
     Makes list of users from DB and calls method for refreshing metrics
@@ -42,7 +36,7 @@ def refresh_metrics():
             # refresh_metric.delay((users[id: id + step]))
 
 
-@celery_app.task
+@celery.task
 def refresh_metric(users: list):
     """
     For each user from the list, it makes a request to Google Analytics
@@ -67,15 +61,17 @@ def refresh_metric(users: list):
                 )
 
 
-@celery_app.task
+@celery.task
 def generate_tip_or_alert(users:list):
     analytics = inheritors(MetricAnalyzer)
     for user in users:
         for analytics_class in analytics:
-            analytics_class(user.get('metrics')).analyze(user.get('_id'))
+            try:
+                analytics_class(user.get('metrics')).analyze(user.get('_id'))
+            except MetricNotFoundException:
+                continue
 
-
-@celery_app.task
+@celery.task
 def generate_tips_and_alerts():
     """
     For each user form DB calls methods of generating tips and alerts
@@ -86,12 +82,12 @@ def generate_tips_and_alerts():
         generate_tip_or_alert.delay(users[i:i+step])
 
 
-@celery_app.task
+@celery.task
 def google_analytics_query_all(token, view_id, start_date, end_date):
     # Max of 10 metrics and 7 dimesions in one report body
-    dimensions = ['ga:browser', 'ga:browserVersion', 'ga:operatingSystem',
-                  'ga:browser', 'ga:browserVersion', 'ga:operatingSystemVersion',
-                  'ga:mobileDeviceBranding', 'ga:mobileInputSelector', 'ga:mobileDeviceModel',
+    dimensions = ['ga:browser', 'ga:operatingSystem',
+                  'ga:operatingSystemVersion', 'ga:mobileDeviceBranding',
+                  'ga:mobileInputSelector', 'ga:mobileDeviceModel',
                   'ga:mobileDeviceInfo', 'ga:deviceCategory', 'ga:browserSize', 'ga:country',
                   'ga:region', 'ga:city', 'ga:language', 'ga:userAgeBracket', 'ga:userGender',
                   'ga:interestOtherCategory']
@@ -111,7 +107,7 @@ def google_analytics_query_all(token, view_id, start_date, end_date):
         google_analytics_query.delay(report, start_date, end_date, token)
 
 
-@celery_app.task
+@celery.task
 def google_analytics_query(report: list, start_date, end_date, token):
     # Google Analytics v4 api setup to make a request to google analytics
     api_client = build(serviceName='analyticsreporting', version='v4', http=auth_credentials(token))

@@ -2,14 +2,13 @@ import os
 from pymongo import MongoClient
 from pymongo.results import InsertOneResult
 from bson import ObjectId
-
 from datetime import datetime, timedelta
 
-uri = os.environ.get('MONGODB_URI', None)
+uri = 'mongodb+srv://MaxTeslya:7887334Mna@melytixdata-ryedw.mongodb.net/test?retryWrites=true&w=majority'
 
 client = MongoClient(uri)
 
-db_name = os.environ.get('DATABASE_NAME')
+db_name = 'heroku_t2hftlhq'
 
 
 class MongoDocument(object):
@@ -46,7 +45,7 @@ class MongoDocument(object):
             fields = {k:1 if v else 0 for k,v in kwargs.pop('fields').items()}
             if (mongo_data := cls.db().find(kwargs, fields)):
                 if mongo_data.count() == 1:
-                    return cls(mongo_data[0])
+                    return mongo_data[0]
                 raise Exception(
                     f'{cls.__name__}.get() returned more than one element.'\
                     f'It returned {mongo_data.count()}!')
@@ -68,7 +67,7 @@ class MongoDocument(object):
         return None
 
     @classmethod
-    def filter_only(cls, **kwargs):
+    def filter_only(cls, **kwargs) -> list:
         """same as the get_only() but returns multiple dict objects"""
         fields = {}
         if kwargs.get('fields'):

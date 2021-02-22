@@ -1,4 +1,4 @@
-from user import User
+from user.models import User
 
 from oauth2client import client as oauth_client
 import httplib2 as lib2

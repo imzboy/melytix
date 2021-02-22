@@ -76,6 +76,11 @@ class MetricAnalyzer(object):
         function_names = [attr for attr in dir(self) if not attr.startswith('') and callable(getattr(self, attr)) and attr != 'analyze']
         for name in function_names:
             func = getattr(self, name)
-            func_hash = func.__hash()
+            func_hash = func.__hash__()
             if (algorithm := func(self.metric, func_hash)):
                 User.append_list({'_id': user_id}, {f'{algorithm.__class__.__name__}s': algorithm.generate()})
+
+
+class MetricNotFoundException(Exception):
+    def __inti__(self, message:str):
+        self.message = message

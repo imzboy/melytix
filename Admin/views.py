@@ -1,9 +1,74 @@
-from flask.globals import request
+from bson.objectid import ObjectId
+from flask import request, render_template, url_for, redirect, Blueprint
+from flask_login import LoginManager, login_required, login_user, logout_user
 from Alerts.Alert import Alert
 from Tips.Tip import Tip
-from user import User
+from user.models import Admin, User
 
-from flask_restful import Resource
+from flask_restful import Api, Resource
+
+admin = Blueprint('admin', __name__, template_folder='templates')
+login = LoginManager(admin)
+login.login_view = '/admin/login'
+
+api_bp = Blueprint('admin_api', __name__)
+api = Api(api_bp)
+
+
+@login.user_loader
+def load_user(id):
+    return Admin(Admin.get(_id=ObjectId(id)))
+
+
+@admin.route('/admin/logout', methods=['GET'])
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('admin_login'))
+
+
+@admin.route('/admin/', methods=['GET', 'POST'])
+@login_required
+def menu():
+    return f'<a href="{url_for("reg_a_user")}">register a new user</a>' \
+    f'<br><a href="https://admin.melytix.tk/">Tips and Alerts Admin</a>' \
+    f'<br><a href="{url_for("logout")}">logout</a>' \
+    f'<br><a href="/refresh">refresh metrics</a>'
+
+
+@admin.route('/admin/login', methods=['GET', 'POST'])
+def admin_login():
+    if request.method == 'POST':
+        form = request.form
+        login = form.get("login")
+        password = form.get("pass")
+        if login and password:
+            if User.verify_admin_password(login, password):
+                login_user(Admin(Admin.get(email=login)))
+                return redirect(url_for('menu'))
+            else:
+                return render_template('admin/login/index.html', url='/admin/login', message='wrong credentials')
+    elif request.method == 'GET':
+        return render_template('admin/login/index.html', url='/admin/login')
+    return '?'
+
+
+@admin.route('/admin/reg-a-user', methods=["GET", "POST"])
+@login_required
+def reg_a_user():
+    if request.method == 'GET':
+        return render_template('admin/login/index.html', url='/admin/reg-a-user')
+    elif request.method == 'POST':
+        form = request.form
+        email = form.get("login")
+        password = form.get("pass")
+        if email and password:
+            if not User.get(email=email):
+                User.register(email, password)
+                return render_template('admin/login/index.html', message='success', url='/admin/reg-a-user')
+            else:
+                return render_template('admin/login/index.html', message='user with that email already exists', url='/admin/reg-a-user')
+    return '?'
 
 
 class MainManualAnalyzeView(Resource):
@@ -46,3 +111,6 @@ class MainManualAnalyzeView(Resource):
             {'email': user_email},
             {type_: item.generate()})
         return {'message': 'success'}, 200
+
+
+api.add_resource(MainManualAnalyzeView, '/admin-api', methods=['OPTIONS', 'POST', 'GET'])

@@ -24,7 +24,7 @@ class User(MongoDocument):
     DashSettings : dict
 
     def __str__(self) -> str:
-        return self.email
+        return f'<User {self.email}>'
 
     @classmethod
     def register(cls, email: str, password: str):

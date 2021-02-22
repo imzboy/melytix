@@ -1,14 +1,16 @@
 from Utils.decorators import user_auth
 import datetime
 
-from flask import request
-from flask_restful import Resource
+from flask import request, Blueprint
+from flask_restful import Resource, Api
 
-from user import User
+from user.models import User
 from Systems.Google import GoogleAuth, GoogleAnalytics
 from Systems.Google.SearchConsole import get_site_list, make_sc_request
 from Utils import GoogleUtils
-from tasks import google_analytics_query_all
+
+google_bp = Blueprint('google_api', __name__)
+api = Api(google_bp)
 
 
 class GoogleAuthLoginApiView(Resource):
@@ -208,6 +210,7 @@ class FirstRequestGoogleAnalyticsMetrics(Resource):
             token)
 
         if viewid:
+            from tasks.tasks import google_analytics_query_all
             google_analytics_query_all.delay(token, viewid, start_date, end_date)
             User.connect_system(
                 token, 'google_analytics',
@@ -218,3 +221,17 @@ class FirstRequestGoogleAnalyticsMetrics(Resource):
                     'web_property_name': request.json['web_property_name']})
             return {'Message': 'success'}, 200
         return {'Message': 'could not fetch viewid'}
+
+
+#Google login
+api.add_resource(GoogleAuthLoginApiView , '/insert-tokens', methods=['POST', 'OPTIONS'])
+api.add_resource(GoogleAuthLoginApiViewMain, '/insert-tokens-main', methods=['POST', 'OPTIONS'])
+
+# google analytics
+api.add_resource(GetViewIdDropDown, '/get-select-data', methods=['POST', 'OPTIONS'])
+api.add_resource(PutViewId, '/insert-viewid', methods=['POST', 'OPTIONS'])
+api.add_resource(FirstRequestGoogleAnalyticsMetrics, '/connect-ga', methods=['POST', 'OPTIONS'])
+
+# search console
+api.add_resource(GetVerifiedSitesList, '/get-sites-url', methods=['POST', 'OPTIONS'])
+api.add_resource(ConnectSearchConsoleAPI, '/connect-sc', methods=['POST', 'OPTIONS'])

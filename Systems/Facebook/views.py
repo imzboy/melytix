@@ -1,12 +1,15 @@
 from Utils import GoogleUtils
-from flask_restful import Resource
+from flask_restful import Resource, Api
 from Systems.Facebook.FacebookAdsManager import facebook_insights_query
-from flask import request
-from user import User
+from flask import request, Blueprint
+from user.models import User
 import datetime
 import requests
 from facebook_business.api import FacebookAdsApi
 from facebook_business.adobjects.adaccount import AdAccount
+
+facebook_insg_bp = Blueprint('facebook_insg_api', __name__)
+api = Api(facebook_insg_bp)
 
 
 class FacebookSetAccount(Resource):
@@ -82,3 +85,8 @@ def facebook_insights_metrics(request):
     start_date, end_date = GoogleUtils.find_start_and_end_date(dates, start_date, end_date)
     if metric and dates:
         return {'metric': metric[start_date:end_date], 'dates': dates[start_date:end_date]}, 200
+
+
+# facebook insights
+api.add_resource(FacebookSetAccount, '/insert-fi-account', methods=['POST', 'OPTIONS'])
+api.add_resource(FacebookAuthLoginApiView, '/insert-fi-token', methods=['POST', 'OPTIONS'])

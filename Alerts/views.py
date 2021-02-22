@@ -2,7 +2,7 @@ from flask_restful import Resource
 
 from flask import request
 
-from user import User
+from user.models import User
 
 
 class RetriveUserAlerts(Resource):
