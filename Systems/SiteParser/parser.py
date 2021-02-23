@@ -145,10 +145,3 @@ class SiteParser(object):
     def is_utf(self) -> bool:
         page_url = self.soup.find_all('meta charset="UTF-8"')
         return True if page_url else False
-
-
-
-url = 'https://habr.com/ru/company/jetinfosystems/blog/542658/'
-
-parser = SiteParser(url)
-print(parser.parse())

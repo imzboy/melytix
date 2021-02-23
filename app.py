@@ -20,7 +20,7 @@ from user.views import user_bp
 from analytics.views import algorithms_bp
 from Systems.Google.views import google_bp
 from Systems.Facebook.views import facebook_insg_bp
-
+from Systems.SiteParser.views import parser_bp
 
 def create_app():
     app = Flask(__name__)
@@ -40,6 +40,7 @@ def create_app():
     app.register_blueprint(google_bp)
     app.register_blueprint(facebook_insg_bp)
     app.register_blueprint(algorithms_bp)
+    app.register_blueprint(parser_bp)
 
 
     @app.route('/')
