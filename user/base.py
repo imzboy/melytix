@@ -9,7 +9,7 @@ from config import settings
 APP_ENV = os.environ.get('APP_ENV', 'Dev')
 config = getattr(settings, f'{APP_ENV}Config')
 
-uri = config.MONGO_URI
+uri = config.MONGODB_URI
 
 client = MongoClient(uri)
 

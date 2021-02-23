@@ -49,6 +49,25 @@ class ProdConfig(BaseConfig):
     beat_schedule=celery_beat_schedule
 
 
+class StageConfig(BaseConfig):
+    ENV = 'development'
+    DEBUG = True
+
+    CELERY_BROKER='redis://h:pf0b2c9e78a670264f0b75b20a33311122bdef5f1d0eae7feca0fc74208319647@ec2-34-252-177-9.eu-west-1.compute.amazonaws.com:9279'
+    CELERY_RESULT_BACKEND='redis://h:pf0b2c9e78a670264f0b75b20a33311122bdef5f1d0eae7feca0fc74208319647@ec2-34-252-177-9.eu-west-1.compute.amazonaws.com:9279'
+
+    MONGODB_URI='mongodb+srv://MaxTeslya:7887334Mna@melytixdata-ryedw.mongodb.net/test?retryWrites=true&w=majority'
+    DATABASE_NAME='heroku_t2hftlhq'
+
+    #celery and beat configurations
+    timezone = 'Europe/Kiev'
+    imports = ('tasks.tasks',)
+    task_serializer="json"
+    accept_content=["json"]
+    result_serializer="json"
+    beat_schedule=celery_beat_schedule
+
+
 class TestConfig(BaseConfig):
    ENV = 'development'
    TESTING = True
