@@ -8,7 +8,7 @@ class ScCtrAnalyzer(MetricAnalyzer):
         if not self.metric:
             raise MetricNotFoundException('sc_ctr not found')
 
-    def ctr_of_all_users(self, alg_id):
+    def ctr_of_all_users(self, alg_id) -> Tip:
         all_ctr = self.metric[-7:]
         res = len([i for i in all_ctr if i < 1])
         if res/len(all_ctr) > 0.4:

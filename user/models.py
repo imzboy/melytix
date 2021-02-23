@@ -19,9 +19,9 @@ class User(MongoDocument):
     tokens : dict
     connected_systems : dict
     metrics : dict
-    Tips : list
-    Alerts : list
-    DashSettings : dict
+    tips : list
+    alerts : list
+    dash_settings : dict
 
     def __str__(self) -> str:
         return f'<User {self.email}>'
@@ -131,7 +131,7 @@ class User(MongoDocument):
         """
         User.update_one(
             {'auth_token': token},
-            {'DashSettings': settings})
+            {'dash_settings': settings})
 
     @classmethod
     def insert_data_in_db(cls, token: str, system: str, data: dict):

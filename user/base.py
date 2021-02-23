@@ -4,11 +4,16 @@ from pymongo.results import InsertOneResult
 from bson import ObjectId
 from datetime import datetime, timedelta
 
-uri = 'mongodb+srv://MaxTeslya:7887334Mna@melytixdata-ryedw.mongodb.net/test?retryWrites=true&w=majority'
+from config import settings
+
+APP_ENV = os.environ.get('APP_ENV', 'Dev')
+config = getattr(settings, f'{APP_ENV}Config')
+
+uri = config.MONGO_URI
 
 client = MongoClient(uri)
 
-db_name = 'heroku_t2hftlhq'
+db_name = config.DATABASE_NAME
 
 
 class MongoDocument(object):
@@ -46,9 +51,10 @@ class MongoDocument(object):
             if (mongo_data := cls.db().find(kwargs, fields)):
                 if mongo_data.count() == 1:
                     return mongo_data[0]
-                raise Exception(
-                    f'{cls.__name__}.get() returned more than one element.'\
-                    f'It returned {mongo_data.count()}!')
+                elif mongo_data.count() > 1:
+                    raise Exception(
+                        f'{cls.__name__}.get() returned more than one element.'\
+                        f'It returned {mongo_data.count()}!')
             return None
         raise Exception('fields was not specified')
 
