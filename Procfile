@@ -1,1 +1,1 @@
-web: gunicorn wsgi:app --preload
+web: honcho -f Procfile.real
