@@ -1,1 +1,1 @@
-web: honcho start -f Procfile.real
+web: gunicorn app:app --preload
