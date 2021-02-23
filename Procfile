@@ -1,1 +1,1 @@
-web: gunicorn wsgi:app --preload
+web: gunicorn wsgi:app --preload --bind 0.0.0.0:$PORT
