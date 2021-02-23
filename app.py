@@ -1,3 +1,5 @@
+from config import settings
+import os
 from Utils.decorators import user_auth
 
 from flask_cors import CORS
@@ -7,7 +9,6 @@ from flask_restful import Resource, Api
 from Systems.Google.views import google_analytics_metrics, search_console_metrics
 
 from Systems.Facebook.views import facebook_insights_metrics
-import config
 
 from flask import Flask, request
 
@@ -25,7 +26,9 @@ def create_app():
     app = Flask(__name__)
     app.secret_key = b"\x92K\x1a\x0e\x04\xcc\x05\xc8\x1c\xc4\x04\x98\xef'\x8e\x1bC\xd6\x18'}:\xc1\x14"
     app.config['CORS_HEADERS'] = 'Content-Type'
-    app.config.from_object('config')
+    APP_ENV = os.environ.get('APP_ENV', 'Dev')
+    config = getattr(settings, f'{APP_ENV}Config')
+    app.config.update(config.as_dict())
 
     api = Api(app)
 

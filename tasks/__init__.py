@@ -1,9 +1,12 @@
+import os
 from celery import Celery
-import config
+from config import settings
+
+APP_ENV = os.environ.get('APP_ENV', 'Dev')
+config = getattr(settings, f'{APP_ENV}Config')
 
 
 def make_celery():
-   print(config.as_dict())
    celery = Celery(__name__, broker=config.CELERY_BROKER)
    celery.conf.update(config.as_dict())
    return celery

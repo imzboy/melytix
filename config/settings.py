@@ -1,12 +1,26 @@
-from tasks.celeryconfig import celery_beat_schedule
+from celery.schedules import crontab
 
-class BaseConfig():
+celery_beat_schedule = {
+    "refresh_metrics": {
+        "task": "tasks.tasks.refresh_metrics",
+        "schedule": crontab(hour=22, minute=0),
+    }
+}
+
+
+
+class BaseConfig(object):
     TESTING = False
     DEBUG = False
 
+    @classmethod
+    def as_dict(cls):
+        res = {f:getattr(cls, f) for f in dir(cls) if not '__' in f}
+        return res
+
 
 class DevConfig(BaseConfig):
-    FLASK_ENV = 'development'
+    ENV = 'development'
     DEBUG = True
 
     CELERY_BROKER='redis://127.0.0.1:6379'
@@ -17,7 +31,8 @@ class DevConfig(BaseConfig):
 
 
 class ProdConfig(BaseConfig):
-    FLASK_ENV = 'production'
+
+    ENV = 'production'
 
     CELERY_BROKER='redis://h:pf0b2c9e78a670264f0b75b20a33311122bdef5f1d0eae7feca0fc74208319647@ec2-34-252-177-9.eu-west-1.compute.amazonaws.com:9279'
     CELERY_RESULT_BACKEND='redis://h:pf0b2c9e78a670264f0b75b20a33311122bdef5f1d0eae7feca0fc74208319647@ec2-34-252-177-9.eu-west-1.compute.amazonaws.com:9279'
@@ -35,7 +50,7 @@ class ProdConfig(BaseConfig):
 
 
 class TestConfig(BaseConfig):
-   FLASK_ENV = 'development'
+   ENV = 'development'
    TESTING = True
    DEBUG = True
    # make celery execute tasks synchronously in the same process
