@@ -34,8 +34,8 @@ class ProdConfig(BaseConfig):
 
     ENV = 'production'
 
-    CELERY_BROKER='redis://h:pf0b2c9e78a670264f0b75b20a33311122bdef5f1d0eae7feca0fc74208319647@ec2-34-252-177-9.eu-west-1.compute.amazonaws.com:9279'
-    CELERY_RESULT_BACKEND='redis://h:pf0b2c9e78a670264f0b75b20a33311122bdef5f1d0eae7feca0fc74208319647@ec2-34-252-177-9.eu-west-1.compute.amazonaws.com:9279'
+    CELERY_BROKER='redis://127.0.0.1:6379'
+    CELERY_RESULT_BACKEND='redis://127.0.0.1:6379'
 
     MONGODB_URI='mongodb+srv://MaxTeslya:7887334Mna@melytixdata-ryedw.mongodb.net/test?retryWrites=true&w=majority'
     DATABASE_NAME='melytix_db'
