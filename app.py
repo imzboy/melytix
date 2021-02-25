@@ -1,3 +1,4 @@
+from flask_login import LoginManager
 from config import settings
 import os
 from Utils.decorators import user_auth
@@ -12,10 +13,11 @@ from Systems.Facebook.views import facebook_insights_metrics
 
 from flask import Flask, request
 
-from user.models import User
+from user.models import User, Admin
+from bson import ObjectId
 
 
-from Admin.views import api_bp, admin
+from Admin.views import admin
 from user.views import user_bp
 from analytics.views import algorithms_bp
 from Systems.Google.views import google_bp
@@ -33,8 +35,17 @@ def create_app():
 
     cors = CORS(app, resources={r"*": {"origins": "*"}})
 
+    login = LoginManager(app)
+    login.login_view = '/admin/login'
 
-    app.register_blueprint(api_bp)
+
+    @login.user_loader
+    def load_user(id):
+        print(id)
+        print(Admin.get(_id=ObjectId(id)))
+        return Admin.get(_id=ObjectId(id))
+
+
     app.register_blueprint(admin)
     app.register_blueprint(user_bp)
     app.register_blueprint(google_bp)
