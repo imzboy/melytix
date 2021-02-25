@@ -119,10 +119,8 @@ class MongoDocument(object):
         if name in ['data', 'is_active', 'is_authenticated', 'is_anonymous', 'get_id']:  #TODO: rework
             return object.__getattribute__(self, name)
 
-        if (attr := self.data.get(name, {})): #TODO: bad...
-            return attr
-
-        return None
+        attr = self.data.get(name, {}) #TODO: bad...
+        return attr
 
     def __setattr__(self, name: str, value):
 
