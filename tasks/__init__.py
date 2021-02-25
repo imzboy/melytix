@@ -5,12 +5,10 @@ from config import settings
 APP_ENV = os.environ.get('APP_ENV', 'Dev')
 config = getattr(settings, f'{APP_ENV}Config')
 
-print(config)
-print(config.as_dict())
+
 def make_celery():
    celery = Celery(__name__, broker=config.CELERY_BROKER)
    celery.conf.update(config.as_dict())
-   print(celery.conf)
    return celery
 
 celery = make_celery()
