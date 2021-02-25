@@ -10,7 +10,7 @@ APP_ENV = os.environ.get('APP_ENV', 'Dev')
 config = getattr(settings, f'{APP_ENV}Config')
 
 uri = config.MONGODB_URI
-
+print(uri)
 client = MongoClient(uri)
 
 db_name = config.DATABASE_NAME
@@ -31,10 +31,11 @@ class MongoDocument(object):
     def get(cls, **kwargs):
         if (mongo_data := cls.db().find(kwargs)):
             if mongo_data.count() == 1:
-                return cls(mongo_data[0])
-            raise Exception(
-                f'{cls.__name__}.get() returned more than one element.'\
-                f'It returned {mongo_data.count()}!')
+                return mongo_data[0]
+            elif mongo_data.count() > 1:
+                raise Exception(
+                    f'{cls.__name__}.get() returned more than one element.'\
+                    f'It returned {mongo_data.count()}!')
         return None
 
     @classmethod

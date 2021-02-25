@@ -37,7 +37,7 @@ class ProdConfig(BaseConfig):
     CELERY_BROKER='redis://127.0.0.1:6379'
     CELERY_RESULT_BACKEND='redis://127.0.0.1:6379'
 
-    MONGODB_URI='mongodb+srv://MaxTeslya:7887334Mna@melytixdata-ryedw.mongodb.net/test?retryWrites=true&w=majority'
+    MONGODB_URI='mongodb+srv://MaxTeslya:7887334Mna@melytixdata.ryedw.mongodb.net/melytix_db?retryWrites=true&w=majority'
     DATABASE_NAME='melytix_db'
 
     #celery and beat configurations
