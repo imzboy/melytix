@@ -89,7 +89,8 @@ def create_app():
         @user_auth
         def post(self):
             connected_systems = {}
-            if (connected_systems := request.user.connected_systems):
+            if request.user.connected_systems:
+                connected_systems = request.user.connected_systems
                 if connected_systems.get('facebook_insights'):
                     connected_systems['facebook_insights']['campaigns'] = list(request.user.metrics.get('facebook_insights',{}).keys())
 
