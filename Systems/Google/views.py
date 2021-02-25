@@ -93,7 +93,7 @@ class ConnectSearchConsoleAPI(Resource):
             {'site_url': site_url})
 
         start_date = request.user.parse_from_date
-        end_date = datetime.datetime.now()
+        end_date = datetime.datetime.now().date().isoformat()
         #TODO: log the time of the api exec
         response = make_sc_request(request.token, site_url, start_date, end_date)
 
