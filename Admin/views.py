@@ -68,15 +68,7 @@ class MainManualAnalyzeView(Resource):
         return {}, 200
 
     def get(self):
-        all_users = []
-        for user in User.filter():
-            user.pop('_id', None)
-            user.pop('password', None)
-            user.pop('salt', None)
-            user.pop('auth_token', None)
-            user.pop('DashSettings', None)
-            user.pop('tokens', None)
-            all_users.append(user)
+        all_users = User.filter_only(fields={'_id':False, 'email':True, 'metrics':True})
 
         return {'users': all_users}, 200
 
