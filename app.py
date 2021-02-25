@@ -88,15 +88,16 @@ def create_app():
 
         @user_auth
         def post(self):
-            connected_systems = request.user.connected_systems
-            if connected_systems.get('facebook_insights'):
-                connected_systems['facebook_insights']['campaigns'] = list(request.user.metrics.get('facebook_insights',{}).keys())
+            connected_systems = {}
+            if (connected_systems := request.user.connected_systems):
+                if connected_systems.get('facebook_insights'):
+                    connected_systems['facebook_insights']['campaigns'] = list(request.user.metrics.get('facebook_insights',{}).keys())
 
-            if connected_systems.get('google_analytics'):
-                try:  # TODO: for now coz it can return a list
-                    connected_systems['google_analytics']['filters'] = request.user.metrics.get('google_analytics').get('ga_sessions').keys()
-                except:
-                    print('nope')
+                if connected_systems.get('google_analytics'):
+                    try:  # TODO: for now coz it can return a list
+                        connected_systems['google_analytics']['filters'] = request.user.metrics.get('google_analytics').get('ga_sessions').keys()
+                    except:
+                        print('nope')
 
 
             return {**connected_systems}, 200
