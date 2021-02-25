@@ -2,10 +2,11 @@ import uuid
 import re
 import datetime
 
+
 class Alert:
-    def __init__(self, category: str, title: str, description: str,
+    def __init__(self, _id: str, category: str, title: str, description: str,
                 is_human_created: bool=False, analytics_func=None):
-        self._id = str(uuid.uuid4())
+        self._id = _id
         self.category = category
         self.title = title
         self.description = description
