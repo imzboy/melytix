@@ -18,7 +18,9 @@ class RetriveUserAlerts(Resource):
         if (token := request.json['token']):
             if (user := User.get(auth_token=token)):
 
-                if (alerts := user.Alerts):
+                if (alerts := user.alerts):
+
+                    alerts = list(filter(lambda x: x.get('active'), alerts))
 
                     return alerts, 200
 
@@ -57,7 +59,9 @@ class RetriveUserTips(Resource):
     @user_auth
     def post(self):
 
-        if (tips := request.user.Tips):
+        if (tips := request.user.tips):
+
+            tips = list(filter(lambda x: x.get('active'), tips))
 
             return tips, 200
 
