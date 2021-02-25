@@ -202,7 +202,7 @@ class FirstRequestGoogleAnalyticsMetrics(Resource):
         end_date = datetime.datetime.now().date().isoformat()
         #TODO: log the time of the api exec
 
-        token = request.json['token']
+        token = request.token
 
         viewid = GoogleAnalytics.g_get_viewid(
             request.json['account'],

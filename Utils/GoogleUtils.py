@@ -10,7 +10,7 @@ class GoogleReportsParser:
             'FLOAT': float,
             'PERCENT': float,
             'CURRENCY': float,
-            'TIME': str,
+            'TIME': float,
             'METRIC_TYPE_UNSPECIFIED': str
         }
 
@@ -51,6 +51,7 @@ class GoogleReportsParser:
     def fill_metrics_by_zero(self, report: dict):
         """ Initialize each unique dimension with a list with zeros in a range of dates """
         result = {}
+
         prev_dimension = report.get('data').get('rows')[0].get('dimensions')[0]
         result.update({prev_dimension: [0] * len(self.time_range)})
 
@@ -120,3 +121,32 @@ def find_start_and_end_date(dates, strart_date, end_date):
             break
 
     return start_date_index, end_date_index
+
+
+
+def fill_all_with_zeros(responce, dates):
+    reports = responce.get('reports')
+    metric_entries = []
+    types = {
+            'INTEGER': int,
+            'FLOAT': float,
+            'PERCENT': float,
+            'CURRENCY': float,
+            'TIME': float,
+            'METRIC_TYPE_UNSPECIFIED': str
+        }
+    for report in reports:
+        for metric in report.get('columnHeader').get('metricHeader').get('metricHeaderEntries'):
+            metric_entries.append(
+                {'name':metric.get('name').replace(':', '_'),
+                'type': types.get(metric.get('type'))})
+
+    responce = {
+        'ga_dates': dates
+    }
+    for metric in metric_entries:
+        responce[metric['name']] = {
+            'total' : [metric['type'](0)] * len(dates)
+        }
+    return responce
+

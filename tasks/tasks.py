@@ -6,7 +6,7 @@ import datetime
 from Systems.Facebook.FacebookAdsManager import facebook_insights_query
 from Systems.Google.GoogleAnalytics import generate_report_body
 from Systems.Google.GoogleAuth import auth_credentials
-from Utils.GoogleUtils import GoogleReportsParser
+from Utils.GoogleUtils import GoogleReportsParser, fill_all_with_zeros
 from Utils.FacebookUtils import create_list_of_dates
 from user.models import User
 from googleapiclient.discovery import build
@@ -110,7 +110,7 @@ def google_analytics_query_all(token, view_id, start_date, end_date):
 @celery.task
 def google_analytics_query(report: list, start_date, end_date, token):
     # Google Analytics v4 api setup to make a request to google analytics
-    api_client = build(serviceName='analyticsreporting', version='v4', http=auth_credentials(token))
+    api_client = build(serviceName='analyticsreporting', version='v4', http=auth_credentials(token), cache_discovery=False)
     response = api_client.reports().batchGet(
         body={
             'reportRequests': report
@@ -118,12 +118,15 @@ def google_analytics_query(report: list, start_date, end_date, token):
 
     dates = create_list_of_dates(start_date, end_date)
 
-    parsed_response = GoogleReportsParser(response, dates).parse()
+    if response.get('reports')[0].get('data').get('rows'):
+        parsed_response = GoogleReportsParser(response, dates).parse()
+    else:
+        parsed_response = fill_all_with_zeros(response, dates)
+    print(token)
     for metric, metric_value in parsed_response.items():
         # if this is the first request to GA
         if len(dates) > 1:
             User.insert_data_in_db(token, f'google_analytics.{metric}', metric_value)
-            User.append_list(token, {f'metrics.google_analytics.ga_dates': dates})
 
         # everyday request
         else:
