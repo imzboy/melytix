@@ -147,16 +147,12 @@ class User(MongoDocument):
 
     @classmethod
     def flip_tip_or_alert(cls, token: str, type_: str, id_: str):
-        user = User.get(auth_token=token)
-        list_of_data = user.dict.get(f'{type_}s')
-
-        for item in list_of_data:
-            if item.get('id') == id_:
-                item.update({'active': not item.get('active')})
-
-        User.update_one(
-            {'auth_token': token},
-            {f'{type_}s': list_of_data})
+        val = User.db().find_one({'auth_token': token, f'{type_}s.id': id_}, {'_id':False, f'{type_}s.active':True})
+        val = val.get(f'{type_}s')[0].get('active')
+        User.db().update_one(
+            {'auth_token': token, f'{type_}s.id':id_},
+            {'$set':
+                {f'{type_}s.$.active': not val}})
 
 
 class Admin(MongoDocument, UserMixin):
