@@ -159,7 +159,7 @@ class User(MongoDocument):
             {f'{type_}s': list_of_data})
 
 
-class Admin(UserMixin, MongoDocument):
+class Admin(MongoDocument, UserMixin):
     email : str
     password : bytes
     salt : bytes
@@ -178,7 +178,7 @@ class Admin(UserMixin, MongoDocument):
                 email (str): user`s email
                 inputted_pass (str): user`s inputted password
         """
-        if (user := cls.get({'email': email})):
+        if (user := Admin.get(email=email)):
             salt = user.salt
             if user.password == pbkdf2_hmac(
                 'sha256',
