@@ -96,7 +96,7 @@ def create_app():
 
                 if connected_systems.get('google_analytics'):
                     try:  # TODO: for now coz it can return a list
-                        connected_systems['google_analytics']['filters'] = request.user.metrics.get('google_analytics').get('ga_sessions').keys()
+                        connected_systems['google_analytics']['filters'] = list(request.user.metrics.get('google_analytics').get('ga_sessions').keys())
                     except:
                         print('nope')
 
