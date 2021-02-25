@@ -10,7 +10,7 @@ APP_ENV = os.environ.get('APP_ENV', 'Dev')
 config = getattr(settings, f'{APP_ENV}Config')
 
 uri = config.MONGODB_URI
-print(uri)
+
 client = MongoClient(uri)
 
 db_name = config.DATABASE_NAME
