@@ -20,7 +20,7 @@ class RetriveUserAlerts(Resource):
 
                 if (alerts := user.Alerts):
 
-                    alerts = list(filter(lambda x: x.get('active'), alerts))
+                    # alerts = list(filter(lambda x: x.get('active'), alerts))
 
                     return alerts, 200
 
@@ -61,7 +61,7 @@ class RetriveUserTips(Resource):
 
         if (tips := request.user.Tips):
 
-            tips = list(filter(lambda x: x.get('active'), tips))
+            # tips = list(filter(lambda x: x.get('active'), tips))
 
             return tips, 200
 
