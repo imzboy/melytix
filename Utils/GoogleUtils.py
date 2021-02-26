@@ -36,11 +36,10 @@ class GoogleReportsParser:
     def create_metrics_dict(self):
         """ Create dict with all metrics """
         helper_dict = {}
-        metric_entries = self.reports[0].get('columnHeader').get('metricHeader').get('metricHeaderEntries')
 
-        for metric in metric_entries:
-            metric_name = metric.get('name').replace(':', "_")
-            helper_dict[metric_name] = {'total': [0] * len(self.time_range)}
+        for report in self.reports:
+            for metric in report.get('columnHeader').get('metricHeader').get('metricHeaderEntries'):
+                helper_dict[metric.get('name').replace(':', '_')] = {'total': [0] * len(self.time_range)}
 
         return helper_dict
 
@@ -52,11 +51,11 @@ class GoogleReportsParser:
         """ Initialize each unique dimension with a list with zeros in a range of dates """
         result = {}
 
-        prev_dimension = report.get('data').get('rows')[0].get('dimensions')[0]
+        prev_dimension = report.get('data').get('rows')[0].get('dimensions')[1]
         result.update({prev_dimension: [0] * len(self.time_range)})
 
         for row in report.get('data').get('rows'):
-            current_dimension = row.get('dimensions')[0]
+            current_dimension = row.get('dimensions')[1]
             if current_dimension != prev_dimension:
                 result.update({current_dimension: [0] * len(self.time_range)})
                 prev_dimension = current_dimension
@@ -75,13 +74,16 @@ class GoogleReportsParser:
                 metric_type = data_of_metric.get('type')
                 current_dimension = report.get('columnHeader').get('dimensions')[0].replace(':', "_")
                 dimensions = self.fill_metrics_by_zero(report)
+                print(dimensions)
 
                 for row in report.get('data').get('rows'):
-                    dimension = row.get('dimensions')[0]
-                    date = self._parse_date(row.get('dimensions')[1])
+                    date = self._parse_date(row.get('dimensions')[0])
+                    dimension = row.get('dimensions')[1]
+
                     index_of_data = self.time_range.get(date)
                     metric_value = metric_type(row.get('metrics')[0].get('values')[i])
-                    dimensions.get(dimension)[index_of_data] = metric_value
+                    print(dimension)
+                    dimensions[dimension][index_of_data] = metric_value
                     result[metric_name].get('total')[index_of_data] += metric_value
 
                 result[metric_name].update({current_dimension: dimensions})

@@ -104,6 +104,7 @@ def google_analytics_query_all(token, view_id, start_date, end_date):
                      'ga:avgPageLoadTime', 'ga:transactionsPerSession', 'ga:transactionRevenue'],
 
             dimensions=['ga:date', dimension])
+            
         google_analytics_query.delay(report, start_date, end_date, token)
 
 
@@ -122,10 +123,11 @@ def google_analytics_query(report: list, start_date, end_date, token):
         parsed_response = GoogleReportsParser(response, dates).parse()
     else:
         parsed_response = fill_all_with_zeros(response, dates)
-    print(token)
     for metric, metric_value in parsed_response.items():
         # if this is the first request to GA
         if len(dates) > 1:
+            print('name',metric)
+            print('value',metric_value)
             User.insert_data_in_db(token, f'google_analytics.{metric}', metric_value)
 
         # everyday request

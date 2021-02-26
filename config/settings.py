@@ -29,8 +29,8 @@ class DevConfig(BaseConfig):
     MONGODB_URI='mongodb://127.0.0.1:27017'
     DATABASE_NAME='test_db'
 
-    # MONGODB_URI='mongodb+srv://MaxTeslya:7887334Mna@melytixdata.ryedw.mongodb.net/melytix_db?retryWrites=true&w=majority'
-    # DATABASE_NAME='melytix_db'
+    MONGODB_URI='mongodb+srv://MaxTeslya:7887334Mna@melytixdata.ryedw.mongodb.net/melytix_db?retryWrites=true&w=majority'
+    DATABASE_NAME='melytix_db'
 
     timezone = 'Europe/Kiev'
     imports = ('tasks.tasks',)

@@ -41,8 +41,6 @@ def create_app():
 
     @login.user_loader
     def load_user(id):
-        print(id)
-        print(Admin.get(_id=ObjectId(id)))
         return Admin.get(_id=ObjectId(id))
 
 
