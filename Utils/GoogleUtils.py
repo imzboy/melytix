@@ -72,9 +72,8 @@ class GoogleReportsParser:
             for i, data_of_metric in helper_dict.items():
                 metric_name = data_of_metric.get('name')
                 metric_type = data_of_metric.get('type')
-                current_dimension = report.get('columnHeader').get('dimensions')[0].replace(':', "_")
+                current_dimension = report.get('columnHeader').get('dimensions')[1].replace(':', "_")
                 dimensions = self.fill_metrics_by_zero(report)
-                print(dimensions)
 
                 for row in report.get('data').get('rows'):
                     date = self._parse_date(row.get('dimensions')[0])
@@ -82,7 +81,6 @@ class GoogleReportsParser:
 
                     index_of_data = self.time_range.get(date)
                     metric_value = metric_type(row.get('metrics')[0].get('values')[i])
-                    print(dimension)
                     dimensions[dimension][index_of_data] = metric_value
                     result[metric_name].get('total')[index_of_data] += metric_value
 

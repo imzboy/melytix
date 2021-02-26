@@ -89,8 +89,8 @@ def google_analytics_query_all(token, view_id, start_date, end_date):
                   'ga:operatingSystemVersion', 'ga:mobileDeviceBranding',
                   'ga:mobileInputSelector', 'ga:mobileDeviceModel',
                   'ga:mobileDeviceInfo', 'ga:deviceCategory', 'ga:browserSize', 'ga:country',
-                  'ga:region', 'ga:city', 'ga:language', 'ga:userAgeBracket', 'ga:userGender',
-                  'ga:interestOtherCategory']
+                  'ga:region', 'ga:language', 'ga:userAgeBracket', 'ga:userGender',
+                  'ga:interestOtherCategory', 'ga:city']
     for dimension in dimensions:
 
         report = generate_report_body(
@@ -104,7 +104,8 @@ def google_analytics_query_all(token, view_id, start_date, end_date):
                      'ga:avgPageLoadTime', 'ga:transactionsPerSession', 'ga:transactionRevenue'],
 
             dimensions=['ga:date', dimension])
-            
+        dates = create_list_of_dates(start_date, end_date)
+        User.insert_data_in_db(token, f'google_analytics.ga_dates', dates)
         google_analytics_query.delay(report, start_date, end_date, token)
 
 
@@ -126,9 +127,8 @@ def google_analytics_query(report: list, start_date, end_date, token):
     for metric, metric_value in parsed_response.items():
         # if this is the first request to GA
         if len(dates) > 1:
-            print('name',metric)
-            print('value',metric_value)
-            User.insert_data_in_db(token, f'google_analytics.{metric}', metric_value)
+            for dimension, dimension_value in metric_value.items():
+                User.insert_data_in_db(token, f'google_analytics.{metric}.{dimension}', dimension_value)
 
         # everyday request
         else:
