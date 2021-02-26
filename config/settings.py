@@ -3,6 +3,10 @@ from celery.schedules import crontab
 celery_beat_schedule = {
     "refresh_metrics": {
         "task": "tasks.tasks.refresh_metrics",
+        "schedule": crontab(hour=20, minute=0),
+    },
+    "generate_tips_and_alerts": {
+        "task": "tasks.tasks.generate_tips_and_alerts",
         "schedule": crontab(hour=22, minute=0),
     }
 }

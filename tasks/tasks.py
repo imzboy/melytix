@@ -1,4 +1,7 @@
+from Systems.Google.views import search_console_metrics
+from Systems.Google.SearchConsole import make_sc_request
 import celery
+from Utils import GoogleUtils
 from analytics.base import MetricAnalyzer, MetricNotFoundException
 from Utils.utils import inheritors
 import datetime
@@ -13,6 +16,7 @@ from googleapiclient.discovery import build
 from tasks import celery
 
 
+
 @celery.task
 def refresh_metrics():
     """
@@ -21,19 +25,19 @@ def refresh_metrics():
     """
     if (mongo_users := User.filter(metrics={'$exists': True})):
         users = []  # convert pymongo cursor obj to list
-        for user in mongo_users:
-            if user.connected_systems.get("google_analytics", {}).get(
-                    'viewid'):  # TODO: change when db is stable again
-                users.append(
-                    {'email': user['email'],
-                     'token': user['auth_token'],
-                     'view_id': user['connected_systems']['google_analytics']['viewid']})
+        for mongo_user in mongo_users:
+            user = {'email': user['email'],
+                'token': user['auth_token']}
+            if user.connected_systems.get('google_analytics'):  #TODO: add more systems
+                user['view_id'] = mongo_user['connected_systems']['google_analytics']['viewid']
+            if user.connected_systems.get('search_console'):
+                user['site_url'] = mongo_user['connected_systems']['search_console']['site_url']
 
         # refresh 10 users by one task for more threaded performace
         step = 10
         for id in range(0, len(users), step):
-            refresh_metric((users[id: id + step]))
-            # refresh_metric.delay((users[id: id + step]))
+            # refresh_metric((users[id: id + step]))
+            refresh_metric.delay((users[id: id + step]))
 
 
 @celery.task
@@ -47,18 +51,26 @@ def refresh_metric(users: list):
     # TODO: in future make this function refresh all system metrics that user connects
     for user in users:
         token = user['token']
-        view_id = user['view_id']
+        view_id = user.get('view_id')
+        site_url = user.get('site_url')
 
-        google_analytics_query_all.delay(token, view_id, 'today', 'today')
+        if view_id:
+            google_analytics_query_all.delay(token, view_id, 'today', 'today')
 
-        today = datetime.datetime.now()
-        f_metrics = facebook_insights_query(token, today, today)
-        for campaign, metrics in f_metrics.items():
-            for metric, value in metrics.items():
-                User.append_list(
-                    {'email': user['email']},
-                    {f'metrics.facebook_insights.{campaign}.{metric}': {'$each': value}}
-                )
+        if site_url:
+            today = datetime.datetime.now().date().isoformat()
+            response = make_sc_request(token, site_url, today, today)
+            data = GoogleUtils.prep_dash_metrics(sc_data=response)
+            for key, value in data.items():
+                User.append_list({'auth_token': token}, {f'metrics.search_console.{key}': value[0]})
+
+        # f_metrics = facebook_insights_query(token, today, today)
+        # for campaign, metrics in f_metrics.items():
+        #     for metric, value in metrics.items():
+        #         User.append_list(
+        #             {'email': user['email']},
+        #             {f'metrics.facebook_insights.{campaign}.{metric}': {'$each': value}}
+        #         )
 
 
 @celery.task
