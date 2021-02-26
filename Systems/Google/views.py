@@ -88,9 +88,6 @@ class ConnectSearchConsoleAPI(Resource):
         if request.user.connected_systems.get('search_console'):
             return {'Error': 'user has already connected to the Search Console'}, 409
         site_url = request.json['site_url']
-        User.connect_system(
-            request.token, 'search_console',
-            {'site_url': site_url})
 
         start_date = request.user.parse_from_date
         end_date = datetime.datetime.now().date().isoformat()
@@ -100,6 +97,11 @@ class ConnectSearchConsoleAPI(Resource):
         data = GoogleUtils.prep_dash_metrics(sc_data=response)
 
         User.insert_data_in_db(request.token, 'search_console', data)
+
+        User.connect_system(
+            request.token, 'search_console',
+            {'site_url': site_url})
+
         return {'Message': 'Success'}, 200
 
 

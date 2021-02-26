@@ -90,9 +90,20 @@ class GoogleReportsParser:
 
 
 def prep_dash_metrics(sc_data: dict) -> dict:
-    metrics = {}
-    for key, value in sc_data['rows'].items():
-        metrics.update({f'sc_{key}': value[0] if key == 'keys' else value})
+    metrics = {
+        'sc_dates': [],
+        'sc_clicks': [],
+        'sc_impressions': [],
+        'sc_ctr': [],
+        'sc_position': [],
+    }
+    # TODO: refactor
+    for row in sc_data['rows']:
+        metrics['sc_dates'].append(row['keys'][0])
+        metrics['sc_clicks'].append(row.get('clicks', 0))
+        metrics['sc_impressions'].append(row.get('impressions', 0))
+        metrics['sc_ctr'].append(row.get('ctr', 0))
+        metrics['sc_position'].append(row.get('position', 0))
 
     return metrics
 
