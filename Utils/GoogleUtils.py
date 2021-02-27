@@ -109,6 +109,7 @@ def prep_dash_metrics(sc_data: dict) -> dict:
 
 
 def find_start_and_end_date(dates, strart_date, end_date):
+    """inclusive"""
     start_date_index = 0
     end_date_index = len(dates) - 1
 
@@ -120,7 +121,7 @@ def find_start_and_end_date(dates, strart_date, end_date):
             end_date_index = i
             break
 
-    return start_date_index, end_date_index
+    return start_date_index-1, end_date_index+1
 
 
 
