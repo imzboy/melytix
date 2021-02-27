@@ -169,17 +169,17 @@ def google_analytics_metrics(request):
     start_date = request.json.get('start_date')
     end_date = request.json.get('end_date')
 
-    # filter = request.json['filter']
+    filter = request.json['filter']
     if request.user.metrics.get('google_analytics', {}).get('ga_dates'):
 
         ga_data = request.user.metrics.get('google_analytics')
 
         metrics = ga_data.get(metric)
-        # metric = metric.get(filter)
+        metric = metrics.get(filter)
         dates = ga_data.get('ga_dates')
         start_date, end_date = GoogleUtils.find_start_and_end_date(dates, start_date, end_date)
         if metric and dates:
-            return {'metric': metrics[start_date:end_date], 'dates': dates[start_date:end_date]}, 200
+            return {'metric': metric[start_date:end_date], 'dates': dates[start_date:end_date]}, 200
 
     return {'message': f'the metric "{metric}" was not found'}, 404
 
