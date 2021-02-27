@@ -6,6 +6,10 @@ from analytics.base import MetricAnalyzer, MetricNotFoundException
 from Utils.utils import inheritors
 import datetime
 
+from analytics.google_analytics import *
+from analytics.search_console import *
+from analytics.face_book_insings import *
+
 from Systems.Facebook.FacebookAdsManager import facebook_insights_query
 from Systems.Google.GoogleAnalytics import generate_report_body
 from Systems.Google.GoogleAuth import auth_credentials
@@ -79,7 +83,7 @@ def refresh_metric(users: list):
 
 @celery.task
 def generate_tip_or_alert(users:list):
-    analytics = inheritors(MetricAnalyzer)
+    analytics = MetricAnalyzer.__subclasses__()
     for user in users:
         for analytics_class in analytics:
             try:
