@@ -4,6 +4,7 @@ from analytics.base import MetricAnalyzer, MetricNotFoundException, Tip, Alert
 class ScCtrAnalyzer(MetricAnalyzer):
 
     def init(self, metrics:dict):
+        # super(MetricAnalyzer, self).__init__()
         self.metric = metrics.get('sc_ctr')
         if not self.metric:
             raise MetricNotFoundException('sc_ctr not found')

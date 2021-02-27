@@ -90,6 +90,7 @@ class GoogleReportsParser:
 
 
 def prep_dash_metrics(sc_data: dict) -> dict:
+    # print(sc_data)
     metrics = {
         'sc_dates': [],
         'sc_clicks': [],

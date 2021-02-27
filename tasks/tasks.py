@@ -24,14 +24,17 @@ def refresh_metrics():
     for 10 users by one task
     """
     if (mongo_users := User.filter(metrics={'$exists': True})):
+    # if (mongo_users := [User.get(email='info@kith2kin.de')]):
         users = []  # convert pymongo cursor obj to list
         for mongo_user in mongo_users:
-            user = {'email': user['email'],
-                'token': user['auth_token']}
-            if user.connected_systems.get('google_analytics'):  #TODO: add more systems
-                user['view_id'] = mongo_user['connected_systems']['google_analytics']['viewid']
-            if user.connected_systems.get('search_console'):
-                user['site_url'] = mongo_user['connected_systems']['search_console']['site_url']
+            user = {'email': mongo_user.email,
+                'token': mongo_user.auth_token}
+            if mongo_user.connected_systems.get('google_analytics'):  #TODO: add more systems
+                user['view_id'] = mongo_user.connected_systems['google_analytics']['view_id']
+            if mongo_user.connected_systems.get('search_console'):
+                user['site_url'] = mongo_user.connected_systems['search_console']['site_url']
+
+            users.append(user)
 
         # refresh 10 users by one task for more threaded performace
         step = 10
@@ -61,6 +64,7 @@ def refresh_metric(users: list):
             today = datetime.datetime.now().date().isoformat()
             response = make_sc_request(token, site_url, today, today)
             data = GoogleUtils.prep_dash_metrics(sc_data=response)
+            # print(data)
             for key, value in data.items():
                 User.append_list({'auth_token': token}, {f'metrics.search_console.{key}': value[0]})
 
@@ -83,12 +87,16 @@ def generate_tip_or_alert(users:list):
             except MetricNotFoundException:
                 continue
 
+
 @celery.task
 def generate_tips_and_alerts():
     """
     For each user form DB calls methods of generating tips and alerts
     """
     users = User.filter_only(metrics={'$exists': True}, fields={'_id':True, 'metrics':True})
+    for user in users:
+        user['_id'] = str(user.get('_id'))
+
     step = 10
     for i in range(0, len(users), step):
         generate_tip_or_alert.delay(users[i:i+step])
