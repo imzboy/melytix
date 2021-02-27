@@ -121,7 +121,7 @@ def find_start_and_end_date(dates, strart_date, end_date):
             end_date_index = i
             break
 
-    return start_date_index-1, end_date_index+1
+    return start_date_index, end_date_index+1
 
 
 
