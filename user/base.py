@@ -31,7 +31,7 @@ class MongoDocument(object):
     def get(cls, **kwargs):
         if (mongo_data := cls.db().find(kwargs)):
             if mongo_data.count() == 1:
-                return mongo_data[0]
+                return cls(mongo_data[0])
             elif mongo_data.count() > 1:
                 raise Exception(
                     f'{cls.__name__}.get() returned more than one element.'\
@@ -116,13 +116,11 @@ class MongoDocument(object):
         )
 
     def __getattribute__(self, name: str):
-        if name == 'data':
+        if name in ['data', 'is_active', 'is_authenticated', 'is_anonymous', 'get_id']:  #TODO: rework
             return object.__getattribute__(self, name)
 
-        if (attr := self.data.get(name, {})): #TODO: bad...
-            return attr
-
-        return None
+        attr = self.data.get(name, {}) #TODO: bad...
+        return attr
 
     def __setattr__(self, name: str, value):
 

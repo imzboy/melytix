@@ -20,6 +20,8 @@ class RetriveUserAlerts(Resource):
 
                 if (alerts := user.Alerts):
 
+                    # alerts = list(filter(lambda x: x.get('active'), alerts))
+
                     return alerts, 200
 
                 return {'Error': 'no alerts has been generated'}, 404
@@ -58,6 +60,8 @@ class RetriveUserTips(Resource):
     def post(self):
 
         if (tips := request.user.Tips):
+
+            # tips = list(filter(lambda x: x.get('active'), tips))
 
             return tips, 200
 

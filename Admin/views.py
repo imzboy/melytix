@@ -1,6 +1,5 @@
-from bson.objectid import ObjectId
 from flask import request, render_template, url_for, redirect, Blueprint
-from flask_login import LoginManager, login_required, login_user, logout_user
+from flask_login import login_required, login_user, logout_user
 from Alerts.Alert import Alert
 from Tips.Tip import Tip
 from user.models import Admin, User
@@ -8,31 +7,22 @@ from user.models import Admin, User
 from flask_restful import Api, Resource
 
 admin = Blueprint('admin', __name__, template_folder='templates')
-login = LoginManager(admin)
-login.login_view = '/admin/login'
 
-api_bp = Blueprint('admin_api', __name__)
-api = Api(api_bp)
-
-
-@login.user_loader
-def load_user(id):
-    return Admin(Admin.get(_id=ObjectId(id)))
-
+api = Api(admin)
 
 @admin.route('/admin/logout', methods=['GET'])
 @login_required
 def logout():
     logout_user()
-    return redirect(url_for('admin_login'))
+    return redirect(url_for('admin.admin_login'))
 
 
 @admin.route('/admin/', methods=['GET', 'POST'])
 @login_required
 def menu():
-    return f'<a href="{url_for("reg_a_user")}">register a new user</a>' \
+    return f'<a href="{url_for("admin.reg_a_user")}">register a new user</a>' \
     f'<br><a href="https://admin.melytix.tk/">Tips and Alerts Admin</a>' \
-    f'<br><a href="{url_for("logout")}">logout</a>' \
+    f'<br><a href="{url_for("admin.logout")}">logout</a>' \
     f'<br><a href="/refresh">refresh metrics</a>'
 
 
@@ -43,9 +33,10 @@ def admin_login():
         login = form.get("login")
         password = form.get("pass")
         if login and password:
-            if User.verify_admin_password(login, password):
-                login_user(Admin(Admin.get(email=login)))
-                return redirect(url_for('menu'))
+            if Admin.verify_password(login, password):
+                admin = Admin.get(email=login)
+                login_user(admin)
+                return redirect(url_for('admin.menu'))
             else:
                 return render_template('admin/login/index.html', url='/admin/login', message='wrong credentials')
     elif request.method == 'GET':
@@ -77,15 +68,7 @@ class MainManualAnalyzeView(Resource):
         return {}, 200
 
     def get(self):
-        all_users = []
-        for user in User.filter():
-            user.pop('_id', None)
-            user.pop('password', None)
-            user.pop('salt', None)
-            user.pop('auth_token', None)
-            user.pop('DashSettings', None)
-            user.pop('tokens', None)
-            all_users.append(user)
+        all_users = User.filter_only(fields={'_id':False, 'email':True, 'metrics':True})
 
         return {'users': all_users}, 200
 

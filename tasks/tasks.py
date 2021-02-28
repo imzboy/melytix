@@ -1,16 +1,24 @@
+from Systems.Google.views import search_console_metrics
+from Systems.Google.SearchConsole import make_sc_request
 import celery
+from Utils import GoogleUtils
 from analytics.base import MetricAnalyzer, MetricNotFoundException
 from Utils.utils import inheritors
 import datetime
 
+from analytics.google_analytics import *
+from analytics.search_console import *
+from analytics.face_book_insings import *
+
 from Systems.Facebook.FacebookAdsManager import facebook_insights_query
 from Systems.Google.GoogleAnalytics import generate_report_body
 from Systems.Google.GoogleAuth import auth_credentials
-from Utils.GoogleUtils import GoogleReportsParser
+from Utils.GoogleUtils import GoogleReportsParser, fill_all_with_zeros
 from Utils.FacebookUtils import create_list_of_dates
 from user.models import User
 from googleapiclient.discovery import build
 from tasks import celery
+
 
 
 @celery.task
@@ -20,20 +28,23 @@ def refresh_metrics():
     for 10 users by one task
     """
     if (mongo_users := User.filter(metrics={'$exists': True})):
+    # if (mongo_users := [User.get(email='info@kith2kin.de')]):
         users = []  # convert pymongo cursor obj to list
-        for user in mongo_users:
-            if user.connected_systems.get("google_analytics", {}).get(
-                    'viewid'):  # TODO: change when db is stable again
-                users.append(
-                    {'email': user['email'],
-                     'token': user['auth_token'],
-                     'view_id': user['connected_systems']['google_analytics']['viewid']})
+        for mongo_user in mongo_users:
+            user = {'email': mongo_user.email,
+                'token': mongo_user.auth_token}
+            if mongo_user.connected_systems.get('google_analytics'):  #TODO: add more systems
+                user['view_id'] = mongo_user.connected_systems['google_analytics']['view_id']
+            if mongo_user.connected_systems.get('search_console'):
+                user['site_url'] = mongo_user.connected_systems['search_console']['site_url']
+
+            users.append(user)
 
         # refresh 10 users by one task for more threaded performace
         step = 10
         for id in range(0, len(users), step):
-            refresh_metric((users[id: id + step]))
-            # refresh_metric.delay((users[id: id + step]))
+            # refresh_metric((users[id: id + step]))
+            refresh_metric.delay((users[id: id + step]))
 
 
 @celery.task
@@ -47,23 +58,32 @@ def refresh_metric(users: list):
     # TODO: in future make this function refresh all system metrics that user connects
     for user in users:
         token = user['token']
-        view_id = user['view_id']
+        view_id = user.get('view_id')
+        site_url = user.get('site_url')
 
-        google_analytics_query_all.delay(token, view_id, 'today', 'today')
+        if view_id:
+            google_analytics_query_all.delay(token, view_id, 'today', 'today')
 
-        today = datetime.datetime.now()
-        f_metrics = facebook_insights_query(token, today, today)
-        for campaign, metrics in f_metrics.items():
-            for metric, value in metrics.items():
-                User.append_list(
-                    {'email': user['email']},
-                    {f'metrics.facebook_insights.{campaign}.{metric}': {'$each': value}}
-                )
+        if site_url:
+            today = datetime.datetime.now().date().isoformat()
+            response = make_sc_request(token, site_url, today, today)
+            data = GoogleUtils.prep_dash_metrics(sc_data=response)
+            # print(data)
+            for key, value in data.items():
+                User.append_list({'auth_token': token}, {f'metrics.search_console.{key}': value[0]})
+
+        # f_metrics = facebook_insights_query(token, today, today)
+        # for campaign, metrics in f_metrics.items():
+        #     for metric, value in metrics.items():
+        #         User.append_list(
+        #             {'email': user['email']},
+        #             {f'metrics.facebook_insights.{campaign}.{metric}': {'$each': value}}
+        #         )
 
 
 @celery.task
 def generate_tip_or_alert(users:list):
-    analytics = inheritors(MetricAnalyzer)
+    analytics = MetricAnalyzer.__subclasses__()
     for user in users:
         for analytics_class in analytics:
             try:
@@ -71,12 +91,16 @@ def generate_tip_or_alert(users:list):
             except MetricNotFoundException:
                 continue
 
+
 @celery.task
 def generate_tips_and_alerts():
     """
     For each user form DB calls methods of generating tips and alerts
     """
     users = User.filter_only(metrics={'$exists': True}, fields={'_id':True, 'metrics':True})
+    for user in users:
+        user['_id'] = str(user.get('_id'))
+
     step = 10
     for i in range(0, len(users), step):
         generate_tip_or_alert.delay(users[i:i+step])
@@ -89,8 +113,8 @@ def google_analytics_query_all(token, view_id, start_date, end_date):
                   'ga:operatingSystemVersion', 'ga:mobileDeviceBranding',
                   'ga:mobileInputSelector', 'ga:mobileDeviceModel',
                   'ga:mobileDeviceInfo', 'ga:deviceCategory', 'ga:browserSize', 'ga:country',
-                  'ga:region', 'ga:city', 'ga:language', 'ga:userAgeBracket', 'ga:userGender',
-                  'ga:interestOtherCategory']
+                  'ga:region', 'ga:language', 'ga:userAgeBracket', 'ga:userGender',
+                  'ga:interestOtherCategory', 'ga:city']
     for dimension in dimensions:
 
         report = generate_report_body(
@@ -104,13 +128,15 @@ def google_analytics_query_all(token, view_id, start_date, end_date):
                      'ga:avgPageLoadTime', 'ga:transactionsPerSession', 'ga:transactionRevenue'],
 
             dimensions=['ga:date', dimension])
+        dates = create_list_of_dates(start_date, end_date)
+        User.insert_data_in_db(token, f'google_analytics.ga_dates', dates)
         google_analytics_query.delay(report, start_date, end_date, token)
 
 
 @celery.task
 def google_analytics_query(report: list, start_date, end_date, token):
     # Google Analytics v4 api setup to make a request to google analytics
-    api_client = build(serviceName='analyticsreporting', version='v4', http=auth_credentials(token))
+    api_client = build(serviceName='analyticsreporting', version='v4', http=auth_credentials(token), cache_discovery=False)
     response = api_client.reports().batchGet(
         body={
             'reportRequests': report
@@ -118,12 +144,15 @@ def google_analytics_query(report: list, start_date, end_date, token):
 
     dates = create_list_of_dates(start_date, end_date)
 
-    parsed_response = GoogleReportsParser(response, dates).parse()
+    if response.get('reports')[0].get('data').get('rows'):
+        parsed_response = GoogleReportsParser(response, dates).parse()
+    else:
+        parsed_response = fill_all_with_zeros(response, dates)
     for metric, metric_value in parsed_response.items():
         # if this is the first request to GA
         if len(dates) > 1:
-            User.insert_data_in_db(token, f'google_analytics.{metric}', metric_value)
-            User.append_list(token, {f'metrics.google_analytics.ga_dates': dates})
+            for dimension, dimension_value in metric_value.items():
+                User.insert_data_in_db(token, f'google_analytics.{metric}.{dimension}', dimension_value)
 
         # everyday request
         else:

@@ -1,3 +1,4 @@
+from flask_login import LoginManager
 from config import settings
 import os
 from Utils.decorators import user_auth
@@ -12,10 +13,11 @@ from Systems.Facebook.views import facebook_insights_metrics
 
 from flask import Flask, request
 
-from user.models import User
+from user.models import User, Admin
+from bson import ObjectId
 
 
-from Admin.views import api_bp, admin
+from Admin.views import admin
 from user.views import user_bp
 from analytics.views import algorithms_bp
 from Systems.Google.views import google_bp
@@ -25,16 +27,23 @@ from Systems.SiteParser.views import parser_bp
 def create_app():
     app = Flask(__name__)
     app.secret_key = b"\x92K\x1a\x0e\x04\xcc\x05\xc8\x1c\xc4\x04\x98\xef'\x8e\x1bC\xd6\x18'}:\xc1\x14"
-    app.config['CORS_HEADERS'] = 'Content-Type'
     APP_ENV = os.environ.get('APP_ENV', 'Dev')
     config = getattr(settings, f'{APP_ENV}Config')
     app.config.update(config.as_dict())
 
     api = Api(app)
 
-    cors = CORS(app)
+    cors = CORS(app, resources={r"*": {"origins": "*"}})
 
-    app.register_blueprint(api_bp)
+    login = LoginManager(app)
+    login.login_view = '/admin/login'
+
+
+    @login.user_loader
+    def load_user(id):
+        return Admin.get(_id=ObjectId(id))
+
+
     app.register_blueprint(admin)
     app.register_blueprint(user_bp)
     app.register_blueprint(google_bp)
@@ -77,15 +86,20 @@ def create_app():
 
         @user_auth
         def post(self):
-            connected_systems = request.user.connected_systems
-            if connected_systems.get('facebook_insights'):
-                connected_systems['facebook_insights']['campaigns'] = list(request.user.metrics.get('facebook_insights',{}).keys())
+            connected_systems = {}
+            if request.user.connected_systems:
+                connected_systems = request.user.connected_systems
+                if connected_systems.get('facebook_insights'):
+                    connected_systems['facebook_insights']['campaigns'] = list(request.user.metrics.get('facebook_insights',{}).keys())
 
-            if connected_systems.get('google_analytics'):
-                try:  # TODO: for now coz it can return a list
-                    connected_systems['google_analytics']['filters'] = request.user.metrics.get('google_analytics').get('ga_sessions').keys()
-                except:
-                    print('nope')
+                if connected_systems.get('google_analytics'):
+                    try:  # TODO: for now coz it can return a list
+                        connected_systems['google_analytics']['metrics'] = list(request.user.metrics.get('google_analytics').keys())
+                        connected_systems['google_analytics']['filters'] = list(request.user.metrics.get('google_analytics').get('ga_sessions').keys())
+                    except:
+                        print('nope')
+                if connected_systems.get('search_console'):
+                    connected_systems['search_console']['metrics'] = list(request.user.metrics.get('search_console').keys())
 
 
             return {**connected_systems}, 200

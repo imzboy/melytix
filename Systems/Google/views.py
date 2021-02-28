@@ -88,18 +88,20 @@ class ConnectSearchConsoleAPI(Resource):
         if request.user.connected_systems.get('search_console'):
             return {'Error': 'user has already connected to the Search Console'}, 409
         site_url = request.json['site_url']
-        User.connect_system(
-            request.token, 'search_console',
-            {'site_url': site_url})
 
         start_date = request.user.parse_from_date
-        end_date = datetime.datetime.now()
+        end_date = datetime.datetime.now().date().isoformat()
         #TODO: log the time of the api exec
         response = make_sc_request(request.token, site_url, start_date, end_date)
 
         data = GoogleUtils.prep_dash_metrics(sc_data=response)
 
         User.insert_data_in_db(request.token, 'search_console', data)
+
+        User.connect_system(
+            request.token, 'search_console',
+            {'site_url': site_url})
+
         return {'Message': 'Success'}, 200
 
 
@@ -167,17 +169,17 @@ def google_analytics_metrics(request):
     start_date = request.json.get('start_date')
     end_date = request.json.get('end_date')
 
-    # filter = request.json['filter']
+    filter = request.json['filter']
     if request.user.metrics.get('google_analytics', {}).get('ga_dates'):
 
         ga_data = request.user.metrics.get('google_analytics')
 
         metrics = ga_data.get(metric)
-        # metric = metric.get(filter)
+        metric = metrics.get(filter)
         dates = ga_data.get('ga_dates')
         start_date, end_date = GoogleUtils.find_start_and_end_date(dates, start_date, end_date)
         if metric and dates:
-            return {'metric': metrics[start_date:end_date], 'dates': dates[start_date:end_date]}, 200
+            return {'metric': metric[start_date:end_date], 'dates': dates[start_date:end_date]}, 200
 
     return {'message': f'the metric "{metric}" was not found'}, 404
 
@@ -202,7 +204,7 @@ class FirstRequestGoogleAnalyticsMetrics(Resource):
         end_date = datetime.datetime.now().date().isoformat()
         #TODO: log the time of the api exec
 
-        token = request.json['token']
+        token = request.token
 
         viewid = GoogleAnalytics.g_get_viewid(
             request.json['account'],

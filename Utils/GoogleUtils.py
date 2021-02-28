@@ -10,7 +10,7 @@ class GoogleReportsParser:
             'FLOAT': float,
             'PERCENT': float,
             'CURRENCY': float,
-            'TIME': str,
+            'TIME': float,
             'METRIC_TYPE_UNSPECIFIED': str
         }
 
@@ -36,11 +36,10 @@ class GoogleReportsParser:
     def create_metrics_dict(self):
         """ Create dict with all metrics """
         helper_dict = {}
-        metric_entries = self.reports[0].get('columnHeader').get('metricHeader').get('metricHeaderEntries')
 
-        for metric in metric_entries:
-            metric_name = metric.get('name').replace(':', "_")
-            helper_dict[metric_name] = {'total': [0] * len(self.time_range)}
+        for report in self.reports:
+            for metric in report.get('columnHeader').get('metricHeader').get('metricHeaderEntries'):
+                helper_dict[metric.get('name').replace(':', '_')] = {'total': [0] * len(self.time_range)}
 
         return helper_dict
 
@@ -51,11 +50,12 @@ class GoogleReportsParser:
     def fill_metrics_by_zero(self, report: dict):
         """ Initialize each unique dimension with a list with zeros in a range of dates """
         result = {}
-        prev_dimension = report.get('data').get('rows')[0].get('dimensions')[0]
+
+        prev_dimension = report.get('data').get('rows')[0].get('dimensions')[1]
         result.update({prev_dimension: [0] * len(self.time_range)})
 
         for row in report.get('data').get('rows'):
-            current_dimension = row.get('dimensions')[0]
+            current_dimension = row.get('dimensions')[1]
             if current_dimension != prev_dimension:
                 result.update({current_dimension: [0] * len(self.time_range)})
                 prev_dimension = current_dimension
@@ -72,15 +72,16 @@ class GoogleReportsParser:
             for i, data_of_metric in helper_dict.items():
                 metric_name = data_of_metric.get('name')
                 metric_type = data_of_metric.get('type')
-                current_dimension = report.get('columnHeader').get('dimensions')[0].replace(':', "_")
+                current_dimension = report.get('columnHeader').get('dimensions')[1].replace(':', "_")
                 dimensions = self.fill_metrics_by_zero(report)
 
                 for row in report.get('data').get('rows'):
-                    dimension = row.get('dimensions')[0]
-                    date = self._parse_date(row.get('dimensions')[1])
+                    date = self._parse_date(row.get('dimensions')[0])
+                    dimension = row.get('dimensions')[1]
+
                     index_of_data = self.time_range.get(date)
                     metric_value = metric_type(row.get('metrics')[0].get('values')[i])
-                    dimensions.get(dimension)[index_of_data] = metric_value
+                    dimensions[dimension][index_of_data] = metric_value
                     result[metric_name].get('total')[index_of_data] += metric_value
 
                 result[metric_name].update({current_dimension: dimensions})
@@ -88,7 +89,8 @@ class GoogleReportsParser:
         return result
 
 
-def prep_dash_metrics(sc_data: list) -> dict:
+def prep_dash_metrics(sc_data: dict) -> dict:
+    # print(sc_data)
     metrics = {
         'sc_dates': [],
         'sc_clicks': [],
@@ -108,6 +110,7 @@ def prep_dash_metrics(sc_data: list) -> dict:
 
 
 def find_start_and_end_date(dates, strart_date, end_date):
+    """inclusive"""
     start_date_index = 0
     end_date_index = len(dates) - 1
 
@@ -119,4 +122,33 @@ def find_start_and_end_date(dates, strart_date, end_date):
             end_date_index = i
             break
 
-    return start_date_index, end_date_index
+    return start_date_index, end_date_index+1
+
+
+
+def fill_all_with_zeros(responce, dates):
+    reports = responce.get('reports')
+    metric_entries = []
+    types = {
+            'INTEGER': int,
+            'FLOAT': float,
+            'PERCENT': float,
+            'CURRENCY': float,
+            'TIME': float,
+            'METRIC_TYPE_UNSPECIFIED': str
+        }
+    for report in reports:
+        for metric in report.get('columnHeader').get('metricHeader').get('metricHeaderEntries'):
+            metric_entries.append(
+                {'name':metric.get('name').replace(':', '_'),
+                'type': types.get(metric.get('type'))})
+
+    responce = {
+        'ga_dates': dates
+    }
+    for metric in metric_entries:
+        responce[metric['name']] = {
+            'total' : [metric['type'](0)] * len(dates)
+        }
+    return responce
+
