@@ -32,7 +32,7 @@ def refresh_metrics():
         users = []  # convert pymongo cursor obj to list
         for mongo_user in mongo_users:
             user = {'email': mongo_user.email,
-                'token': mongo_user.auth_token}
+                    'token': mongo_user.auth_token}
             if mongo_user.connected_systems.get('google_analytics'):  #TODO: add more systems
                 user['view_id'] = mongo_user.connected_systems['google_analytics']['view_id']
             if mongo_user.connected_systems.get('search_console'):
@@ -65,10 +65,9 @@ def refresh_metric(users: list):
             google_analytics_query_all.delay(token, view_id, 'today', 'today')
 
         if site_url:
-            today = datetime.datetime.now().date().isoformat()
-            response = make_sc_request(token, site_url, today, today)
+            date = (datetime.datetime.now() - datetime.timedelta(days=3)).date().isoformat()  # SC doesn't return metrics for 3 last days
+            response = make_sc_request(token, site_url, date, date)
             data = GoogleUtils.prep_dash_metrics(sc_data=response)
-            # print(data)
             for key, value in data.items():
                 User.append_list({'auth_token': token}, {f'metrics.search_console.{key}': value[0]})
 

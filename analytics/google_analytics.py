@@ -6,7 +6,7 @@ import datetime
 class GaSessionsAnalyzer(MetricAnalyzer):
 
     def __init__(self, metrics: dict):
-        self.metric = metrics.get('ga_sessions')
+        self.metric = metrics.get('google_analytics', {}).get('ga_sessions')
         if not self.metric:
             raise MetricNotFoundException('ga_sessions not found')
 
@@ -24,7 +24,7 @@ class GaSessionsAnalyzer(MetricAnalyzer):
 class GaUsersAnalyzer(MetricAnalyzer):
 
     def __init__(self, metrics: dict):
-        self.metric = metrics.get('ga_users')
+        self.metric = metrics.get('google_analytics', {}).get('ga_users')
         if not self.metric:
             raise MetricNotFoundException('ga_users not found')
 
@@ -125,19 +125,20 @@ class GaUsersAnalyzer(MetricAnalyzer):
         if (all_languages := self.metric.get('ga_language')):
             main_language_tuple = max(all_languages.items(), key=lambda x: sum(x[1][-7:]))  # [0] - key (language name), [1] - data list
             total_sum = sum(sum(i[-7:]) for i in all_languages.values())
-            if float(sum(main_language_tuple[1]) / total_sum) > 0.8 :
-                set_of_languages = set(all_languages.keys())
-                set_of_languages.discard(main_language_tuple[0])
-                string_languages = str(set_of_languages)[1:-1]
-                str_main_language = main_language_tuple[0]
-                return Tip(
-                    _id = alg_id,
-                    category='Analytics, Целевая Аудитория',
-                    title=f'Ваша целевая аудитория общается не только на {str_main_language} ',
-                    description=f'Ваша целевая аудитория общается не только на {str_main_language}. '
-                                f'Заметьте, ваша основная целевая аудитория использует не только {str_main_language},'
-                                f' но ещё и {string_languages}. Создайте мультиязычную версию сайта или же проверьте '
-                                'её наличие и грамотный перевод. Это влияет на вашу конверсию!')
+            if total_sum:  # to bypass ZeroDivisionError
+                if float(sum(main_language_tuple[1]) / total_sum) > 0.8 :
+                    set_of_languages = set(all_languages.keys())
+                    set_of_languages.discard(main_language_tuple[0])
+                    string_languages = str(set_of_languages)[1:-1]
+                    str_main_language = main_language_tuple[0]
+                    return Tip(
+                        _id = alg_id,
+                        category='Analytics, Целевая Аудитория',
+                        title=f'Ваша целевая аудитория общается не только на {str_main_language} ',
+                        description=f'Ваша целевая аудитория общается не только на {str_main_language}. '
+                                    f'Заметьте, ваша основная целевая аудитория использует не только {str_main_language},'
+                                    f' но ещё и {string_languages}. Создайте мультиязычную версию сайта или же проверьте '
+                                    'её наличие и грамотный перевод. Это влияет на вашу конверсию!')
 
     def interest_other_category_tip(self, alg_id) -> Tip:
         if (all_interests := self.metric.get('ga_interestOtherCategory')):
@@ -168,7 +169,7 @@ class GaUsersAnalyzer(MetricAnalyzer):
 class GaBouncesAnalyzer(MetricAnalyzer):
 
     def __init__(self, metrics: dict):
-        self.metric = metrics.get('ga_bounces')
+        self.metric = metrics.get('google_analytics', {}).get('ga_bounces')
         if not self.metric:
             raise MetricNotFoundException('ga_bounces not found')
 
@@ -215,7 +216,7 @@ class GaBouncesAnalyzer(MetricAnalyzer):
 class GaReturningUserAnalyzer(MetricAnalyzer):
 
     def __init__(self, metrics: dict):
-        self.metric = metrics.get('ga_returningUser')
+        self.metric = metrics.get('google_analytics', {}).get('ga_returningUser')
         if not self.metric:
             raise MetricNotFoundException('ga_ReturningUser not found')
 
@@ -282,7 +283,7 @@ class GaReturningUserAnalyzer(MetricAnalyzer):
 
 class GaNewUserAnalyzer(MetricAnalyzer):
     def __init__(self, metrics: dict):
-        self.metric = metrics.get('ga_newUser')
+        self.metric = metrics.get('google_analytics', {}).get('ga_newUser')
         if not self.metric:
             raise MetricNotFoundException('ga_NewUser not found')
 
@@ -310,7 +311,7 @@ class GaNewUserAnalyzer(MetricAnalyzer):
 
 class GaPageViewsPerSessionAnalyzer(MetricAnalyzer):
     def __init__(self, metrics: dict):
-        self.metric = metrics.get('ga_pageviewsPerSession')
+        self.metric = metrics.get('google_analytics', {}).get('ga_pageviewsPerSession')
         if not self.metric:
             raise MetricNotFoundException('ga_pageviewsPerSession not found')
 
@@ -333,7 +334,7 @@ class GaPageViewsPerSessionAnalyzer(MetricAnalyzer):
 
 class GaAvgSessionDurationAnalyzer(MetricAnalyzer):
     def __init__(self, metrics: dict):
-        self.metric = metrics.get('ga_avgSessionDuration')
+        self.metric = metrics.get('google_analytics', {}).get('ga_avgSessionDuration')
         if not self.metric:
             raise MetricNotFoundException('ga_avgSessionDuration not found')
 
@@ -378,7 +379,7 @@ class GaAvgSessionDurationAnalyzer(MetricAnalyzer):
 
 class GaAvgPageLoadTimeAnalyzer(MetricAnalyzer):
     def __init__(self, metrics: dict):
-        self.metric = metrics.get('ga_avgPageLoadTime')
+        self.metric = metrics.get('google_analytics', {}).get('ga_avgPageLoadTime')
         if not self.metric:
             raise MetricNotFoundException('ga_avgPageLoadTime not found')
 
@@ -413,7 +414,7 @@ class GaAvgPageLoadTimeAnalyzer(MetricAnalyzer):
 
 class GaTimeOnPageAnalyzer(MetricAnalyzer):
     def __init__(self, metrics: dict):
-        self.metric = metrics.get('ga_timeOnPage')
+        self.metric = metrics.get('google_analytics', {}).get('ga_timeOnPage')
         if not self.metric:
             raise MetricNotFoundException('ga_timeOnPage not found')
 

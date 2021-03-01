@@ -1,10 +1,11 @@
+from bson.objectid import ObjectId
 from user.models import User
 import uuid
 import re
 import datetime
 
 class Alert:
-    def __init__(self, _id:str, category: str, title: str, description: str,
+    def __init__(self, _id:int, category: str, title: str, description: str,
                 is_human_created: bool=False):
         self._id = _id
         self.category = category
@@ -44,7 +45,7 @@ class Alert:
 
 
 class Tip:
-    def __init__(self, _id: str, category: str, title: str, description: str,
+    def __init__(self, _id: int, category: str, title: str, description: str,
                 is_human_created: bool=False):
         self._id = _id
         self.category = category
@@ -71,16 +72,16 @@ class Tip:
 class MetricAnalyzer(object):
 
     def analyze(self, user_id):
-        function_names = [attr for attr in dir(self) if not attr.startswith('') and callable(getattr(self, attr)) and attr != 'analyze']
+        function_names = [attr for attr in dir(self) if not attr.startswith('__') and callable(getattr(self, attr)) and attr != 'analyze']
         for name in function_names:
             func = getattr(self, name)
             func_hash = func.__hash__()
-            alg_type = func.__annotations__.get('return').__name__.lower()  # don't proccess the algorithm if the same id is in the database
-            if not User.db().find_one({'_id': user_id, f'{alg_type}.id': func_hash, 'active': True}):
-                if (algorithm := func(self.metric, func_hash)):
-                    User.append_list({'_id': user_id}, {f'{alg_type}s': algorithm.generate()})
+            alg_type = func.__annotations__.get('return').__name__  # don't proccess the algorithm if the same id is in the database
+            if not User.db().find_one({'_id': ObjectId(user_id), f'{alg_type}.id': func_hash, 'active': True}):
+                if (algorithm := func(func_hash)):
+                    User.append_list({'_id': ObjectId(user_id)}, {f'{alg_type}s': algorithm.generate()})
 
 
 class MetricNotFoundException(Exception):
-    def __inti__(self, message:str):
+    def __init__(self, message:str):
         self.message = message
