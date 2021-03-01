@@ -154,8 +154,9 @@ class GaUsersAnalyzer(MetricAnalyzer):
     def extra_city_tip(self, alg_id) -> Tip:
         if (all_cities := self.metric.get('ga_city')):
             sorted_cities_dict = dict(sorted(all_cities.items(), key=lambda x: sum(x[1][-7:]), reverse=True))
-            sorted_cities_names = sorted_cities_dict[:3].keys()
-            str_cities = str(sorted_cities_names)[11:-2]
+            sorted_cities_names = list(sorted_cities_dict.keys())
+            sorted_cities_names = sorted_cities_names[:3]
+            str_cities = str(sorted_cities_names)[1:-1]
             return Tip(
                 _id = alg_id,
                 category='Analytics, Целевая Аудитория',
