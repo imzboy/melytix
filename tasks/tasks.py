@@ -97,7 +97,9 @@ def generate_tips_and_alerts():
     For each user form DB calls methods of generating tips and alerts
     """
     users = User.filter_only(metrics={'$exists': True}, fields={'_id':True, 'metrics':True})
+
     for user in users:
+        # total summing of metrics
         user['_id'] = str(user.get('_id'))
 
     step = 10
@@ -128,8 +130,11 @@ def google_analytics_query_all(token, view_id, start_date, end_date):
 
             dimensions=['ga:date', dimension])
         dates = create_list_of_dates(start_date, end_date)
-        User.insert_data_in_db(token, f'google_analytics.ga_dates', dates)
-        google_analytics_query.delay(report, start_date, end_date, token)
+        if len(dates) > 1:
+            User.insert_data_in_db(token, f'google_analytics.ga_dates', dates)
+        else:
+            User.append_list(token, {'metrics.google_analytics.ga_dates': dates[0]})
+
 
 
 @celery.task
@@ -175,14 +180,3 @@ def google_analytics_query(report: list, start_date, end_date, token):
                                 f'metrics.google_analytics.{dimension}.{sub_dimension}': value if isinstance(value, int) else value[0]
                             }
                         )
-            # append date
-            User.append_list(token, {'metrics.google_analytics.ga_dates': dates[0]})
-
-
-
-
-
-
-
-
-
