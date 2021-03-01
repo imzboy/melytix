@@ -156,15 +156,25 @@ def google_analytics_query(report: list, start_date, end_date, token):
         # everyday request
         else:
             for dimension, dimension_value in metric_value.items():
-                for sub_dimension, value in dimension_value.items():
+                if dimension == 'total':
                     User.append_list(
                         filter={
                             'auth_token': token
                         },
                         append={
-                            f'metrics.google_analytics.{dimension}.{sub_dimension}': value if isinstance(value, int) else value[0]
+                            f'metrics.google_analytics.{dimension}': dimension_value if isinstance(dimension_value, int) else dimension_value[0]
                         }
                     )
+                else:
+                    for sub_dimension, value in dimension_value.items():
+                        User.append_list(
+                            filter={
+                                'auth_token': token
+                            },
+                            append={
+                                f'metrics.google_analytics.{dimension}.{sub_dimension}': value if isinstance(value, int) else value[0]
+                            }
+                        )
             # append date
             User.append_list(token, {'metrics.google_analytics.ga_dates': dates[0]})
 
