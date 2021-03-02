@@ -13,7 +13,7 @@ from analytics.face_book_insings import *
 from Systems.Facebook.FacebookAdsManager import facebook_insights_query
 from Systems.Google.GoogleAnalytics import generate_report_body
 from Systems.Google.GoogleAuth import auth_credentials
-from Utils.GoogleUtils import GoogleReportsParser, fill_all_with_zeros
+from Utils.GoogleUtils import GoogleReportsParser, GoogleTotalsReportsParser, fill_all_with_zeros
 from Utils.FacebookUtils import create_list_of_dates
 from user.models import User
 from googleapiclient.discovery import build
@@ -99,26 +99,6 @@ def generate_tips_and_alerts():
     users = User.filter_only(metrics={'$exists': True}, fields={'_id':True, 'metrics':True})
 
     for user in users:
-        # total summing of metrics
-        metrics = user.get('metrics').get('google_analytics')
-        totals = {}
-        for metric, metric_value in metrics.items():
-            if metric != 'ga_dates':
-                total = 0
-                for dimension, dimension_value in metric_value.items():
-                    total += dimension_value.get('total')
-                totals.update({metric: total})
-
-        for metric, total in totals.items():
-            User.append_list(
-                filter={
-                    'auth_token': user.get('auth_token')
-                },
-                append={
-                    f'metrics.google_analytics.{metric}.total': total
-                }
-            )
-
         user['_id'] = str(user.get('_id'))
 
     step = 10
@@ -154,6 +134,22 @@ def google_analytics_query_all(token, view_id, start_date, end_date):
         else:
             User.append_list(token, {'metrics.google_analytics.ga_dates': dates[0]})
 
+        google_analytics_query.delay(report, start_date, end_date, token)
+
+    # After dimensions were collected make a call to retrive totals for metrics without dimensions
+    totals_report = generate_report_body(
+    view_id=view_id,
+    start_date=start_date,
+    end_date=end_date,
+
+    metrics=['ga:sessions', 'ga:users', 'ga:pageviews',
+                'ga:pageviewsPerSession', 'ga:avgSessionDuration', 'ga:bounces',
+                'ga:percentNewSessions', 'ga:pageviews', 'ga:timeOnPage', 'ga:pageLoadTime',
+                'ga:avgPageLoadTime', 'ga:transactionsPerSession', 'ga:transactionRevenue'],
+
+    dimensions=['ga:date'])
+
+    google_analytics_query_totals.delay(totals_report, start_date, end_date, token)
 
 
 @celery.task
@@ -197,5 +193,40 @@ def google_analytics_query(report: list, start_date, end_date, token):
                             },
                             append={
                                 f'metrics.google_analytics.{metric}.{dimension}.{sub_dimension}': value if isinstance(value, int) else value[0]
+                            }
+                        )
+
+
+@celery.task
+def google_analytics_query_totals(report, start_date, end_date, token):
+    api_client = build(serviceName='analyticsreporting', version='v4', http=auth_credentials(token), cache_discovery=False)
+    response = api_client.reports().batchGet(
+        body={
+            'reportRequests': report
+        }).execute()
+
+    if response.get('reports')[0].get('data').get('rows'):
+        parsed_response = GoogleTotalsReportsParser(response).parse()
+    else:
+        l = len(create_list_of_dates(start_date, end_date))
+        metrics = ['ga:sessions', 'ga:users', 'ga:pageviews',
+                     'ga:pageviewsPerSession', 'ga:avgSessionDuration', 'ga:bounces',
+                     'ga:percentNewSessions', 'ga:pageviews', 'ga:timeOnPage', 'ga:pageLoadTime',
+                     'ga:avgPageLoadTime', 'ga:transactionsPerSession', 'ga:transactionRevenue']
+        parsed_response = {k: [0] * l for k in metrics}
+
+    for metric, metric_value in parsed_response.items():
+        if metric != 'ga_dates':
+            if len(metric_value) > 1:
+                User.insert_data_in_db(token, f'google_analytics.{metric}.total', metric_value)
+
+            # everyday request
+            else:
+                User.append_list(
+                            filter={
+                                'auth_token': token
+                            },
+                            append={
+                                f'metrics.google_analytics.{metric}.total': metric_value if isinstance(metric_value, int) else metric_value[0]
                             }
                         )

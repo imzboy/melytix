@@ -75,7 +75,7 @@ class MetricAnalyzer(object):
         function_names = [attr for attr in dir(self) if not attr.startswith('__') and callable(getattr(self, attr)) and attr != 'analyze']
         for name in function_names:
             func = getattr(self, name)
-            func_hash = func.__hash__()
+            func_hash = hash(func.__name__)
             alg_type = func.__annotations__.get('return').__name__  # don't proccess the algorithm if the same id is in the database
             if not User.db().find_one({'_id': ObjectId(user_id), f'{alg_type}.id': func_hash, 'active': True}):
                 if (algorithm := func(func_hash)):
