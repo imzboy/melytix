@@ -27,7 +27,7 @@ class User(MongoDocument):
         return f'<User {self.email}>'
 
     @classmethod
-    def register(cls, email: str, password: str):
+    def register(cls, email: str, password: str, plan:str):
         """
         Hashes the password and register one new user in the database.
             Parameters:
@@ -36,7 +36,7 @@ class User(MongoDocument):
         """
         salt = os.urandom(24)
         password = pbkdf2_hmac('sha256', password.encode('utf-8'), salt, 100000)
-        result = User.create(email=email, password=password, salt=salt)
+        result = User.create(email=email, password=password, salt=salt, plan=plan)
         return result
 
     @classmethod
