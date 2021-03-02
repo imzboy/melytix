@@ -39,7 +39,7 @@ class GoogleReportsParser:
 
         for report in self.reports:
             for metric in report.get('columnHeader').get('metricHeader').get('metricHeaderEntries'):
-                helper_dict[metric.get('name').replace(':', '_')] = {'total': [0] * len(self.time_range)}
+                helper_dict[metric.get('name').replace(':', '_')] = {}
 
         return helper_dict
 
@@ -57,7 +57,7 @@ class GoogleReportsParser:
         for row in report.get('data').get('rows'):
             current_dimension = row.get('dimensions')[1]
             if current_dimension != prev_dimension:
-                result.update({current_dimension: [0] * len(self.time_range)})
+                result.update({'total': [0] * len(self.time_range), current_dimension: [0] * len(self.time_range)})
                 prev_dimension = current_dimension
 
         return result
@@ -82,7 +82,7 @@ class GoogleReportsParser:
                     index_of_data = self.time_range.get(date)
                     metric_value = metric_type(row.get('metrics')[0].get('values')[i])
                     dimensions[dimension][index_of_data] = metric_value
-                    result[metric_name].get('total')[index_of_data] += metric_value
+                    dimensions['total'][index_of_data] += metric_value
 
                 result[metric_name].update({current_dimension: dimensions})
 

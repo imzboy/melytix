@@ -100,6 +100,25 @@ def generate_tips_and_alerts():
 
     for user in users:
         # total summing of metrics
+        metrics = user.get('metrics').get('google_analytics')
+        totals = {}
+        for metric, metric_value in metrics.items():
+            if metric != 'ga_dates':
+                total = 0
+                for dimension, dimension_value in metric_value.items():
+                    total += dimension_value.get('total')
+                totals.update({metric: total})
+
+        for metric, total in totals.items():
+            User.append_list(
+                filter={
+                    'auth_token': user.get('auth_token')
+                },
+                append={
+                    f'metrics.google_analytics.{metric}.total': total
+                }
+            )
+
         user['_id'] = str(user.get('_id'))
 
     step = 10
@@ -167,7 +186,7 @@ def google_analytics_query(report: list, start_date, end_date, token):
                             'auth_token': token
                         },
                         append={
-                            f'metrics.google_analytics.{dimension}': dimension_value if isinstance(dimension_value, int) else dimension_value[0]
+                            f'metrics.google_analytics.{metric}.{dimension}': dimension_value if isinstance(dimension_value, int) else dimension_value[0]
                         }
                     )
                 else:
@@ -177,6 +196,6 @@ def google_analytics_query(report: list, start_date, end_date, token):
                                 'auth_token': token
                             },
                             append={
-                                f'metrics.google_analytics.{dimension}.{sub_dimension}': value if isinstance(value, int) else value[0]
+                                f'metrics.google_analytics.{metric}.{dimension}.{sub_dimension}': value if isinstance(value, int) else value[0]
                             }
                         )
