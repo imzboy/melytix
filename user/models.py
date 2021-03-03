@@ -27,7 +27,7 @@ class User(MongoDocument):
         return f'<User {self.email}>'
 
     @classmethod
-    def register(cls, email: str, password: str, plan:str):
+    def register(cls, email: str, password: str, plan:str='free'):
         """
         Hashes the password and register one new user in the database.
             Parameters:
