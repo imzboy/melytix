@@ -68,7 +68,7 @@ class MainManualAnalyzeView(Resource):
         return {}, 200
 
     def get(self):
-        all_users = User.filter_only(fields={'_id':False, 'email':True, 'metrics':True})
+        all_users = User.filter_only(fields={'_id':False, 'email':True, 'metrics':True, 'Tips':True, 'Alerts':True})
 
         return {'users': all_users}, 200
 

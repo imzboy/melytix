@@ -3,22 +3,12 @@ from analytics.base import MetricAnalyzer, MetricNotFoundException, Tip, Alert
 import datetime
 
 
-class GaSessionsAnalyzer(MetricAnalyzer):
+# class GaSessionsAnalyzer(MetricAnalyzer):
 
-    def __init__(self, metrics: dict):
-        self.metric = metrics.get('google_analytics', {}).get('ga_sessions')
-        if not self.metric:
-            raise MetricNotFoundException('ga_sessions not found')
-
-    def sessions_lower(self, alg_id) -> Alert:
-        if (all_sessions := self.metric.get('total')):
-            if len(all_sessions) > 1:
-                if all_sessions[-1] < all_sessions[-2]:
-                    return Alert(
-                        _id=alg_id,
-                        category='idk',
-                        title='Your sessions are lover than yesterday',
-                        description='Your sessions are lover than yesterday')
+#     def __init__(self, metrics: dict):
+#         self.metric = metrics.get('google_analytics', {}).get('ga_sessions')
+#         if not self.metric:
+#             raise MetricNotFoundException('ga_sessions not found')
 
 
 class GaUsersAnalyzer(MetricAnalyzer):
@@ -154,6 +144,8 @@ class GaUsersAnalyzer(MetricAnalyzer):
 
     def extra_city_tip(self, alg_id) -> Tip:
         if (all_cities := self.metric.get('ga_city')):
+            all_cities.pop('total', {})
+            all_cities.pop('(not set)', {})
             sorted_cities_dict = dict(sorted(all_cities.items(), key=lambda x: sum(x[1][-7:]), reverse=True))
             sorted_cities_names = list(sorted_cities_dict.keys())
             sorted_cities_names = sorted_cities_names[:3]
