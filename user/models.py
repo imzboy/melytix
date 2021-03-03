@@ -147,8 +147,12 @@ class User(MongoDocument):
 
     @classmethod
     def flip_tip_or_alert(cls, token: str, type_: str, id_: str):
-        val = User.db().find_one({'auth_token': token, f'{type_}s.id': id_}, {'_id':False, f'{type_}s.active':True})
-        val = val.get(f'{type_}s')[0].get('active')
+        query = User.db().find_one({'auth_token': token, f'{type_}s.id': id_}, {'_id':False, f'{type_}s.active':True, f'{type_}s.id':True})
+        for item in query.get(f'{type_}s'):
+            if item['id'] == id_:
+                val = item['active']
+                break
+
         User.db().update_one(
             {'auth_token': token, f'{type_}s.id':id_},
             {'$set':
