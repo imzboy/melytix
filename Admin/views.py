@@ -1,7 +1,5 @@
 from flask import request, render_template, url_for, redirect, Blueprint
 from flask_login import login_required, login_user, logout_user
-from Alerts.Alert import Alert
-from Tips.Tip import Tip
 from user.models import Admin, User
 
 from flask_restful import Api, Resource
