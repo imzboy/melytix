@@ -71,12 +71,11 @@ class MainManualAnalyzeView(Resource):
     def get(self):
         all_users = User.filter_only(fields={'_id':False, 'email':True, 'Tips':True, 'Alerts':True, 'auth_token':True})
 
-        for user in all_users:
-            path = f'users_metrics/{user.get("auth_token")}'
-            if os.path.exists(path):
-                with open(f'{path}/metrics.json', 'r') as f:
-                    metrics = json.loads(f.read())
-                    user['metrics'] = metrics
+        # for user in all_users:
+        #     path = f'users_metrics/{user.get("auth_token")}'
+        #     with open(f'{path}/metrics.json', 'r') as f:
+        #         metrics = json.loads(f.read())
+        #         user['metrics'] = metrics
 
         return {'users': all_users}, 200
 
