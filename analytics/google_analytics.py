@@ -1,3 +1,4 @@
+from functools import reduce
 from analytics.base import MetricAnalyzer, MetricNotFoundException, Tip, Alert
 
 import datetime
@@ -73,7 +74,7 @@ class GaUsersAnalyzer(MetricAnalyzer):
     def mobile_device_branding(self, alg_id) -> Tip:
         if (all_mobile_devices := self.metric.get('ga_mobileDeviceBranding')):
             main_brand_tuple = max(all_mobile_devices.items(), key=lambda x: sum(x[1][-7:]))  # [0] - key (brand name), [1] - data list
-            most_popular_brand = main_brand_tuple[0]
+            most_popular_brand = main_brand_tuple[0] if main_brand_tuple[0] != '(not set)' and main_brand_tuple[0] != 'total' else main_brand_tuple[1]
             return Tip(
                 _id=alg_id,
                 category='Analytics, Целевая Аудитория',
@@ -85,7 +86,7 @@ class GaUsersAnalyzer(MetricAnalyzer):
     def browser_tip(self, alg_id) -> Tip:
         if (all_browsers := self.metric.get('ga_browser')):
             main_browser_tuple = max(all_browsers.items(), key=lambda x: sum(x[1][-7:]))  # [0] - key (browser name), [1] - data list
-            most_popular_browser = main_browser_tuple[0]
+            most_popular_browser = main_browser_tuple[0] if main_browser_tuple[0] != 'total' else main_browser_tuple[1]
             return Tip(
                 _id = alg_id,
                 category='Analytics, Целевая Аудитория',
@@ -96,10 +97,10 @@ class GaUsersAnalyzer(MetricAnalyzer):
         if (all_categories := self.metric.get('ga_deviceCategory')):
             if(all_sizes := self.metric.get('ga_browserSize')):
                 main_categories_tuple = max(all_categories.items(), key=lambda x: sum(x[1][-7:]))  # [0] - key (category name), [1] - data list
-                most_popular_category = main_categories_tuple[0]
+                most_popular_category = main_categories_tuple[0] if main_categories_tuple[0] != 'total' else main_categories_tuple[1]
 
                 main_device_size_tuple = max(all_sizes.items(), key=lambda x: sum(x[1][-7:]))  # [0] - key (size_str), [1] - data list
-                most_popular_size = main_device_size_tuple[0]
+                most_popular_size = main_device_size_tuple[0] if main_device_size_tuple[0] != 'total' else main_device_size_tuple[1]
 
                 return Tip(
                     _id = alg_id,
@@ -200,7 +201,7 @@ class GaBouncesAnalyzer(MetricAnalyzer):
                     return Alert(
                         _id=alg_id,
                         category=' Analytics',
-                        title='Показатель отказов по сайту повысился больше, чем 50% в {day} ( {day} - день в котором произошёл критический момент )',
+                        title=f'Показатель отказов по сайту повысился больше, чем 50% в {day} ( {day} - день в котором произошёл критический момент )',
                         description=f'В {day} день на вашем сайте был замечен показатель больше, чем 50% - это плохая новость для Вас, но с помощью неё можно проанализировать все маркетинговые каналы'
                                     ' и понять какой канал привёл нерелеватный трафик, которых не “зацепила” посадочная страница. Проведите анализ '
                                     'с помощью сводки Google Analytics - Источники трафика сравнивая показатель с “Bounce Rate” ( рус. Показатель Отказов ).')
@@ -333,7 +334,7 @@ class GaAvgSessionDurationAnalyzer(MetricAnalyzer):
 
     def right_avg_session_duration_func(self, alg_id) -> Tip:
         if(session_duration := self.metric.get('total', [])[-7:]):
-            average = sum(session_duration) / 7
+            average = reduce(lambda x, y: float(x) + float(y), session_duration) / 7
             if average > 1.3:
                 return Tip(
                     _id = alg_id,
@@ -345,7 +346,7 @@ class GaAvgSessionDurationAnalyzer(MetricAnalyzer):
 
     def low_avg_session_duration_func(self, alg_id) -> Tip:
         if(session_duration := self.metric.get('total', [])[-7:]):
-            average = sum(session_duration) / 7
+            average = reduce(lambda x, y: float(x) + float(y), session_duration) / 7
             if 1.0 < average < 1.5:
                 return Tip(
                     _id = alg_id,
@@ -357,7 +358,7 @@ class GaAvgSessionDurationAnalyzer(MetricAnalyzer):
 
     def no_avg_session_duration_func(self, alg_id) -> Tip:
         if(session_duration := self.metric.get('total', [])[-7:]):
-            average = sum(session_duration) / 7
+            average = reduce(lambda x, y: float(x) + float(y),  session_duration) / 7
             if average < 1.0:
                 return Tip(
                     _id = alg_id,
@@ -414,7 +415,7 @@ class GaTimeOnPageAnalyzer(MetricAnalyzer):
     def critical_time_on_page(self, alg_id) -> Tip:
         week_slice = self.metric.get('total', [])[-7:]
         for item in week_slice:
-            if item < 10:
+            if float(item) < 10:
                 return Tip(
                     _id = alg_id,
                     category='Analytics',
@@ -427,7 +428,7 @@ class GaTimeOnPageAnalyzer(MetricAnalyzer):
     def low_time_on_page(self, alg_id) -> Tip:
         week_slice = self.metric.get('total', [])[-7:]
         for item in week_slice:
-            if item < 30:
+            if float(item) < 30:
                 return Tip(
                     _id = alg_id,
                     category='Analytics',

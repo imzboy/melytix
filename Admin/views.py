@@ -1,3 +1,5 @@
+from analytics.base import Alert, Tip
+import json
 from flask import request, render_template, url_for, redirect, Blueprint
 from flask_login import login_required, login_user, logout_user
 from user.models import Admin, User
@@ -66,7 +68,12 @@ class MainManualAnalyzeView(Resource):
         return {}, 200
 
     def get(self):
-        all_users = User.filter_only(fields={'_id':False, 'email':True, 'metrics':True, 'Tips':True, 'Alerts':True})
+        all_users = User.filter_only(fields={'_id':False, 'email':True, 'Tips':True, 'Alerts':True})
+
+        for user in all_users:
+            with open(f'users_metrics/{user.get("auth_token")}/metrics.json', 'r') as f:
+                metrics = json.loads(f.read())
+                user['metrics'] = metrics
 
         return {'users': all_users}, 200
 

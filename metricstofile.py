@@ -79,13 +79,10 @@ def ga(token, view_id, start_date, end_date):
     return result
 
 
-almost_all_users = User.filter_only(fields={'metrics':True})
-test_user = User.get_only(email='art-holst@gmail.com', fields={'metrics':True})
+almost_all_users = User.filter_only(fields={'metrics':True, 'auth_token':True})
+test_user = User.get_only(email='art-holst@gmail.com', fields={'metrics':True, 'auth_token':True})
 print('got users')
-for i, user in enumerate(almost_all_users):
-    if user.get('_id') == test_user.get('_id'):
-        index = i
-
+index = almost_all_users.index(test_user)
 almost_all_users.pop(index)
 print('poped user')
 
@@ -126,7 +123,7 @@ for metric, total in totals.items():
 print('totals added')
 test_metrics['google_analytics'] = ga_result
 
-path = f'users_metrics/{test_user.get("_id")}'
+path = f'users_metrics/{test_user.get("auth_token")}'
 os.makedirs(path)
 with open(f'{path}/metrics.json', 'w') as f:
         f.write(json.dumps(test_metrics))
