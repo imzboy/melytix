@@ -4,6 +4,7 @@ import json
 from flask import request, render_template, url_for, redirect, Blueprint
 from flask_login import login_required, login_user, logout_user
 from user.models import Admin, User
+import uuid
 
 from flask_restful import Api, Resource
 
@@ -91,6 +92,7 @@ class MainManualAnalyzeView(Resource):
         title = request.json.get('title')
         is_human_created = True
         item = helper_dict.get(type_)(
+            _id=str(uuid.uuid4()),
             category=category,
             title=title,
             description=description,
