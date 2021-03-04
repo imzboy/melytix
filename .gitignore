@@ -10,6 +10,7 @@ venv/
 env/
 .vscode/
 .wenv/
+users_metrics/
 
 # Elastic Beanstalk Files
 .elasticbeanstalk/*
