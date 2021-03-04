@@ -1,3 +1,4 @@
+import os
 from analytics.base import Alert, Tip
 import json
 from flask import request, render_template, url_for, redirect, Blueprint
@@ -71,9 +72,11 @@ class MainManualAnalyzeView(Resource):
         all_users = User.filter_only(fields={'_id':False, 'email':True, 'Tips':True, 'Alerts':True})
 
         for user in all_users:
-            with open(f'users_metrics/{user.get("auth_token")}/metrics.json', 'r') as f:
-                metrics = json.loads(f.read())
-                user['metrics'] = metrics
+            path = f'users_metrics/{user.get("auth_token")}'
+            if os.path.exists(path):
+                with open(f'path/metrics.json', 'r') as f:
+                    metrics = json.loads(f.read())
+                    user['metrics'] = metrics
 
         return {'users': all_users}, 200
 
