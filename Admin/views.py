@@ -94,8 +94,7 @@ class MainManualAnalyzeView(Resource):
             category=category,
             title=title,
             description=description,
-            is_human_created=is_human_created,
-            analytics_func=None
+            is_human_created=is_human_created
         )
         User.append_list(
             {'email': user_email},
