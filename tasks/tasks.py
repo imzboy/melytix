@@ -1,3 +1,5 @@
+import json
+import os
 from Systems.Google.views import search_console_metrics
 from Systems.Google.SearchConsole import make_sc_request
 import celery
@@ -68,8 +70,14 @@ def refresh_metric(users: list):
             date = (datetime.datetime.now() - datetime.timedelta(days=3)).date().isoformat()  # SC doesn't return metrics for 3 last days
             response = make_sc_request(token, site_url, date, date)
             data = GoogleUtils.prep_dash_metrics(sc_data=response)
-            for key, value in data.items():
-                User.append_list({'auth_token': token}, {f'metrics.search_console.{key}': value[0]})
+            with open(f'users_metrics/{token}/metrics.json', 'r+') as f:
+                all_metrics = json.loads(f.read())
+                sc_metrics = all_metrics.pop('search_console')
+                for metrics_name, metric_value in sc_metrics.items():
+                    metric_value.append(data.get(metrics_name)[0])
+
+                all_metrics['search_console'] = sc_metrics
+                f.write(json.dumps(all_metrics))
 
         # f_metrics = facebook_insights_query(token, today, today)
         # for campaign, metrics in f_metrics.items():
@@ -110,11 +118,20 @@ def generate_tips_and_alerts():
 def google_analytics_query_all(token, view_id, start_date, end_date):
     # Max of 10 metrics and 7 dimesions in one report body
     dimensions = ['ga:browser', 'ga:operatingSystem',
-                  'ga:operatingSystemVersion', 'ga:mobileDeviceBranding',
-                  'ga:mobileInputSelector', 'ga:mobileDeviceModel',
+                  'ga:mobileDeviceBranding', 'ga:mobileInputSelector', 'ga:mobileDeviceModel',
                   'ga:mobileDeviceInfo', 'ga:deviceCategory', 'ga:browserSize', 'ga:country',
                   'ga:region', 'ga:language', 'ga:userAgeBracket', 'ga:userGender',
                   'ga:interestOtherCategory', 'ga:city']
+    dates = create_list_of_dates(start_date, end_date)
+
+    metrics = ['ga:sessions', 'ga:users', 'ga:pageviews',
+                     'ga:pageviewsPerSession', 'ga:avgSessionDuration', 'ga:bounces',
+                     'ga:percentNewSessions', 'ga:pageviews', 'ga:timeOnPage', 'ga:pageLoadTime',
+                     'ga:avgPageLoadTime', 'ga:transactionsPerSession', 'ga:transactionRevenue']
+    result = {
+        'ga_dates':dates,
+        **{k.replace(':', '_'):{} for k in metrics}
+    }
     for dimension in dimensions:
 
         report = generate_report_body(
@@ -122,37 +139,65 @@ def google_analytics_query_all(token, view_id, start_date, end_date):
             start_date=start_date,
             end_date=end_date,
 
-            metrics=['ga:sessions', 'ga:users', 'ga:pageviews',
-                     'ga:pageviewsPerSession', 'ga:avgSessionDuration', 'ga:bounces',
-                     'ga:percentNewSessions', 'ga:pageviews', 'ga:timeOnPage', 'ga:pageLoadTime',
-                     'ga:avgPageLoadTime', 'ga:transactionsPerSession', 'ga:transactionRevenue'],
+            metrics=metrics,
 
             dimensions=['ga:date', dimension])
-        dates = create_list_of_dates(start_date, end_date)
-        if len(dates) > 1:
-            User.insert_data_in_db(token, f'google_analytics.ga_dates', dates)
-        else:
-            User.append_list(token, {'metrics.google_analytics.ga_dates': dates[0]})
+        res = google_analytics_query(report, start_date, end_date, token)
+        for metric_name, value in res.items():
+            result[metric_name].update(**value)
 
-        google_analytics_query.delay(report, start_date, end_date, token)
-
-    # After dimensions were collected make a call to retrive totals for metrics without dimensions
     totals_report = generate_report_body(
-    view_id=view_id,
-    start_date=start_date,
-    end_date=end_date,
+        view_id=view_id,
+        start_date=start_date,
+        end_date=end_date,
 
-    metrics=['ga:sessions', 'ga:users', 'ga:pageviews',
-                'ga:pageviewsPerSession', 'ga:avgSessionDuration', 'ga:bounces',
-                'ga:percentNewSessions', 'ga:pageviews', 'ga:timeOnPage', 'ga:pageLoadTime',
-                'ga:avgPageLoadTime', 'ga:transactionsPerSession', 'ga:transactionRevenue'],
+        metrics=['ga:sessions', 'ga:users', 'ga:pageviews',
+        'ga:pageviewsPerSession', 'ga:avgSessionDuration', 'ga:bounces',
+        'ga:percentNewSessions', 'ga:pageviews', 'ga:timeOnPage', 'ga:pageLoadTime',
+        'ga:avgPageLoadTime', 'ga:transactionsPerSession', 'ga:transactionRevenue'],
 
-    dimensions=['ga:date'])
+        dimensions=['ga:date'])
 
-    google_analytics_query_totals.delay(totals_report, start_date, end_date, token)
+    totals = google_analytics_query_totals(totals_report, start_date, end_date, token)
+    for metric, total in totals.items():
+        result[metric]['total']= total
+
+    path = f'users_metrics/{token}'
+    if len(dates) > 1:
+        if not os.path.exists(path):
+            os.makedirs(path)
+            metrics = {'google_analytics': result}
+
+        else:
+            with open(f'{path}/metrics.json', 'r') as f:
+                metrics = json.loads(f.read())
+                metrics['google_analytics'] = result
+
+        with open(f'{path}/metrics.json', 'r+') as f:
+                f.write(json.dumps(metrics))
+    else:
+        with open(f'{path}/metrics.json', 'r+') as f:
+                all_metrics = json.loads(f.read())
+                metrics = all_metrics.pop('google_analytics')
+                del all_metrics
+                dates = metrics.pop('ga_dates')
+                dates.append(result.get('ga_dates')[0])
+                if metrics:
+                    #This is hella bad
+                    for m_name, m_value in metrics.items():
+                        for d_name, d_value in m_value.items():
+                            for sub_d_name, sb_d_value in d_value.items():
+                                # sub d value -> list of metrics
+                                sb_d_value.append(
+                                    result.get(m_name).get(d_name).get(sub_d_name)[0]
+                                )
+                    metrics['ga_dates'] = dates
+                    # get file second time to shorthen the update period
+                    all_metrics = json.loads(f.read())
+                    all_metrics['google_analytics'] = metrics
+                    f.write(json.dumps(all_metrics))
 
 
-@celery.task
 def google_analytics_query(report: list, start_date, end_date, token):
     # Google Analytics v4 api setup to make a request to google analytics
     api_client = build(serviceName='analyticsreporting', version='v4', http=auth_credentials(token), cache_discovery=False)
@@ -164,40 +209,11 @@ def google_analytics_query(report: list, start_date, end_date, token):
     dates = create_list_of_dates(start_date, end_date)
 
     if response.get('reports')[0].get('data').get('rows'):
-        parsed_response = GoogleReportsParser(response, dates).parse()
-    else:
-        parsed_response = fill_all_with_zeros(response, dates)
-    for metric, metric_value in parsed_response.items():
-        # if this is the first request to GA
-        if len(dates) > 1:
-            for dimension, dimension_value in metric_value.items():
-                User.insert_data_in_db(token, f'google_analytics.{metric}.{dimension}', dimension_value)
+        return  GoogleUtils.GoogleReportsParser(response, dates).parse()
 
-        # everyday request
-        else:
-            for dimension, dimension_value in metric_value.items():
-                if dimension == 'total':
-                    User.append_list(
-                        filter={
-                            'auth_token': token
-                        },
-                        append={
-                            f'metrics.google_analytics.{metric}.{dimension}': dimension_value if isinstance(dimension_value, int) else dimension_value[0]
-                        }
-                    )
-                else:
-                    for sub_dimension, value in dimension_value.items():
-                        User.append_list(
-                            filter={
-                                'auth_token': token
-                            },
-                            append={
-                                f'metrics.google_analytics.{metric}.{dimension}.{sub_dimension}': value if isinstance(value, int) else value[0]
-                            }
-                        )
+    return GoogleUtils.fill_all_with_zeros(response, dates)
 
 
-@celery.task
 def google_analytics_query_totals(report, start_date, end_date, token):
     api_client = build(serviceName='analyticsreporting', version='v4', http=auth_credentials(token), cache_discovery=False)
     response = api_client.reports().batchGet(
@@ -206,7 +222,8 @@ def google_analytics_query_totals(report, start_date, end_date, token):
         }).execute()
 
     if response.get('reports')[0].get('data').get('rows'):
-        parsed_response = GoogleTotalsReportsParser(response).parse()
+        parsed_response = GoogleUtils.GoogleTotalsReportsParser(response).parse()
+        parsed_response.pop('ga_dates')
     else:
         l = len(create_list_of_dates(start_date, end_date))
         metrics = ['ga:sessions', 'ga:users', 'ga:pageviews',
@@ -215,18 +232,4 @@ def google_analytics_query_totals(report, start_date, end_date, token):
                      'ga:avgPageLoadTime', 'ga:transactionsPerSession', 'ga:transactionRevenue']
         parsed_response = {k: [0] * l for k in metrics}
 
-    for metric, metric_value in parsed_response.items():
-        if metric != 'ga_dates':
-            if len(metric_value) > 1:
-                User.insert_data_in_db(token, f'google_analytics.{metric}.total', metric_value)
-
-            # everyday request
-            else:
-                User.append_list(
-                            filter={
-                                'auth_token': token
-                            },
-                            append={
-                                f'metrics.google_analytics.{metric}.total': metric_value if isinstance(metric_value, int) else metric_value[0]
-                            }
-                        )
+    return parsed_response

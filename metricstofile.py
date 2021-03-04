@@ -1,3 +1,4 @@
+from bson.objectid import ObjectId
 from Systems.Google.GoogleAnalytics import generate_report_body
 from Utils.FacebookUtils import create_list_of_dates
 from Systems.Google.GoogleAuth import auth_credentials
@@ -129,4 +130,6 @@ path = f'users_metrics/{test_user.get("_id")}'
 os.makedirs(path)
 with open(f'{path}/metrics.json', 'w') as f:
         f.write(json.dumps(test_metrics))
+
 print(f'Done check {path}/metrics.json')
+
