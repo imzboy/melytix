@@ -73,8 +73,10 @@ class GaUsersAnalyzer(MetricAnalyzer):
 
     def mobile_device_branding(self, alg_id) -> Tip:
         if (all_mobile_devices := self.metric.get('ga_mobileDeviceBranding')):
+            all_mobile_devices.pop('total')
+            all_mobile_devices.pop('(not set)', {})
             main_brand_tuple = max(all_mobile_devices.items(), key=lambda x: sum(x[1][-7:]))  # [0] - key (brand name), [1] - data list
-            most_popular_brand = main_brand_tuple[0] if main_brand_tuple[0] != '(not set)' and main_brand_tuple[0] != 'total' else main_brand_tuple[1]
+            most_popular_brand = main_brand_tuple[0]
             return Tip(
                 _id=alg_id,
                 category='Analytics, Целевая Аудитория',
@@ -85,8 +87,10 @@ class GaUsersAnalyzer(MetricAnalyzer):
 
     def browser_tip(self, alg_id) -> Tip:
         if (all_browsers := self.metric.get('ga_browser')):
+            all_browsers.pop('total')
+            all_browsers.pop('(not set)', {})
             main_browser_tuple = max(all_browsers.items(), key=lambda x: sum(x[1][-7:]))  # [0] - key (browser name), [1] - data list
-            most_popular_browser = main_browser_tuple[0] if main_browser_tuple[0] != 'total' else main_browser_tuple[1]
+            most_popular_browser = main_browser_tuple[0]
             return Tip(
                 _id = alg_id,
                 category='Analytics, Целевая Аудитория',
@@ -95,12 +99,17 @@ class GaUsersAnalyzer(MetricAnalyzer):
 
     def device_category_tip(self, alg_id) -> Tip:
         if (all_categories := self.metric.get('ga_deviceCategory')):
+            all_categories.pop('total',{})
+            all_categories.pop('(not set)',{})
             if(all_sizes := self.metric.get('ga_browserSize')):
+                all_sizes.pop('total', {})
+                all_sizes.pop('(not set)',{})
+
                 main_categories_tuple = max(all_categories.items(), key=lambda x: sum(x[1][-7:]))  # [0] - key (category name), [1] - data list
                 most_popular_category = main_categories_tuple[0] if main_categories_tuple[0] != 'total' else main_categories_tuple[1]
 
                 main_device_size_tuple = max(all_sizes.items(), key=lambda x: sum(x[1][-7:]))  # [0] - key (size_str), [1] - data list
-                most_popular_size = main_device_size_tuple[0] if main_device_size_tuple[0] != 'total' else main_device_size_tuple[1]
+                most_popular_size = main_device_size_tuple[0]
 
                 return Tip(
                     _id = alg_id,
@@ -198,6 +207,7 @@ class GaBouncesAnalyzer(MetricAnalyzer):
             for item in week_ga_bounces_list:
                 if item > 50:
                     day = week_ga_bounces_list.index(item) + 1
+                    day = (datetime.datetime.now() - datetime.timedelta(days=7-day)).date().isoformat()
                     return Alert(
                         _id=alg_id,
                         category=' Analytics',
