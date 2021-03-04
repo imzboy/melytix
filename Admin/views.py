@@ -74,7 +74,7 @@ class MainManualAnalyzeView(Resource):
         for user in all_users:
             path = f'users_metrics/{user.get("auth_token")}'
             if os.path.exists(path):
-                with open(f'path/metrics.json', 'r') as f:
+                with open(f'{path}/metrics.json', 'r') as f:
                     metrics = json.loads(f.read())
                     user['metrics'] = metrics
 
