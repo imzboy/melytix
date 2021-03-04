@@ -94,6 +94,8 @@ def generate_tip_or_alert(users:list):
     for user in users:
         for analytics_class in analytics:
             try:
+                with open(f'users_metrics/{user.get("auth_token")}/metrics.json') as f:
+                    metrics = json.loads(r.read())
                 analytics_class(user.get('metrics')).analyze(user.get('_id'))
             except MetricNotFoundException:
                 continue
@@ -104,7 +106,7 @@ def generate_tips_and_alerts():
     """
     For each user form DB calls methods of generating tips and alerts
     """
-    users = User.filter_only(metrics={'$exists': True}, fields={'_id':True, 'metrics':True})
+    users = User.filter_only(metrics={'$exists': True}, fields={'_id':True, 'auth_token':True})
 
     for user in users:
         user['_id'] = str(user.get('_id'))
