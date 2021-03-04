@@ -106,9 +106,10 @@ def generate_tips_and_alerts():
     """
     For each user form DB calls methods of generating tips and alerts
     """
-    users = User.filter_only(connected_systems={'$exists': True}, fields={'_id':True, 'auth_token':True})
+    # users = User.filter_only(connected_systems={'$exists': True}, fields={'_id':True, 'auth_token':True})
     # users = [User.get_only(email='art-holst@gmail.com', fields={'_id':True, 'auth_token':True})]
-
+    users = [User.get_only(email='info@kith2kin.de', fields={'_id':True, 'auth_token':True}),
+             User.get_only(email='art-holst@gmail.com', fields={'_id':True, 'auth_token':True})]
     for user in users:
         user['_id'] = str(user.get('_id'))
 
