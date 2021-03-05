@@ -1,6 +1,7 @@
 from flask_login import LoginManager
 from config import settings
 import os
+import json
 from Utils.decorators import user_auth
 
 from flask_cors import CORS
@@ -89,22 +90,24 @@ def create_app():
             connected_systems = {}
             if request.user.connected_systems:
                 connected_systems = request.user.connected_systems
+                with open(f'users_metrics/{request.token}/metrics.json', 'r') as f:
+                    metrics = json.loads(f.read())
                 if connected_systems.get('facebook_insights'):
-                    connected_systems['facebook_insights']['campaigns'] = list(request.user.metrics.get('facebook_insights',{}).keys())
+                    connected_systems['facebook_insights']['campaigns'] = list(metrics.get('facebook_insights',{}).keys())
 
                 if connected_systems.get('google_analytics'):
                     try:  # TODO: for now coz it can return a list
-                        connected_systems['google_analytics']['metrics'] = list(request.user.metrics.get('google_analytics').keys())
+                        connected_systems['google_analytics']['metrics'] = list(metrics.get('google_analytics').keys())
                         ga_dates_i = connected_systems['google_analytics']['metrics'].index('ga_dates')
                         connected_systems['google_analytics']['metrics'].pop(ga_dates_i)
 
-                        connected_systems['google_analytics']['filters'] = list(request.user.metrics.get('google_analytics').get('ga_sessions').keys())
+                        connected_systems['google_analytics']['filters'] = list(metrics.get('google_analytics').get('ga_sessions').keys())
                         ga_dates_i = connected_systems['google_analytics']['filters'].index('ga_dates')
                         connected_systems['google_analytics']['filters'].pop(ga_dates_i)
                     except:
                         print('nope')
                 if connected_systems.get('search_console'):
-                    connected_systems['search_console']['metrics'] = list(request.user.metrics.get('search_console').keys())
+                    connected_systems['search_console']['metrics'] = list(metrics.get('search_console').keys())
                     ga_dates_i = connected_systems['search_console']['metrics'].index('sc_dates')
                     connected_systems['search_console']['metrics'].pop(ga_dates_i)
 

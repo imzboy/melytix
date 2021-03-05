@@ -1,3 +1,4 @@
+import json
 from Utils.decorators import user_auth
 import datetime
 
@@ -96,7 +97,12 @@ class ConnectSearchConsoleAPI(Resource):
 
         data = GoogleUtils.prep_dash_metrics(sc_data=response)
 
-        User.insert_data_in_db(request.token, 'search_console', data)
+        with open(f'users_metrics/{request.token}/metrics.json', 'r+') as f:
+            all_metrics = json.loads(f.read())
+            all_metrics['search_console'] = data
+            f.write(json.dumps(all_metrics))
+
+        # User.insert_data_in_db(request.token, 'search_console', data)
 
         User.connect_system(
             request.token, 'search_console',
@@ -113,8 +119,10 @@ def search_console_metrics(request):
     start_date = request.json.get('start_date')
     end_date = request.json.get('end_date')
 
+    with open(f'users_metrics/{request.token}/metrics.json', 'r') as f:
+        all_metrics = json.loads(f.read())
+        sc_dict_data = all_metrics.get('search_console')
 
-    sc_dict_data = request.user.metrics.get('search_console')
     metric_name = request.json.get('metric')
     metric = sc_dict_data.get(metric_name)
     dates = sc_dict_data.get('sc_dates')
@@ -170,9 +178,13 @@ def google_analytics_metrics(request):
     end_date = request.json.get('end_date')
 
     filter = request.json['filter']
-    if request.user.metrics.get('google_analytics', {}).get('ga_dates'):
 
-        ga_data = request.user.metrics.get('google_analytics')
+    with open(f'users_metrics/{request.token}/metrics.json', 'r') as f:
+        metrics = json.loads(f.read())
+
+    if metrics.get('google_analytics', {}).get('ga_dates'):
+
+        ga_data = metrics.get('google_analytics')
 
         metrics = ga_data.get(metric)
         metric = metrics.get(filter)

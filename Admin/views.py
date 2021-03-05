@@ -1,8 +1,10 @@
+import os
+from analytics.base import Alert, Tip
+import json
 from flask import request, render_template, url_for, redirect, Blueprint
 from flask_login import login_required, login_user, logout_user
-from Alerts.Alert import Alert
-from Tips.Tip import Tip
 from user.models import Admin, User
+import uuid
 
 from flask_restful import Api, Resource
 
@@ -68,7 +70,13 @@ class MainManualAnalyzeView(Resource):
         return {}, 200
 
     def get(self):
-        all_users = User.filter_only(fields={'_id':False, 'email':True, 'metrics':True, 'Tips':True, 'Alerts':True})
+        all_users = User.filter_only(fields={'_id':False, 'email':True, 'Tips':True, 'Alerts':True, 'auth_token':True})
+
+        # for user in all_users:
+        #     path = f'users_metrics/{user.get("auth_token")}'
+        #     with open(f'{path}/metrics.json', 'r') as f:
+        #         metrics = json.loads(f.read())
+        #         user['metrics'] = metrics
 
         return {'users': all_users}, 200
 
@@ -84,11 +92,11 @@ class MainManualAnalyzeView(Resource):
         title = request.json.get('title')
         is_human_created = True
         item = helper_dict.get(type_)(
+            _id=str(uuid.uuid4()),
             category=category,
             title=title,
             description=description,
-            is_human_created=is_human_created,
-            analytics_func=None
+            is_human_created=is_human_created
         )
         User.append_list(
             {'email': user_email},
