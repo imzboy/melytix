@@ -22,19 +22,24 @@ Docs syntax:
             "account" : str (user account) ,
             "account_name" : str (name of selected account) ,
             "web_property" : str (selected web_property) ,
-            "web_property_name" : str (name of selected web_property)
+            "web_property_name" : str (name of selected web_property),
+            "scopes": <list> (scopes that are required for authorization)
         },
         "search_console": {
-            "site_url" : str (selected site URL)
+            "site_url" : str (selected site URL),
+            "scopes": <list> (scopes that are required for authorization)
         }
         "facebook_insights":{
             "account_id": (account ID in the ads manager, which the user has chosen),
             "name": (the name of the account the user chose)
         },
-        "search_console": {
-            "sc_dates" <list> (the list of dates),
-            "sc_~name of the metric": <list> (search console metrics)
-        }
+        "google_ads": {
+            "customer_id": str (account id with level = 0),
+            "customer_name": str (account name with level = 0),
+            "account_id": str (account id with level = 1),
+            "account_name": str (account name with level = 1),
+            "scopes": <list> (scopes that are required for authorization)
+        },
     },
     "metrics": {
         "google_analytics" : { <dict> (the google analytics data)
@@ -46,13 +51,22 @@ Docs syntax:
             }
             "ga_dates": <list> (the array of dates from google google analytics, contains every day from user registration minus 3 weeks)
         },
-        "search_console": {},
+        "search_console": {
+            "sc_dates" <list> (the list of dates),
+            "sc_~name of the metric": <list> (search console metrics)
+        },
         "facebook_insights": {
              "dates": <list> (the array of dates from facebook ads manager, contains every day from user registration minus 3 weeks)
              "~campaign name": {
                 "~name of the metric": <list> (the array of metrics) # ~name of the metric[i] == dates[i]
             }
-        }
+        },
+        "google_ads": {
+             "dates": <list> (the array of dates from facebook ads manager, contains every day from user registration minus 3 weeks)
+             "~campaign name": {
+                "~name of the metric": <list> (the array of metrics) # ~name of the metric[i] == dates[i]
+            }
+        },
         }
     },
     # TODO: add more systems
