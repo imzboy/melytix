@@ -77,13 +77,14 @@ class MetricAnalyzer(object):
             func = getattr(self, name)
             func_hash = hash(func.__name__)
             alg_type = func.__annotations__.get('return').__name__  # don't proccess the algorithm if the same id is in the database
-            if not User.db().find_one({'_id': ObjectId(user_id), f'{alg_type}.id': func_hash, 'active': True}):
+            if not User.db().find_one({'_id': ObjectId(user_id), f'{alg_type}s': {'$elemMatch': {'id': func_hash, 'active': True}}}):
                 try:
                     if (algorithm := func(func_hash)):
                         User.append_list({'_id': ObjectId(user_id)}, {f'{alg_type}s': algorithm.generate()})
                 except Exception as e:
                     with open('log.log', 'a') as f:
-                        f.write(f'[ALGORITHM ERROR] - {str(e)} - alg<{func.__name__}>\n')
+                        f.write(f'[ALGORITHM ERROR] - {str(e)} - alg<{name}>\n')
+
 
 class MetricNotFoundException(Exception):
     def __init__(self, message:str):
