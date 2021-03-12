@@ -111,7 +111,7 @@ def generate_tip_or_alert(users:list):
             try:
                 with open(f'users_metrics/{user.get("auth_token")}/metrics.json') as f:
                     metrics = json.loads(f.read())
-                analytics_class(metrics).analyze(user.get('_id'))
+                analytics_class(metrics).__analyze(user.get('_id'))
             except MetricNotFoundException:
                 continue
 

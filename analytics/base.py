@@ -71,8 +71,8 @@ class Tip:
 
 class MetricAnalyzer(object):
 
-    def analyze(self, user_id):
-        function_names = [attr for attr in dir(self) if not attr.startswith('__') and callable(getattr(self, attr)) and attr != 'analyze']
+    def __analyze(self, user_id):
+        function_names = [attr for attr in dir(self) if not attr.startswith('__') and callable(getattr(self, attr))]
         for name in function_names:
             func = getattr(self, name)
             func_hash = hash(func.__name__)
