@@ -27,7 +27,7 @@ class GoogleAdsAuthLoginApiView(Resource):
         code = request.json['code']
         token = request.json['token']
 
-        uri = 'http://localhost:8080'
+        uri = 'http://localhost:8080'  # TODO поменять на 'melytix.tk'
 
         access_token, refresh_token = code_exchange(code, uri)
 

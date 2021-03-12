@@ -5,6 +5,8 @@ from Systems.Google.GoogleAuth import CLIENT_ID, CLIENT_SECRET
 from Systems.GoogleAds.views import DEVELOPER_TOKEN
 from user.models import User
 from Utils.FacebookUtils import create_list_of_dates
+
+
 metrics = [
     'absoluteTopImpressionPercentage',
     'activeViewCpm',
@@ -226,7 +228,7 @@ def create_helper_dict(campaign_names: list, date_range: list):
             'metric': [],
             ...
         },
-    'data': [dates]
+    'dates': [dates]
     }"""
     result = {}
     for campaign in campaign_names:
