@@ -94,7 +94,7 @@ class MetricAnalyzer(object):
                 except Exception as e:
                     with open('log.log', 'a') as f:
                         f.write(f'[ALGORITHM ERROR] - {str(e)} - alg<{name}>\n')
-        if User.db().find_one({'_id': ObjectId(user_id), 'plan': 'free'}):
+        if User.get(_id=ObjectId(user_id), plan='free'):
             rand_alert = random.choice(all_alerts)
             rand_tip = random.choice(all_tips)
             User.append_list({'_id': ObjectId(user_id)}, {'Alerts': rand_alert.generate()})
