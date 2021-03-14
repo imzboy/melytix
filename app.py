@@ -12,6 +12,8 @@ from Systems.Google.views import google_analytics_metrics, search_console_metric
 
 from Systems.Facebook.views import facebook_insights_metrics
 
+from Systems.GoogleAds.views import google_ads_metrics
+
 from flask import Flask, request
 
 from user.models import User, Admin
@@ -24,6 +26,7 @@ from analytics.views import algorithms_bp
 from Systems.Google.views import google_bp
 from Systems.Facebook.views import facebook_insg_bp
 from Systems.SiteParser.views import parser_bp
+from Systems.GoogleAds.views import google_ads_bp
 
 def create_app():
     app = Flask(__name__)
@@ -51,6 +54,7 @@ def create_app():
     app.register_blueprint(facebook_insg_bp)
     app.register_blueprint(algorithms_bp)
     app.register_blueprint(parser_bp)
+    app.register_blueprint(google_ads_bp)
 
 
     @app.route('/')
@@ -90,26 +94,30 @@ def create_app():
             connected_systems = {}
             if request.user.connected_systems:
                 connected_systems = request.user.connected_systems
+                connected_systems['g_scopes'] = []
                 with open(f'users_metrics/{request.token}/metrics.json', 'r') as f:
                     metrics = json.loads(f.read())
                 if connected_systems.get('facebook_insights'):
                     connected_systems['facebook_insights']['campaigns'] = list(metrics.get('facebook_insights',{}).keys())
 
+                if connected_systems.get('google_ads'):
+                    connected_systems['g_scopes'].extend(connected_systems.get('google_ads').get('scopes'))
+                    connected_systems['google_ads']['campaigns'] = list(metrics.get('google_ads',{}).keys())
+
                 if connected_systems.get('google_analytics'):
                     try:  # TODO: for now coz it can return a list
+                        connected_systems['g_scopes'].extend(connected_systems.get('google_analytics').get('scopes'))
                         connected_systems['google_analytics']['metrics'] = list(metrics.get('google_analytics').keys())
-                        ga_dates_i = connected_systems['google_analytics']['metrics'].index('ga_dates')
-                        connected_systems['google_analytics']['metrics'].pop(ga_dates_i)
+                        connected_systems['google_analytics']['metrics'].pop('ga_dates')
 
                         connected_systems['google_analytics']['filters'] = list(metrics.get('google_analytics').get('ga_sessions').keys())
-                        ga_dates_i = connected_systems['google_analytics']['filters'].index('ga_dates')
-                        connected_systems['google_analytics']['filters'].pop(ga_dates_i)
+                        connected_systems['google_analytics']['filters'].pop('ga_dates')
                     except:
                         print('nope')
                 if connected_systems.get('search_console'):
+                    connected_systems['g_scopes'].extend(connected_systems.get('search_console').get('scopes'))
                     connected_systems['search_console']['metrics'] = list(metrics.get('search_console').keys())
-                    ga_dates_i = connected_systems['search_console']['metrics'].index('sc_dates')
-                    connected_systems['search_console']['metrics'].pop(ga_dates_i)
+                    connected_systems['search_console']['metrics'].pop('sc_dates')
 
 
             return {**connected_systems}, 200

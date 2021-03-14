@@ -88,6 +88,9 @@ class ConnectSearchConsoleAPI(Resource):
     def post(self):
         if request.user.connected_systems.get('search_console'):
             return {'Error': 'user has already connected to the Search Console'}, 409
+        scopes = ['https://www.googleapis.com/auth/userinfo.profile',
+                  'https://www.googleapis.com/auth/webmasters.readonly']
+
         site_url = request.json['site_url']
 
         start_date = request.user.parse_from_date
@@ -106,7 +109,7 @@ class ConnectSearchConsoleAPI(Resource):
 
         User.connect_system(
             request.token, 'search_console',
-            {'site_url': site_url})
+            {'site_url': site_url, 'scopes': scopes})
 
         return {'Message': 'Success'}, 200
 
@@ -158,13 +161,18 @@ class PutViewId(Resource):
             request.json['web_property'],
             request.token
         )
+
+        scopes = ['https://www.googleapis.com/auth/userinfo.profile',
+                  'https://www.googleapis.com/auth/analytics.readonly']
+
         User.connect_system(
             request.token, 'google_analytics',
             {'view_id': viewid,
                 'account': request.json['account'],
                 'account_name': request.json['account_name'],
                 'web_property': request.json['web_property'],
-                'web_property_name': request.json['web_property_name']})
+                'web_property_name': request.json['web_property_name',
+                'scopes': scopes]})
 
         return {'Message': 'Success'}, 200
 

@@ -15,6 +15,7 @@ from analytics.face_book_insings import *
 from Systems.Facebook.FacebookAdsManager import facebook_insights_query
 from Systems.Google.GoogleAnalytics import generate_report_body
 from Systems.Google.GoogleAuth import auth_credentials
+from Systems.GoogleAds.GoogleAds import google_ads_query_metrics
 from Utils.GoogleUtils import GoogleReportsParser, GoogleTotalsReportsParser, fill_all_with_zeros
 from Utils.FacebookUtils import create_list_of_dates
 from user.models import User
@@ -86,6 +87,20 @@ def refresh_metric(users: list):
         #             {'email': user['email']},
         #             {f'metrics.facebook_insights.{campaign}.{metric}': {'$each': value}}
         #         )
+
+        # today = datetime.datetime.now().date().isoformat()
+        # data = google_ads_query_metrics(token, today, today)
+        # with open(f'users_metrics/{token}/metrics.json', 'r+') as f:
+        #     all_metrics = json.loads(f.read())
+        #     googleads_metrics = all_metrics.pop('google_ads')
+        #     for campaign, metrics in data.items():
+        #         if campaign == "dates":
+        #             googleads_metrics['dates'].append(today)
+        #             continue
+        #         for metric, value in metrics.items():
+        #             googleads_metrics[campaign][metric].append(value)
+        #     all_metrics['google_ads'] = googleads_metrics
+        #     f.write(json.dumps(all_metrics))
 
 
 @celery.task
@@ -164,7 +179,7 @@ def google_analytics_query_all(token, view_id, start_date, end_date):
 
     totals = google_analytics_query_totals(totals_report, start_date, end_date, token)
     for metric, total in totals.items():
-        result[metric]['total']= total
+        result[metric]['total'] = total
 
     path = f'users_metrics/{token}'
     if len(dates) > 1:
@@ -178,29 +193,28 @@ def google_analytics_query_all(token, view_id, start_date, end_date):
                 metrics['google_analytics'] = result
 
         with open(f'{path}/metrics.json', 'r+') as f:
-                f.write(json.dumps(metrics))
+            f.write(json.dumps(metrics))
     else:
         with open(f'{path}/metrics.json', 'r+') as f:
+            all_metrics = json.loads(f.read())
+            metrics = all_metrics.pop('google_analytics')
+            del all_metrics
+            dates = metrics.pop('ga_dates')
+            dates.append(result.get('ga_dates')[0])
+            if metrics:
+                #This is hella bad
+                for m_name, m_value in metrics.items():
+                    for d_name, d_value in m_value.items():
+                        for sub_d_name, sb_d_value in d_value.items():
+                            # sub d value -> list of metrics
+                            sb_d_value.append(
+                                result.get(m_name).get(d_name).get(sub_d_name)[0]
+                            )
+                metrics['ga_dates'] = dates
+                # get file second time to shorthen the update period
                 all_metrics = json.loads(f.read())
-                metrics = all_metrics.pop('google_analytics')
-                del all_metrics
-                dates = metrics.pop('ga_dates')
-                dates.append(result.get('ga_dates')[0])
-                if metrics:
-                    #This is hella bad
-                    for m_name, m_value in metrics.items():
-                        for d_name, d_value in m_value.items():
-                            for sub_d_name, sb_d_value in d_value.items():
-                                # sub d value -> list of metrics
-                                sb_d_value.append(
-                                    result.get(m_name).get(d_name).get(sub_d_name)[0]
-                                )
-                    metrics['ga_dates'] = dates
-                    # get file second time to shorthen the update period
-                    all_metrics = json.loads(f.read())
-                    all_metrics['google_analytics'] = metrics
-                    f.write(json.dumps(all_metrics))
-
+                all_metrics['google_analytics'] = metrics
+                f.write(json.dumps(all_metrics))
 
 def google_analytics_query(report: list, start_date, end_date, token):
     # Google Analytics v4 api setup to make a request to google analytics
