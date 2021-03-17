@@ -8,6 +8,10 @@ celery_beat_schedule = {
     "generate_tips_and_alerts": {
         "task": "tasks.tasks.generate_tips_and_alerts",
         "schedule": crontab(hour=22, minute=0),
+    },
+    "check_accounts_for_delete": {
+        "task": "tasks.tasks.check_accounts_for_delete",
+        "schedule": crontab(hour=1, minute=0),
     }
 }
 

@@ -4,7 +4,7 @@ from flask import request, Blueprint
 from flask_restful import Resource, Api
 from google.ads.google_ads.client import GoogleAdsClient
 from google.oauth2.credentials import Credentials
-from Systems.GoogleAds.GoogleAds import google_ads_query_metrics
+from Systems.GoogleAds.GoogleAds import google_ads_query_metrics, DEVELOPER_TOKEN
 from Utils.decorators import user_auth
 from user.models import User
 from Utils.GoogleUtils import find_start_and_end_date
@@ -15,7 +15,6 @@ api = Api(google_ads_bp)
 
 
 SCOPE = 'https://www.googleapis.com/auth/adwords'
-DEVELOPER_TOKEN = 'vRm9-k8iVkRprjZw9fkc7w' # TODO: get from main account
 
 
 class GoogleAdsAuthLoginApiView(Resource):
@@ -81,6 +80,7 @@ class GoogleAdsSetAccount(Resource):
 
         start_date = User.parse_from_date
         end_date = datetime.datetime.now().date().isoformat()
+
         googleads_metrics = google_ads_query_metrics(token, start_date, end_date)
 
         with open(f'users_metrics/{request.token}/metrics.json', 'r+') as f:

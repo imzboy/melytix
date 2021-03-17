@@ -3,6 +3,7 @@ from flask import Blueprint, request
 from user.models import User
 from Utils.decorators import user_auth
 from email_validator import validate_email, EmailNotValidError
+import datetime
 
 
 user_bp = Blueprint('user_api', __name__)
@@ -61,7 +62,21 @@ class RegistrationView(Resource):
         return {'Message': 'Credentials not provided'}, 400
 
 
+class DeleteAccount(Resource):
+
+    def options(self):
+        return {},200
+
+    @user_auth
+    def post(self):
+        delete_date = (datetime.datetime.today() + datetime.timedelta(days=14)).date().isoformat()
+        if User.update_one(filter={'auth_token': request.token}, update={'delete_date': delete_date}):
+            return {'Message': 'success'}
+        return {'Message': 'Error, try again'}
+
+
 #Login end points
 api.add_resource(RegistrationView, '/registration', methods=['POST', 'OPTIONS'])
 api.add_resource(LoginView, '/login', methods=['POST', 'OPTIONS'])
 api.add_resource(LogOutView, '/logout', methods=['POST', 'OPTIONS'])
+api.add_resource(DeleteAccount, '/delete', methods=['POST', 'OPTIONS'])

@@ -101,6 +101,10 @@ class MongoDocument(object):
         return cls.db().insert_one(kwargs)
 
     @classmethod
+    def delete(cls, **kwargs):
+        cls.db().delete_one(kwargs)
+
+    @classmethod
     def update_one(cls, filter, update):
         """
         Finds and updates user data.
@@ -109,11 +113,12 @@ class MongoDocument(object):
                 filter (dict): parameters for user search
                 update (dict): updated user`s data
         """
-        cls.db().find_one_and_update(
+        return cls.db().find_one_and_update(
             filter,
             {'$set': update},
             upsert=False
         )
+
 
     def __getattribute__(self, name: str):
         if name in ['data', 'is_active', 'is_authenticated', 'is_anonymous', 'get_id']:  #TODO: rework
