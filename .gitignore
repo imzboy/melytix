@@ -1,6 +1,7 @@
 .venv/
 .env/
 .env
+.idea
 __pycache__/
 Systems/__pycache__/
 Alerts/__pycache__/
