@@ -251,3 +251,13 @@ def google_analytics_query_totals(report, start_date, end_date, token):
         parsed_response = {k: [0] * l for k in metrics}
 
     return parsed_response
+
+
+@celery.task
+def check_accounts_for_delete():
+    if (mongo_users := User.filter(delete_date={'$exists': True})):
+        for mongo_user in mongo_users:
+            delete_date = mongo_user.get_only(email=mongo_users.email, fields={'_id':False, 'delete_date':True}).get('delete_date')
+            today = datetime.datetime.today().date().isoformat()
+            if delete_date == today:
+                mongo_user.delete(email=mongo_user.email)

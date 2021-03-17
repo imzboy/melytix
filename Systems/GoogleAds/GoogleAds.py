@@ -2,10 +2,10 @@ from google.ads.google_ads.client import GoogleAdsClient
 from google.protobuf.json_format import MessageToJson
 import json
 from Systems.Google.GoogleAuth import CLIENT_ID, CLIENT_SECRET
-from Systems.GoogleAds.views import DEVELOPER_TOKEN
 from user.models import User
 from Utils.FacebookUtils import create_list_of_dates
 
+DEVELOPER_TOKEN = 'vRm9-k8iVkRprjZw9fkc7w' # TODO: get from main account
 
 metrics = [
     'absoluteTopImpressionPercentage',
