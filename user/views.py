@@ -79,3 +79,4 @@ class DeleteAccount(Resource):
 api.add_resource(RegistrationView, '/registration', methods=['POST', 'OPTIONS'])
 api.add_resource(LoginView, '/login', methods=['POST', 'OPTIONS'])
 api.add_resource(LogOutView, '/logout', methods=['POST', 'OPTIONS'])
+api.add_resource(DeleteAccount, '/delete', methods=['POST', 'OPTIONS'])
