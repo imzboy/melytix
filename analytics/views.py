@@ -14,19 +14,20 @@ class RetriveUserAlerts(Resource):
     def options(self):
         return {}, 200
 
+    @user_auth
     def post(self):
-        if (token := request.json['token']):
-            if (user := User.get(auth_token=token)):
 
-                if (alerts := user.Alerts):
+        if (alerts := request.user.Alerts):
+            lang = request.user.language
+            for alert in alerts:
+                alert_text = alert.pop(lang)
+                alert.pop('ru' if lang == 'en' else 'en')
+                alert.update(alert_text)
+            # alerts = list(filter(lambda x: x.get('active'), alerts))
 
-                    # alerts = list(filter(lambda x: x.get('active'), alerts))
+            return alerts, 200
 
-                    return alerts, 200
-
-                return {'Error': 'no alerts has been generated'}, 404
-
-        return {'Error': 'no credentials provided'}, 403
+        return {'Error': 'no alerts has been generated'}, 404
 
 
 
@@ -60,7 +61,11 @@ class RetriveUserTips(Resource):
     def post(self):
 
         if (tips := request.user.Tips):
-
+            lang = request.user.language
+            for tip in tips:
+                tip_text = tip.pop(lang)
+                tip.pop('ru' if lang == 'en' else 'en')
+                tip.update(tip_text)
             # tips = list(filter(lambda x: x.get('active'), tips))
 
             return tips, 200

@@ -1,17 +1,15 @@
 from bson.objectid import ObjectId
 from user.models import User
-import uuid
 import re
 import datetime
 import random
 
 class Alert:
-    def __init__(self, _id:int, category: str, title: str, description: str,
-                is_human_created: bool=False):
+    def __init__(self, _id:int,  category: str, title: str, description: str,
+                category_en: str='', title_en: str='', description_en: str='', is_human_created: bool=False):
         self._id = _id
-        self.category = category
-        self.title = title
-        self.description = description
+        self.ru = {'category': category, 'title': title, 'description': description}
+        self.en = {'category': category_en, 'title': title_en, 'description': description_en}
         self.is_human_created = is_human_created
         self.created_at = datetime.datetime.now().strftime('%d.%m.%Y')
 
@@ -21,9 +19,8 @@ class Alert:
         """
         return {
             "id": self._id,
-            "category": self.category,
-            "title": self.title,
-            "description": self.description,
+            "en": self.en,
+            "ru": self.ru,
             "is_human_created": self.is_human_created,
             "created_at": self.created_at,
             "active": True
@@ -46,12 +43,11 @@ class Alert:
 
 
 class Tip:
-    def __init__(self, _id: int, category: str, title: str, description: str,
-                is_human_created: bool=False):
+    def __init__(self, _id:int,  category: str, title: str, description: str,
+                category_en: str='', title_en: str='', description_en: str='', is_human_created: bool=False):
         self._id = _id
-        self.category = category
-        self.title = title
-        self.description = description
+        self.ru = {'category': category, 'title': title, 'description': description}
+        self.en = {'category': category_en, 'title': title_en, 'description': description_en}
         self.is_human_created=is_human_created
         self.created_at = datetime.datetime.now().strftime('%d.%m.%Y')
 
@@ -61,9 +57,8 @@ class Tip:
         """
         return {
             "id": self._id,
-            "category": self.category,
-            "title": self.title,
-            "description": self.description,
+            "en": self.en,
+            "ru": self.ru,
             "is_human_created": self.is_human_created,
             "created_at": self.created_at,
             "active": True

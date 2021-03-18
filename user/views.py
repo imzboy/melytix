@@ -52,13 +52,14 @@ class RegistrationView(Resource):
             except EmailNotValidError as e:
                 return {"Message": str(e)}, 400
             else:
-                if len(password) >= 8:
-                    User.register(email, password, plan)
+                if not User.get(email=email):
+                    if len(password) >= 8:
+                        User.register(email, password, plan)
 
-                    return {'Message': 'success'}, 201
+                        return {'Message': 'success'}, 201
 
-                return {'Message': 'Password length is less than 8'}, 400
-
+                    return {'Message': 'Password length is less than 8'}, 400
+                return {'Message': 'User with this email already exists'}, 400
         return {'Message': 'Credentials not provided'}, 400
 
 

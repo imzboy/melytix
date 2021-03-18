@@ -21,13 +21,14 @@ class User(MongoDocument):
     metrics : dict
     tips : list
     alerts : list
+    language : str
     dash_settings : dict
 
     def __str__(self) -> str:
         return f'<User {self.email}>'
 
     @classmethod
-    def register(cls, email: str, password: str, plan:str='free'):
+    def register(cls, email: str, password: str, language: str='en', plan:str='free'):
         """
         Hashes the password and register one new user in the database.
             Parameters:
@@ -36,7 +37,7 @@ class User(MongoDocument):
         """
         salt = os.urandom(24)
         password = pbkdf2_hmac('sha256', password.encode('utf-8'), salt, 100000)
-        result = User.create(email=email, password=password, salt=salt, plan=plan)
+        result = User.create(email=email, password=password, salt=salt, language=language, plan=plan)
         return result
 
     @classmethod
