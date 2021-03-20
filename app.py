@@ -119,7 +119,7 @@ def create_app():
                     main_dict['search_console']['metrics'] = list(metrics.get('search_console').keys())
                     main_dict['search_console']['metrics'].pop('sc_dates')
 
-            main_dict['lang'] = request.user.lang
+            main_dict['language'] = request.user.language
             return {**main_dict}, 200
 
 

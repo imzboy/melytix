@@ -45,7 +45,7 @@ class RegistrationView(Resource):
         email: str = request.json.get('email')
         password: str = request.json.get('password')
         plan:str = request.json.get('plan')
-
+        language:str = request.json.get('language')
         if email and password:
             try:
                 validate_email(email)
@@ -54,7 +54,7 @@ class RegistrationView(Resource):
             else:
                 if not User.get(email=email):
                     if len(password) >= 8:
-                        User.register(email, password, plan)
+                        User.register(email, password, language, plan)
 
                         return {'Message': 'success'}, 201
 
