@@ -250,6 +250,11 @@ class GaReturningUserAnalyzer(MetricAnalyzer):
             if 0.25 < average < 0.5:
                 return Tip(
                     _id=alg_id,
+                    category_en='Analytics',
+                    title_en='Users are slowly returning to the main domain.',
+                    description_en="During a week, users do not return to your page. Check your remarketing and "
+                                   "retargeting settings, increase the frequency of your ad for traffic bounces, "
+                                   "and view your ads' CTRs for a complete solution to your traffic return process.",
                     category='Analytics',
                     title='Пользователи не активно возвращаются на главный домен.',
                     description='На протяжении недели пользователи не возвращаются на вашу страницу. '
@@ -263,6 +268,14 @@ class GaReturningUserAnalyzer(MetricAnalyzer):
             if average < 0.25:
                 return Tip(
                     _id=alg_id,
+                    category_en='Analytics',
+                    title_en='Users are not returned to the main domain.',
+                    description_en='During a week, users do not return to your page. Over 55% of online businesses '
+                                   'set up remarketing and retargeting to advertise their website. This allows the '
+                                   'project to always be “in the public eye”! Use remarketing technology in Google '
+                                   'Adwords, as well as test social retargeting to bring users back to the site - '
+                                   'this can increase the number of repeat sales, as well as increase your '
+                                   'conversion.',
                     category='Analytics',
                     title='Пользователи не возвращаются на главный домен.',
                     description='На протяжении недели пользователи не возвращаются на вашу страницу. '
@@ -278,6 +291,12 @@ class GaReturningUserAnalyzer(MetricAnalyzer):
             if average > 0.8:
                 return Tip(
                     _id=alg_id,
+                    category_en='Analytics',
+                    title_en='You are great at returning users to your main domain.',
+                    description_en='You are excellent at returning users to your site, it increases your conversion '
+                                   'rate and the repeat success rate for your business goals. We advise you to '
+                                   'increase your remarketing or retargeting ad budget to strengthen this channel and '
+                                   'increase business-critical metrics!',
                     category='Analytics',
                     title='Вы отлично возвращаете пользователей на ваш главный домен.',
                     description='Вы отлично возвращаете пользователей на ваш сайт, это повышает показатель вашей конверсии и '
@@ -296,6 +315,11 @@ class GaNewUserAnalyzer(MetricAnalyzer):
             if sorted(new_users) == new_users:
                 return Tip(
                     _id=alg_id,
+                    category_en='Analytics',
+                    title_en = 'The influx of new unique users has been continuing since the start of the week and still is growing!',
+                    description_en='During the week, a positive increase in new unique users was recorded. Save your '
+                                   'marketing channel settings to further drive new user growth, which translates '
+                                   'into higher Unique Conversion Rates!',
                     category='Analytics',
                     title='Приток новых уникальных пользователей на этой неделе сохранился и растёт последовательно!',
                     description='На протяжении недели зафиксирован положительный прирост новых уникальных пользователей. Сохраните '
@@ -325,6 +349,15 @@ class GaPageViewsPerSessionAnalyzer(MetricAnalyzer):
                 if item < 1.5:
                     return Tip(
                         _id = alg_id,
+                        category_en='Analytics',
+                        title_en='Your traffic is not engaging in viewing content.',
+                        description_en='For a week, users are not engaged in exploring the content of the main '
+                                       'domain. This problem occurs on sites that make such mistakes, '
+                                       'namely 1. Inconveniently located menu for users. 2. Users are directed by '
+                                       'advertising to an inappropriate page. 3. The content on the page is not '
+                                       'interesting to the incoming traffic. We advise you to change the user login '
+                                       'pages, check the menu and navigation settings on your site, revise the '
+                                       'settings for advertising traffic attraction.',
                         category='Analytics',
                         title='Ваш трафик не просматривает контент вовлеченно.',
                         description='На протяжении недели пользователи не вовлеченно изучают контент главного домена. '

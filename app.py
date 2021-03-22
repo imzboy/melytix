@@ -91,36 +91,36 @@ def create_app():
 
         @user_auth
         def post(self):
-            connected_systems = {}
+            main_dict = {}
             if request.user.connected_systems:
-                connected_systems = request.user.connected_systems
-                connected_systems['g_scopes'] = []
+                main_dict = request.user.connected_systems
+                main_dict['g_scopes'] = []
                 with open(f'users_metrics/{request.token}/metrics.json', 'r') as f:
                     metrics = json.loads(f.read())
-                if connected_systems.get('facebook_insights'):
-                    connected_systems['facebook_insights']['campaigns'] = list(metrics.get('facebook_insights',{}).keys())
+                if main_dict.get('facebook_insights'):
+                    main_dict['facebook_insights']['campaigns'] = list(metrics.get('facebook_insights',{}).keys())
 
-                if connected_systems.get('google_ads'):
-                    connected_systems['g_scopes'].extend(connected_systems.get('google_ads').get('scopes'))
-                    connected_systems['google_ads']['campaigns'] = list(metrics.get('google_ads',{}).keys())
+                if main_dict.get('google_ads'):
+                    main_dict['g_scopes'].extend(main_dict.get('google_ads').get('scopes'))
+                    main_dict['google_ads']['campaigns'] = list(metrics.get('google_ads',{}).keys())
 
-                if connected_systems.get('google_analytics'):
+                if main_dict.get('google_analytics'):
                     try:  # TODO: for now coz it can return a list
-                        connected_systems['g_scopes'].extend(connected_systems.get('google_analytics').get('scopes'))
-                        connected_systems['google_analytics']['metrics'] = list(metrics.get('google_analytics').keys())
-                        connected_systems['google_analytics']['metrics'].pop('ga_dates')
+                        main_dict['g_scopes'].extend(main_dict.get('google_analytics').get('scopes'))
+                        main_dict['google_analytics']['metrics'] = list(metrics.get('google_analytics').keys())
+                        main_dict['google_analytics']['metrics'].pop('ga_dates')
 
-                        connected_systems['google_analytics']['filters'] = list(metrics.get('google_analytics').get('ga_sessions').keys())
-                        connected_systems['google_analytics']['filters'].pop('ga_dates')
+                        main_dict['google_analytics']['filters'] = list(metrics.get('google_analytics').get('ga_sessions').keys())
+                        main_dict['google_analytics']['filters'].pop('ga_dates')
                     except:
                         print('nope')
-                if connected_systems.get('search_console'):
-                    connected_systems['g_scopes'].extend(connected_systems.get('search_console').get('scopes'))
-                    connected_systems['search_console']['metrics'] = list(metrics.get('search_console').keys())
-                    connected_systems['search_console']['metrics'].pop('sc_dates')
+                if main_dict.get('search_console'):
+                    main_dict['g_scopes'].extend(main_dict.get('search_console').get('scopes'))
+                    main_dict['search_console']['metrics'] = list(metrics.get('search_console').keys())
+                    main_dict['search_console']['metrics'].pop('sc_dates')
 
-
-            return {**connected_systems}, 200
+            main_dict['language'] = request.user.language
+            return {**main_dict}, 200
 
 
 

@@ -87,6 +87,7 @@ Docs syntax:
             "active": <boolean>
         }
     ],
+    "language" <string> (user`s language of tips and alerts)
     "DashSettings": <dict> (user settings for his dashboard)
 }
 }
