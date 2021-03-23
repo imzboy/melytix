@@ -120,6 +120,8 @@ def create_app():
                     main_dict['search_console']['metrics'].pop('sc_dates')
 
             main_dict['language'] = request.user.language
+            main_dict['email'] = request.user.email
+
             return {**main_dict}, 200
 
 
