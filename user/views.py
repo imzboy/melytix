@@ -85,12 +85,18 @@ class ChangeCreds(Resource):
     def post(self):
 
         if email := request.json.get('email'):
+            if email == request.user.email:
+                return {'Message': 'Error, this email is already the same as the old one'}
             User.update_one(filter={'auth_token': request.token}, update={'email': email})
 
         if language := request.json.get('language'):
+            if language == request.user.language:
+                return {'Message': 'Error, this language is already the same as the old one'}
             User.update_one(filter={'auth_token': request.token}, update={'language': language})
 
         if password := request.json.get('password'):
+            if password == request.user.password:
+                return {'Message': 'Error, this password is already the same as the old one'}
             User.update_one(filter={'auth_token': request.token}, update={'password': password})
 
         return {'Message': 'success'}
