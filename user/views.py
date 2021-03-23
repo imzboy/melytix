@@ -76,8 +76,29 @@ class DeleteAccount(Resource):
         return {'Message': 'Error, try again'}
 
 
+class ChangeCreds(Resource):
+
+    def options(self):
+        return {},200
+
+    @user_auth
+    def post(self):
+
+        if email := request.json.get('email'):
+            User.update_one(filter={'auth_token': request.token}, update={'email': email})
+
+        if language := request.json.get('language'):
+            User.update_one(filter={'auth_token': request.token}, update={'language': language})
+
+        if password := request.json.get('password'):
+            User.update_one(filter={'auth_token': request.token}, update={'password': password})
+
+        return {'Message': 'success'}
+
+
 #Login end points
 api.add_resource(RegistrationView, '/registration', methods=['POST', 'OPTIONS'])
 api.add_resource(LoginView, '/login', methods=['POST', 'OPTIONS'])
 api.add_resource(LogOutView, '/logout', methods=['POST', 'OPTIONS'])
 api.add_resource(DeleteAccount, '/delete', methods=['POST', 'OPTIONS'])
+api.add_resource(ChangeCreds, '/change-creds', methods=['POST', 'OPTIONS'])
