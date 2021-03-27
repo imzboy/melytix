@@ -79,6 +79,12 @@ class GaUsersAnalyzer(MetricAnalyzer):
             most_popular_brand = main_brand_tuple[0]
             return Tip(
                 _id=alg_id,
+                category_en='Analytics, The target audience',
+                title_en=f'Your target audience uses the {most_popular_brand}',
+                description_en=f'Your target audience uses the {most_popular_brand} device. Look carefully at the '
+                               'design of your site for the model of mobile devices of this brand. Also, '
+                               'when setting up advertising campaigns, direct the majority (60%) of the advertising '
+                               'budget to devices of this type.',
                 category='Analytics, Целевая Аудитория',
                 title=f'Ваша целевая аудитория пользуется устройством {most_popular_brand}',
                 description=f'Ваша целевая аудитория пользуется устройством {most_popular_brand}. Внимательно просмотрите дизайн вашего '
@@ -93,6 +99,9 @@ class GaUsersAnalyzer(MetricAnalyzer):
             most_popular_browser = main_browser_tuple[0]
             return Tip(
                 _id = alg_id,
+                category_en='Analytics, The target audience',
+                title_en=f'Your target audience uses a browser - {most_popular_browser}',
+                description_en=f'Your target audience uses a browser - {most_popular_browser}. Carefully review the design of your site for this browser.',
                 category='Analytics, Целевая Аудитория',
                 title=f'Ваша целевая аудитория пользуется браузером - {most_popular_browser}',
                 description=f'Ваша целевая аудитория пользуется браузером - {most_popular_browser}. Внимательно просмотрите дизайн вашего сайта под этот браузер.')
@@ -113,6 +122,15 @@ class GaUsersAnalyzer(MetricAnalyzer):
 
                 return Tip(
                     _id = alg_id,
+                    category_en='Analytics, The target audience',
+                    title_en=f'Your target audience uses the device - {most_popular_category}',
+                    description_en=f'Your target audience uses the device - {most_popular_category}. Check the '
+                                   'responsiveness of your site design for this type of device. Carefully check the '
+                                   f'visibility and size of all items for a given device type size - {most_popular_size}. '
+                                   'Note that even the size and color of the button can affect your conversion, '
+                                   'so important elements of your site functionality should be highlighted and '
+                                   'visible to the user on this type of device.',
+
                     category='Analytics, Целевая Аудитория',
                     title=f'Ваша целевая аудитория пользуется девайсом -  {most_popular_category}',
                     description=f'Ваша целевая аудитория пользуется девайсом -  {most_popular_category}. Проверьте адаптивность дизайна '
@@ -133,8 +151,14 @@ class GaUsersAnalyzer(MetricAnalyzer):
                     str_main_language = main_language_tuple[0]
                     return Tip(
                         _id = alg_id,
+                        category_en='Analytics, The target audience',
+                        title_en=f'Your target audience speaks not only in the {str_main_language}',
+                        description_en=f'Your target audience does not only communicate in the {str_main_language}.'
+                                       f'Note that your main target audience uses not only {str_main_language} but also '
+                                       f'{string_languages}. Create a multilingual version of the site or check its '
+                                       'availability and correct translation. This affects your conversion!',
                         category='Analytics, Целевая Аудитория',
-                        title=f'Ваша целевая аудитория общается не только на {str_main_language} ',
+                        title=f'Ваша целевая аудитория общается не только на {str_main_language}',
                         description=f'Ваша целевая аудитория общается не только на {str_main_language}. '
                                     f'Заметьте, ваша основная целевая аудитория использует не только {str_main_language},'
                                     f' но ещё и {string_languages}. Создайте мультиязычную версию сайта или же проверьте '
@@ -145,10 +169,16 @@ class GaUsersAnalyzer(MetricAnalyzer):
             str_interests = str(all_interests.keys())[11:-2]
             return Tip(
                 _id = alg_id,
+                category_en='Analytics, The target audience',
+                title_en='Use the interests of your audience in the settings of targeted advertising on Facebook, Instagram!',
+                description_en='Melytix.ai has analyzed your users and identified important interests that relate to '
+                               f'your target audience, namely: {str_interests}. Use exactly '
+                               'these interests to accurately hit your target audience, and the system will analyze '
+                               'the increase in your conversion after new advertising campaigns appear.',
                 category='Analytics, Целевая Аудитория',
                 title='Используйте интересы вашей аудитории в настройках таргетированной рекламы в Facebook, Instagram!',
                 description='Melytix.ai провёл анализ Ваших пользователей и выявил важные интересы, которые относятся к вашей '
-                            f'целевой аудитории, а именно - {str_interests}. Используйте именно эти '
+                            f'целевой аудитории, а именно: {str_interests}. Используйте именно эти '
                             'интересы для точного попадания в Вашу целевую аудиторию, а система проанализируют повышение Вашей '
                             'конверсии после появления новых рекламных кампаний.')
 
@@ -162,6 +192,12 @@ class GaUsersAnalyzer(MetricAnalyzer):
             str_cities = str(sorted_cities_names)[1:-1]
             return Tip(
                 _id = alg_id,
+                category_en='Analytics, The target audience',
+                title_en=f'Major cities - {str_cities} gives you the most conversions!',
+                description_en='Melytix analyzed your users and identified the most popular cities that give you the '
+                               'most conversions! Set up targeted advertising campaigns from hyper - locations to '
+                               'city data to reduce the cost per lead of your advertising campaign and increase your '
+                               'conversions!',
                 category='Analytics, Целевая Аудитория',
                 title=f'Основные города - {str_cities} дают Вам больше всего конверсий!',
                 description='Melytix.ai провёл анализ Ваших пользователей и выявил самые популярные города, которые дают Вам '
@@ -331,6 +367,11 @@ class GaNewUserAnalyzer(MetricAnalyzer):
             if sorted(new_users, reverse=True) == new_users:
                 return Tip(
                     _id=alg_id,
+                    category_en='Analytics',
+                    title_en='There are fewer new unique users this week!',
+                    description_en='During this week decline of new unique users was detected. Check the health of '
+                                   'your marketing channels to correct and improve this metric to increase site '
+                                   'rankings and new unique conversions.',
                     category='Analytics',
                     title='Приток новых уникальных пользователей на этой неделе упал!',
                     description='На протяжении недели зафиксировано падение новых уникальных пользователей. '
@@ -381,6 +422,11 @@ class GaAvgSessionDurationAnalyzer(MetricAnalyzer):
             if average > 1.3:
                 return Tip(
                     _id = alg_id,
+                    category_en='Analytics',
+                    title_en='In terms of average session duration, you are less than 35% of sites.',
+                    description_en="Average session length is one of the top behavioral factors for ranking your main "
+                                   "domain in search engines. Try to keep your user's attention on the site longer "
+                                   "than you have now - by adding more user path navigation cues on your page.",
                     category='Analytics',
                     title='В показателе средней продолжительности сеанса вы больше, чем 56% сайтов.',
                     description='Вы отлично удерживаете внимание пользователя на вашем сайте, аудитория достаточно активно изучает'
@@ -393,6 +439,12 @@ class GaAvgSessionDurationAnalyzer(MetricAnalyzer):
             if 1.0 < average < 1.5:
                 return Tip(
                     _id = alg_id,
+                    category_en='Analytics',
+                    title_en=' In terms of average session duration, you are less than 35% of sites.',
+                    description_en= "Average session length is one of the top behavioral factors for ranking your "
+                                    "main domain in search engines. Try to keep your user's attention on the site "
+                                    "longer than you have now - by adding more user path navigation cues on your "
+                                    "page.",
                     category='Analytics',
                     title='В показателе средней продолжительности сеанса вы меньше, чем 35% сайтов.',
                     description='Средняя продолжительность сеансов - один из главных поведенческих факторов ранжирования вашего '
@@ -405,6 +457,13 @@ class GaAvgSessionDurationAnalyzer(MetricAnalyzer):
             if average < 1.0:
                 return Tip(
                     _id = alg_id,
+                    category_en='Analytics',
+                    title_en='In terms of average session duration, you are less than 85% of sites.',
+                    description_en="Average session length is one of the top behavioral factors for ranking your main "
+                                   "domain in search engines. Try to keep your user's attention on the site longer "
+                                   "than you have now - by adding more user path navigation cues on your page. And "
+                                   "also check the settings of your marketing channels for driving traffic - is the "
+                                   "relevant traffic coming to your site?",
                     category='Analytics',
                     title='В показателе средней продолжительности сеанса вы меньше, чем 85% сайтов',
                     description='Средняя продолжительность сеансов - один из главных поведенческих факторов ранжирования вашего '
@@ -426,6 +485,13 @@ class GaAvgPageLoadTimeAnalyzer(MetricAnalyzer):
             if item > 3:
                 return Tip(
                     _id=alg_id,
+                    category_en='Analytics',
+                    title_en='Page loading speed is not optimized!',
+                    description_en="The loading speed of your site pages is not optimized. At the moment, the average "
+                                   "indicator is more than 3 seconds, which is unacceptable for search engines, "
+                                   "and most importantly, your user behavioral indicators. This metric negatively "
+                                   "affects your rankings and conversions. Try to shorten unnecessary code on the "
+                                   "site, as well as cache images on your site to improve this indicator.",
                     category='Analytics',
                     title='Скорость загрузки страницы не оптимизирована!',
                     description='Скорость загрузки ваших страниц сайта не оптимизирована. В данный момент средний показатель '
@@ -440,6 +506,14 @@ class GaAvgPageLoadTimeAnalyzer(MetricAnalyzer):
             if item > 2:
                 return Tip(
                     _id=alg_id,
+                    category_en='Analytics',
+                    title_en='The download speed is not optimized enough.',
+                    description_en="The loading speed of your website pages is not fully optimized. At the moment, "
+                                   "the average indicator is more than 2 seconds, which does not give maximum "
+                                   "efficiency for search engines, and most importantly, your user behavioral "
+                                   "indicators. This metric negatively affects your rankings and conversions. Try to "
+                                   "shorten unnecessary code on the site, as well as cache images on your site to "
+                                   "improve this indicator.",
                     category='Analytics',
                     title='Скорость загрузки оптимизирована недостаточно.',
                     description='Скорость загрузки ваших страниц сайта не оптимизирована в полной мере. В данный момент средний '
@@ -461,6 +535,12 @@ class GaTimeOnPageAnalyzer(MetricAnalyzer):
             if float(item) < 10:
                 return Tip(
                     _id = alg_id,
+                    category_en='Analytics',
+                    title_en='Users stay on your site too little',
+                    description_en='Users stay on your site too little. The reason for the deterioration of this '
+                                   'metric can be several events: irrelevant traffic is sent to the site, site pages '
+                                   'take a long time to load. Try to correct at least one of these events, '
+                                   'and Melytix.ai will automatically measure your performance again!',
                     category='Analytics',
                     title='Пользователи не задерживаются на вашем сайте.',
                     description='Пользователи не задерживаются на вашем сайте. Причиной ухудшения данной метрики может быть несколько '
