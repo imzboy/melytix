@@ -581,6 +581,12 @@ class GaTimeOnPageAnalyzer(MetricAnalyzer):
             if float(item) < 30:
                 return Tip(
                     _id = alg_id,
+                    category_en='Analytics',
+                    title_en='Users stay on your site too little.',
+                    description_en='Users stay on your site too little. The reason for the deterioration of this '
+                                   'metric can be several events: irrelevant traffic is sent to the site, site pages '
+                                   'take a long time to load. Try to correct at least one of these events, '
+                                   'and Melytix.ai will automatically measure your performance again!',
                     category='Analytics',
                     title='Пользователи задерживаются на вашем сайте слишком мало.',
                     description='Пользователи задерживаются на вашем сайте слишком мало. Причиной ухудшения данной метрики может быть '
