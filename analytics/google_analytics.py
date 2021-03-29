@@ -218,6 +218,12 @@ class GaBouncesAnalyzer(MetricAnalyzer):
             if weekly_sum / 7 > 50:
                 return Alert(
                     _id=alg_id,
+                    category_en='Analytics',
+                    title_en='The average site bounce rate increased by more than 50%, which is unacceptable for Google search engines.',
+                    description_en='The average bounce rate on the site has grown and is now over 50%. Your search '
+                                   'engine rankings go down and customers spend less time on the site than possible. '
+                                   'Check the landing pages to which you drive traffic on the first touch with the '
+                                   'client.',
                     category=' Analytics',
                     title='Средний показатель отказов по сайту повысился больше, чем 50%, что неприемлемо для поисковых систем Google и Yandex',
                     description='Средний показатель отказов на сайте вырос и сейчас он больше, чем 50%. Ваше '
@@ -231,6 +237,12 @@ class GaBouncesAnalyzer(MetricAnalyzer):
             if 25 < weekly_sum / 7 < 50:
                 return Alert(
                     _id=alg_id,
+                    category_en='Analytics',
+                    title_en='The average site bounce rate is greater than 25%, which is unacceptable for your customers and Google search engines.',
+                    description_en='The average bounce rate on the site has grown and is now over 25%. Your search '
+                                   'engine rankings go down and customers spend less time on the site than possible. '
+                                   'Check the landing pages to which you attract traffic on the first touch with the '
+                                   'client, as well as the page load speed and pageview depth.',
                     category=' Analytics',
                     title='Средний показатель отказов по сайту повысился больше, чем 50%, что неприемлемо для поисковых систем Google и Yandex',
                     description='Средний показатель отказов на сайте вырос и сейчас он больше, чем 50%. Ваше '
@@ -246,8 +258,14 @@ class GaBouncesAnalyzer(MetricAnalyzer):
                     day = (datetime.datetime.now() - datetime.timedelta(days=7-day)).date().isoformat()
                     return Alert(
                         _id=alg_id,
+                        category_en='Analytics',
+                        title_en=f'The bounce rate for the site increased more than 50%  on {day} day',
+                        description_en=f'On the {day} day, a bounce rate of more than 50% was noticed on your site - '
+                                       'this is bad news for you, but you should analyze all marketing channels and '
+                                       'understand which channel brought irrelevant traffic. Analyze with Google '
+                                       'Analytics Dashboard - Traffic Sources comparing metric to “Bounce Rate”',
                         category=' Analytics',
-                        title=f'Показатель отказов по сайту повысился больше, чем 50% в {day} ( {day} - день в котором произошёл критический момент )',
+                        title=f'Показатель отказов по сайту повысился больше, чем 50% в {day}',
                         description=f'В {day} день на вашем сайте был замечен показатель больше, чем 50% - это плохая новость для Вас, но с помощью неё можно проанализировать все маркетинговые каналы'
                                     ' и понять какой канал привёл нерелеватный трафик, которых не “зацепила” посадочная страница. Проведите анализ '
                                     'с помощью сводки Google Analytics - Источники трафика сравнивая показатель с “Bounce Rate” ( рус. Показатель Отказов ).')
@@ -265,6 +283,12 @@ class GaReturningUserAnalyzer(MetricAnalyzer):
             if sorted(returning_users, reverse=True) == returning_users:
                 return Alert(
                     _id = alg_id,
+                    category_en='Analytics',
+                    title_en='The rate of return of users to the site has been falling every day for the last 7 days.',
+                    description_en='It looks like new users are not returning to your site. Check the relevance of '
+                                   'your remarketing or retargeting sources. User return is an important metric for '
+                                   'your conversion rate and ranking for search engines. Refresh your creatives in '
+                                   'your return campaigns - they are most likely outdated.',
                     category=' Analytics',
                     title='Показатель возврата пользователей на сайт падает с каждым днём на протяжении последних 7 дней.',
                     description='Похоже новые пользователи не возвращаются к Вам на сайт. Проверьте актуальность источников вашего ремаркетинга или ретаргетинга . Возврат пользователей это важная метрика Вашей конверсии и показатель ранжирования для поисковых систем. '
@@ -275,6 +299,9 @@ class GaReturningUserAnalyzer(MetricAnalyzer):
             if sorted(returning_users) == returning_users:
                 return Alert(
                     _id=alg_id,
+                    category_en='Analytics',
+                    title_en='The rate of return of users to the site has been increasing every day over the past 7 days.',
+                    description_en="Great job! Your remarketing channels are showing great performance and growth over the past 7 days, returning more and more users! This positively adds up to your conversion rate and your snippets' search engine rankings.",
                     category=' Analytics',
                     title='Показатель возврата пользователей на сайт возрастает с каждым днём на протяжении последних 7 дней.',
                     description='Отличная работа! Каналы вашего ремаркетинга показывают отличные показатели и растут за последние 7 дней возвращая'
