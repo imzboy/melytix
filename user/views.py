@@ -89,16 +89,21 @@ class ChangeCreds(Resource):
                 return {'Message': 'Error, this email is already the same as the old one'}
             User.update_one(filter={'auth_token': request.token}, update={'email': email})
 
-        if language := request.json.get('language'):
+        if language := request.json.get('lang'):
             if language == request.user.language:
                 return {'Message': 'Error, this language is already the same as the old one'}
             User.update_one(filter={'auth_token': request.token}, update={'language': language})
 
-        if password := request.json.get('password'):
-            if password == request.user.password:
-                return {'Message': 'Error, this password is already the same as the old one'}
-            User.update_one(filter={'auth_token': request.token}, update={'password': password})
+        if old_pass := request.json.get('old_pass'):
+            base_pass = request.user.password
 
+            if old_pass == base_pass:
+                new_pass = request.json.get('new_pass')
+                if new_pass == base_pass:
+                    return {'Message': 'Error, this password is already the same as the old one'}
+                User.update_one(filter={'auth_token': request.token}, update={'password': new_pass})
+            else:
+                return {'Message': 'Error, invalid password'}
         return {'Message': 'success'}
 
 
