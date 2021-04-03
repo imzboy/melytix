@@ -5,6 +5,7 @@ from Utils.decorators import user_auth
 from email_validator import validate_email, EmailNotValidError
 import datetime
 
+import re
 
 user_bp = Blueprint('user_api', __name__)
 api = Api(user_bp)
@@ -20,7 +21,7 @@ class LoginView(Resource):
         password = request.json['password']
         if User.verify_password(email, password):
             return {'token': User.get_or_create_token(email)}
-        return {'Error': 'wrong password'}
+        return {'Error': 'wrong password'}, 400
 
 
 class LogOutView(Resource):
@@ -72,8 +73,8 @@ class DeleteAccount(Resource):
     def post(self):
         delete_date = (datetime.datetime.today() + datetime.timedelta(days=14)).date().isoformat()
         if User.update_one(filter={'auth_token': request.token}, update={'delete_date': delete_date}):
-            return {'Message': 'success'}
-        return {'Message': 'Error, try again'}
+            return {'Message': 'success'}, 200
+        return {'Message': 'Error, try again'}, 400
 
 
 class ChangeCreds(Resource):
@@ -86,12 +87,12 @@ class ChangeCreds(Resource):
 
         if email := request.json.get('email'):
             if email == request.user.email:
-                return {'Message': 'Error, this email is already the same as the old one'}
+                return {'Message': 'Error, this email is already the same as the old one'}, 400
             User.update_one(filter={'auth_token': request.token}, update={'email': email})
 
         if language := request.json.get('lang'):
             if language == request.user.language:
-                return {'Message': 'Error, this language is already the same as the old one'}
+                return {'Message': 'Error, this language is already the same as the old one'}, 400
             User.update_one(filter={'auth_token': request.token}, update={'language': language})
 
         if old_pass := request.json.get('old_pass'):
@@ -100,11 +101,55 @@ class ChangeCreds(Resource):
             if old_pass == base_pass:
                 new_pass = request.json.get('new_pass')
                 if new_pass == base_pass:
-                    return {'Message': 'Error, this password is already the same as the old one'}
+                    return {'Message': 'Error, this password is already the same as the old one'}, 400
                 User.update_one(filter={'auth_token': request.token}, update={'password': new_pass})
             else:
-                return {'Message': 'Error, invalid password'}
-        return {'Message': 'success'}
+                return {'Message': 'Error, invalid password'}, 400
+        return {'Message': 'success'}, 200
+
+
+class IndividualPlanRequest(Resource):
+
+    def options(self):
+        return {},200
+
+    @user_auth
+    def post(self):
+        email = request.json.get('email')
+        try:
+            validate_email(email)
+        except EmailNotValidError as e:
+            return {"Message": str(e)}, 400
+        else:
+            emails = User.db().find_one(filter={{"type": "email_storage"}}).get('individual_email', [])
+            if emails.count(email) > 0:
+                return {'Message': 'Request with this email already exists'}, 302
+            if User.db().find_and_update({"type": "email_storage"}, {"$push": {'individual_email': email}},upsert=True):
+                return {'Message': 'success'}, 200
+
+
+class ForgotPasswordRequest(Resource):
+
+    def options(self):
+        return {},200
+
+    @user_auth
+    def post(self):
+        email = request.json.get('email')
+        try:
+            validate_email(email)
+        except EmailNotValidError as e:
+            return {"Message": str(e)}, 400
+        else:
+            if User.get(email=email):
+                emails = User.db().find_one(filter={{"type": "email_storage"}}).get('restore_email', [])
+                if emails.count(email):
+                    return {'Message': 'Request with this email already exists'}, 302
+                if User.db().find_and_update({"type": "email_storage"}, {"$push": {'restore_email': email}},
+                                             upsert=True):
+                    return {'Message': 'success'}, 200
+            else:
+                return {'Message': 'User with this email not exists'}, 400
 
 
 #Login end points
@@ -113,3 +158,5 @@ api.add_resource(LoginView, '/login', methods=['POST', 'OPTIONS'])
 api.add_resource(LogOutView, '/logout', methods=['POST', 'OPTIONS'])
 api.add_resource(DeleteAccount, '/delete', methods=['POST', 'OPTIONS'])
 api.add_resource(ChangeCreds, '/change-creds', methods=['POST', 'OPTIONS'])
+api.add_resource(IndividualPlanRequest, '/set-individual-email', methods=['POST', 'OPTIONS'])
+api.add_resource(ForgotPasswordRequest, '/forgot-password', methods=['POST', 'OPTIONS'])
