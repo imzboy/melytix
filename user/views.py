@@ -5,8 +5,6 @@ from Utils.decorators import user_auth
 from email_validator import validate_email, EmailNotValidError
 import datetime
 
-import re
-
 user_bp = Blueprint('user_api', __name__)
 api = Api(user_bp)
 
@@ -108,48 +106,25 @@ class ChangeCreds(Resource):
         return {'Message': 'success'}, 200
 
 
-class IndividualPlanRequest(Resource):
+class EmailForAdminRequest(Resource):
 
     def options(self):
         return {},200
 
     @user_auth
     def post(self):
-        email = request.json.get('email')
+        email = request.json.get("email")
+        email_category = request.json.get("email_category") # 'individual_email' or 'restore_email'
         try:
             validate_email(email)
         except EmailNotValidError as e:
             return {"Message": str(e)}, 400
         else:
-            emails = User.db().find_one(filter={{"type": "email_storage"}}).get('individual_email', [])
+            emails = User.db().find_one(filter={{"type": "email_storage"}}).get(f'{email_category}', [])
             if emails.count(email) > 0:
                 return {'Message': 'Request with this email already exists'}, 302
-            if User.db().find_and_update({"type": "email_storage"}, {"$push": {'individual_email': email}},upsert=True):
+            if User.db().find_and_update({"type": "email_storage"}, {"$push": {f'{email_category}': email}}, upsert=True):
                 return {'Message': 'success'}, 200
-
-
-class ForgotPasswordRequest(Resource):
-
-    def options(self):
-        return {},200
-
-    @user_auth
-    def post(self):
-        email = request.json.get('email')
-        try:
-            validate_email(email)
-        except EmailNotValidError as e:
-            return {"Message": str(e)}, 400
-        else:
-            if User.get(email=email):
-                emails = User.db().find_one(filter={{"type": "email_storage"}}).get('restore_email', [])
-                if emails.count(email):
-                    return {'Message': 'Request with this email already exists'}, 302
-                if User.db().find_and_update({"type": "email_storage"}, {"$push": {'restore_email': email}},
-                                             upsert=True):
-                    return {'Message': 'success'}, 200
-            else:
-                return {'Message': 'User with this email not exists'}, 400
 
 
 #Login end points
@@ -158,5 +133,4 @@ api.add_resource(LoginView, '/login', methods=['POST', 'OPTIONS'])
 api.add_resource(LogOutView, '/logout', methods=['POST', 'OPTIONS'])
 api.add_resource(DeleteAccount, '/delete', methods=['POST', 'OPTIONS'])
 api.add_resource(ChangeCreds, '/change-creds', methods=['POST', 'OPTIONS'])
-api.add_resource(IndividualPlanRequest, '/set-individual-email', methods=['POST', 'OPTIONS'])
-api.add_resource(ForgotPasswordRequest, '/forgot-password', methods=['POST', 'OPTIONS'])
+api.add_resource(EmailForAdminRequest, '/set-email', methods=['POST', 'OPTIONS'])
