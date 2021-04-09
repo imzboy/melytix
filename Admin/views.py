@@ -12,6 +12,7 @@ admin = Blueprint('admin', __name__, template_folder='templates')
 
 api = Api(admin)
 
+
 @admin.route('/admin/logout', methods=['GET'])
 @login_required
 def logout():
@@ -104,4 +105,48 @@ class MainManualAnalyzeView(Resource):
         return {'message': 'success'}, 200
 
 
+class IndividualEmails(Resource):
+    def options(self):
+        return {}, 200
+
+    def post(self):
+        if emails := User.db().find_one(filter={"type": "email_storage"}):
+            result = emails.get('individual_email')
+            return {'emails': result}, 200
+        return {'Message': 'Error, individual emails were not found'}, 400
+
+
+class RestoreEmails(Resource):
+    def options(self):
+        return {}, 200
+
+    def post(self):
+        if emails := User.db().find_one(filter={"type": "email_storage"}):
+            result = emails.get('restore_email')
+            return {'emails': result}, 200
+        return {'Message': 'Error, emails for restore user`s passwords were not found'}, 400
+
+
+class RemoveEmail(Resource):
+    def options(self):
+        return {}, 200
+
+    def post(self):
+        email = request.json.get('email')
+        category = request.json.get('category')
+        emails = User.db().find_one({'type': 'email_storage'}).get(category, [])
+        if emails.count(email):
+            emails.remove(email)
+            User.db().find_one_and_update(
+                {'type': 'email_storage'},
+                {'$set': {category: emails}},
+                upsert=False
+            )
+            return {'Message': 'success'}, 200
+        return {'Message': 'Email not found'}, 400
+
+
 api.add_resource(MainManualAnalyzeView, '/admin-api', methods=['OPTIONS', 'POST', 'GET'])
+api.add_resource(IndividualEmails, '/individual-emails', methods=['OPTIONS', 'POST'])
+api.add_resource(RestoreEmails, '/restore-emails', methods=['OPTIONS', 'POST'])
+api.add_resource(RemoveEmail, '/remove-email', methods=['OPTIONS', 'POST'])
