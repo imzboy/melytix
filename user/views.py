@@ -45,7 +45,7 @@ class RegistrationView(Resource):
         email: str = request.json.get('email')
         password: str = request.json.get('password')
         plan:str = request.json.get('plan')
-        language:str = request.json.get('language')
+        language:str = request.json.get('language', 'en')
         if email and password:
             try:
                 validate_email(email)
