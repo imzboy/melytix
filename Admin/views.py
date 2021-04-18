@@ -110,10 +110,9 @@ class IndividualEmails(Resource):
         return {}, 200
 
     def post(self):
-        if emails := User.db().find_one(filter={"type": "email_storage"}):
-            result = emails.get('individual_email')
-            return {'emails': result}, 200
-        return {'Message': 'Error, individual emails were not found'}, 400
+        emails = User.db().find_one(filter={"type": "email_storage"})
+        result = emails.get('individual_email', [])
+        return {'emails': result}, 200
 
 
 class RestoreEmails(Resource):
@@ -121,10 +120,9 @@ class RestoreEmails(Resource):
         return {}, 200
 
     def post(self):
-        if emails := User.db().find_one(filter={"type": "email_storage"}):
-            result = emails.get('restore_email')
-            return {'emails': result}, 200
-        return {'Message': 'Error, emails for restore user`s passwords were not found'}, 400
+        emails = User.db().find_one(filter={"type": "email_storage"})
+        result = emails.get('restore_email', [])
+        return {'emails': result}, 200
 
 
 class RemoveEmail(Resource):
