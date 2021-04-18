@@ -8,5 +8,5 @@ db_name = config.DATABASE_NAME
 db = client[db_name]
 col = db["users"]
 
-col.update_many({}, {'$unset': {'Tips': 1, 'tips': 1, 'Alerts': 1, 'alerts': 1, 'metrics': 1}, '$set': {'language': 'en'}},
+col.update_many({}, {'$unset': {'Tips':  '', 'tips': '', 'Alerts': '', 'alerts': '', 'metrics': ''}, '$set': {'language': 'en'}},
                   upsert=True)
