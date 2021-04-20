@@ -26,7 +26,8 @@ def menu():
     return f'<a href="{url_for("admin.reg_a_user")}">register a new user</a>' \
     f'<br><a href="https://admin.melytix.tk/">Tips and Alerts Admin</a>' \
     f'<br><a href="{url_for("admin.logout")}">logout</a>' \
-    f'<br><a href="/refresh">refresh metrics</a>'
+    f'<br><a href="/refresh">refresh metrics</a>' \
+    f'<br><a href="{url_for("admin.delete_users")}">delete users</a>'
 
 
 @admin.route('/admin/login', methods=['GET', 'POST'])
@@ -63,6 +64,21 @@ def reg_a_user():
             else:
                 return render_template('admin/login/index.html', message='user with that email already exists', url='/admin/reg-a-user')
     return '?'
+
+
+@admin.route('/admin/delete-users', methods=["GET", "POST"])
+@login_required
+def delete_users():
+
+    if request.method == 'GET':
+        users = [item.get('email') for item in User.db().find({}, {"_id": 0, 'email': 1})]
+        return render_template('admin/delete_users/delete_users.html', users=users, url='/admin/delete-users')
+    elif request.method == 'POST':
+        form = request.form.getlist('email')
+        for email in form:
+            User.delete(email=email)
+        users = [item.get('email') for item in User.db().find({}, {"_id": 0, 'email': 1})]
+        return render_template('admin/delete_users/delete_users.html', users=users, url='/admin/delete-users')
 
 
 class MainManualAnalyzeView(Resource):
