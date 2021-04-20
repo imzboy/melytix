@@ -4,6 +4,7 @@ from user.models import User
 from Utils.decorators import user_auth
 from email_validator import validate_email, EmailNotValidError
 import datetime
+from hashlib import pbkdf2_hmac
 
 user_bp = Blueprint('user_api', __name__)
 api = Api(user_bp)
@@ -84,25 +85,35 @@ class ChangeCreds(Resource):
     def post(self):
 
         if email := request.json.get('email'):
+            try:
+                validate_email(email)
+            except EmailNotValidError as e:
+                return {"Message": str(e)}, 400
             if email == request.user.email:
                 return {'Message': 'Error, this email is already the same as the old one'}, 400
             User.update_one(filter={'auth_token': request.token}, update={'email': email})
 
         if language := request.json.get('lang'):
-            if language == request.user.language:
-                return {'Message': 'Error, this language is already the same as the old one'}, 400
             User.update_one(filter={'auth_token': request.token}, update={'language': language})
 
         if old_pass := request.json.get('old_pass'):
             base_pass = request.user.password
+            salt = request.user.salt
+            old_pass = pbkdf2_hmac('sha256', old_pass.encode('utf-8'), salt, 100000)
 
             if old_pass == base_pass:
                 new_pass = request.json.get('new_pass')
-                if new_pass == base_pass:
-                    return {'Message': 'Error, this password is already the same as the old one'}, 400
-                User.update_one(filter={'auth_token': request.token}, update={'password': new_pass})
+
+                if len(new_pass) >= 8:
+                    new_pass = pbkdf2_hmac('sha256', new_pass.encode('utf-8'), salt, 100000)
+                    if new_pass == base_pass:
+                        return {'Message': 'Error, this password is already the same as the old one'}, 400
+                    User.update_one(filter={'auth_token': request.token}, update={'password': new_pass})
+                else:
+                    return {'Message': 'Password length is less than 8'}, 400
             else:
                 return {'Message': 'Error, invalid password'}, 400
+
         return {'Message': 'success'}, 200
 
 
@@ -111,7 +122,7 @@ class EmailForAdminRequest(Resource):
     def options(self):
         return {},200
 
-    @user_auth
+
     def post(self):
         email = request.json.get("email")
         email_category = request.json.get("email_category") # 'individual_email' or 'restore_email'
@@ -120,12 +131,17 @@ class EmailForAdminRequest(Resource):
         except EmailNotValidError as e:
             return {"Message": str(e)}, 400
         else:
-            emails = User.db().find_one(filter={{"type": "email_storage"}}).get(f'{email_category}', [])
+            if emails := User.db().find_one(filter={"type": "email_storage"}):
+                emails = emails.get(f'{email_category}', [])
+            else:
+                User.db().insert_one({"type": "email_storage"})
+                emails = []
             if emails.count(email) > 0:
                 return {'Message': 'Request with this email already exists'}, 302
-            if User.db().find_and_update({"type": "email_storage"}, {"$push": {f'{email_category}': email}}, upsert=True):
+            if User.db().update_one({"type": "email_storage"}, {"$push": {f'{email_category}': email}}, upsert=True):
                 return {'Message': 'success'}, 200
 
+# 1O8vBH7dcWqQfaIpwdlsA+Bx4KaKDKI0K9r/JlD+kAw=
 
 #Login end points
 api.add_resource(RegistrationView, '/registration', methods=['POST', 'OPTIONS'])
