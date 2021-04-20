@@ -5,9 +5,8 @@
     <title>Удаление аккаунтов пользователей</title>
 </head>
 <body>
-    <p style="color: red; font-weight: 900">Удаление происходит без подтверждения</p>
     <form action={{url}} method="post">
-    <p><input type="submit" value="Удалить"></p>
+    <p><input onclick="return confirm('Are you sure?');" type="submit" value="Удалить"></p>
     {% for item in users %}
       <p><input type="checkbox" name="email" value="{{item}}">{{item}}</p>
     {% endfor %}

@@ -77,8 +77,7 @@ def delete_users():
         form = request.form.getlist('email')
         for email in form:
             User.delete(email=email)
-        users = [item.get('email') for item in User.db().find({}, {"_id": 0, 'email': 1})]
-        return render_template('admin/delete_users/delete_users.html', users=users, url='/admin/delete-users')
+        return redirect(url_for('admin.delete_users'))
 
 
 class MainManualAnalyzeView(Resource):
@@ -88,12 +87,6 @@ class MainManualAnalyzeView(Resource):
 
     def get(self):
         all_users = User.filter_only(fields={'_id':False, 'email':True, 'Tips':True, 'Alerts':True, 'auth_token':True})
-
-        # for user in all_users:
-        #     path = f'users_metrics/{user.get("auth_token")}'
-        #     with open(f'{path}/metrics.json', 'r') as f:
-        #         metrics = json.loads(f.read())
-        #         user['metrics'] = metrics
 
         return {'users': all_users}, 200
 
