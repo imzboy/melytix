@@ -1,6 +1,6 @@
 from functools import reduce
 from analytics.base import MetricAnalyzer, MetricNotFoundException, Tip, Alert
-
+from user.base import MetricsUserManager
 import datetime
 
 
@@ -14,8 +14,8 @@ import datetime
 
 class GaUsersAnalyzer(MetricAnalyzer):
 
-    def __init__(self, metrics: dict):
-        self.metric = metrics.get('google_analytics', {}).get('ga_users')
+    def __init__(self, metrics: MetricsUserManager):
+        self.metric = self.__get_metric(metrics, 'ga_users', 'google_analytics')
         if not self.metric:
             raise MetricNotFoundException('ga_users not found')
 

@@ -143,7 +143,7 @@ class GoogleReportsParser:
                     index_of_data = self.time_range.get(date)
                     metric_value = metric_type(row.get('metrics')[0].get('values')[i])
                     dimensions[dimension][index_of_data] = metric_value
-                    dimensions['total'][index_of_data] += metric_value
+                    # dimensions['total'][index_of_data] += metric_value
 
                 result[metric_name].update({current_dimension: dimensions})
 
@@ -151,7 +151,6 @@ class GoogleReportsParser:
 
 
 def prep_dash_metrics(sc_data: dict) -> dict:
-    # print(sc_data)
     metrics = {
         'sc_dates': [],
         'sc_clicks': [],

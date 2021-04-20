@@ -1,5 +1,5 @@
 from typing import Any
-from user.base import MongoDocument
+from user.base import MetricsUserManager, MongoDocument
 from flask_login.mixins import UserMixin
 
 import os
@@ -18,7 +18,7 @@ class User(MongoDocument):
     auth_token : str
     tokens : dict
     connected_systems : dict
-    metrics : dict
+    metrics : MetricsUserManager
     tips : list
     alerts : list
     language : str
@@ -26,6 +26,10 @@ class User(MongoDocument):
 
     def __str__(self) -> str:
         return f'<User {self.email}>'
+
+    @property
+    def metrics(self):
+        return MetricsUserManager(self._id)
 
     @classmethod
     def register(cls, email: str, password: str, language: str='en', plan:str='free'):

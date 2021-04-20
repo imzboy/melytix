@@ -1,3 +1,4 @@
+from user.base import MetricsUserManager
 from bson.objectid import ObjectId
 from user.models import User
 import re
@@ -66,6 +67,16 @@ class Tip:
 
 
 class MetricAnalyzer(object):
+
+    def __get_metric(self, metrics: MetricsUserManager, name: str, system_name: str):
+        filtered = metrics.week(system_name, table_type='filtered')
+        metric = filtered.get(name)
+        if metric:
+            total = metrics.week(system_name, table_type='total')
+            metric['total'] = total.get(name)
+
+        return metric
+
     def __analyze(self, user_id):
         """
             Generates alerts and tips without repeating.

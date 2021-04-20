@@ -18,6 +18,7 @@ from Systems.Google.GoogleAuth import auth_credentials
 from Systems.GoogleAds.GoogleAds import google_ads_query_metrics
 from Utils.GoogleUtils import GoogleReportsParser, GoogleTotalsReportsParser, fill_all_with_zeros
 from Utils.FacebookUtils import create_list_of_dates
+import tasks
 from user.models import User
 from googleapiclient.discovery import build
 from tasks import celery
@@ -71,46 +72,20 @@ def refresh_metric(users: list):
             date = (datetime.datetime.now() - datetime.timedelta(days=3)).date().isoformat()  # SC doesn't return metrics for 3 last days
             response = make_sc_request(token, site_url, date, date)
             data = GoogleUtils.prep_dash_metrics(sc_data=response)
-            with open(f'users_metrics/{token}/metrics.json', 'r+') as f:
-                all_metrics = json.loads(f.read())
-                sc_metrics = all_metrics.pop('search_console')
-                for metrics_name, metric_value in sc_metrics.items():
-                    metric_value.append(data.get(metrics_name)[0])
 
-                all_metrics['search_console'] = sc_metrics
-                f.write(json.dumps(all_metrics))
+            user_obj = User.get(email=user.get('email'))
 
-        # f_metrics = facebook_insights_query(token, today, today)
-        # for campaign, metrics in f_metrics.items():
-        #     for metric, value in metrics.items():
-        #         User.append_list(
-        #             {'email': user['email']},
-        #             {f'metrics.facebook_insights.{campaign}.{metric}': {'$each': value}}
-        #         )
-
-        # today = datetime.datetime.now().date().isoformat()
-        # data = google_ads_query_metrics(token, today, today)
-        # with open(f'users_metrics/{token}/metrics.json', 'r+') as f:
-        #     all_metrics = json.loads(f.read())
-        #     googleads_metrics = all_metrics.pop('google_ads')
-        #     for campaign, metrics in data.items():
-        #         if campaign == "dates":
-        #             googleads_metrics['dates'].append(today)
-        #             continue
-        #         for metric, value in metrics.items():
-        #             googleads_metrics[campaign][metric].append(value)
-        #     all_metrics['google_ads'] = googleads_metrics
-        #     f.write(json.dumps(all_metrics))
+            date = data.pop('sc_dates')
+            user_obj.metrics.daily_update(data, date, 'search_console')
 
 
 @celery.task
-def generate_tip_or_alert(users:list):
+def generate_tip_or_alert(users: list):
     analytics = MetricAnalyzer.__subclasses__()
     for user in users:
         for analytics_class in analytics:
             try:
-                with open(f'users_metrics/{user.get("auth_token")}/metrics.json') as f:
-                    metrics = json.loads(f.read())
+                metrics = User.get(email=user.get('email')).metrics
                 analytics_class(metrics).__analyze(user.get('_id'))
             except MetricNotFoundException:
                 continue
@@ -147,8 +122,18 @@ def google_analytics_query_all(token, view_id, start_date, end_date):
                      'ga:pageviewsPerSession', 'ga:avgSessionDuration', 'ga:bounces',
                      'ga:percentNewSessions', 'ga:pageviews', 'ga:timeOnPage', 'ga:pageLoadTime',
                      'ga:avgPageLoadTime', 'ga:transactionsPerSession', 'ga:transactionRevenue']
+
+    totals_report = generate_report_body(
+    view_id=view_id,
+    start_date=start_date,
+    end_date=end_date,
+    metrics=metrics,
+    dimensions=['ga:date'])
+
+    google_analytics_query_totals.delay(totals_report, start_date, end_date, token)
+
+
     result = {
-        'ga_dates':dates,
         **{k.replace(':', '_'):{} for k in metrics}
     }
     for dimension in dimensions:
@@ -165,56 +150,11 @@ def google_analytics_query_all(token, view_id, start_date, end_date):
         for metric_name, value in res.items():
             result[metric_name].update(**value)
 
-    totals_report = generate_report_body(
-        view_id=view_id,
-        start_date=start_date,
-        end_date=end_date,
-
-        metrics=['ga:sessions', 'ga:users', 'ga:pageviews',
-        'ga:pageviewsPerSession', 'ga:avgSessionDuration', 'ga:bounces',
-        'ga:percentNewSessions', 'ga:pageviews', 'ga:timeOnPage', 'ga:pageLoadTime',
-        'ga:avgPageLoadTime', 'ga:transactionsPerSession', 'ga:transactionRevenue'],
-
-        dimensions=['ga:date'])
-
-    totals = google_analytics_query_totals(totals_report, start_date, end_date, token)
-    for metric, total in totals.items():
-        result[metric]['total'] = total
-
-    path = f'users_metrics/{token}'
+    user = User.get(token=token)
     if len(dates) > 1:
-        if not os.path.exists(path):
-            os.makedirs(path)
-            metrics = {'google_analytics': result}
-
-        else:
-            with open(f'{path}/metrics.json', 'r') as f:
-                metrics = json.loads(f.read())
-                metrics['google_analytics'] = result
-
-        with open(f'{path}/metrics.json', 'r+') as f:
-            f.write(json.dumps(metrics))
+        user.metrics.initial_insert(result, dates, 'google_analytics', table_type='filtered')
     else:
-        with open(f'{path}/metrics.json', 'r+') as f:
-            all_metrics = json.loads(f.read())
-            metrics = all_metrics.pop('google_analytics')
-            del all_metrics
-            dates = metrics.pop('ga_dates')
-            dates.append(result.get('ga_dates')[0])
-            if metrics:
-                #This is hella bad
-                for m_name, m_value in metrics.items():
-                    for d_name, d_value in m_value.items():
-                        for sub_d_name, sb_d_value in d_value.items():
-                            # sub d value -> list of metrics
-                            sb_d_value.append(
-                                result.get(m_name).get(d_name).get(sub_d_name)[0]
-                            )
-                metrics['ga_dates'] = dates
-                # get file second time to shorthen the update period
-                all_metrics = json.loads(f.read())
-                all_metrics['google_analytics'] = metrics
-                f.write(json.dumps(all_metrics))
+        user.metrics.daily_update(result)
 
 def google_analytics_query(report: list, start_date, end_date, token):
     # Google Analytics v4 api setup to make a request to google analytics
@@ -232,6 +172,7 @@ def google_analytics_query(report: list, start_date, end_date, token):
     return GoogleUtils.fill_all_with_zeros(response, dates)
 
 
+@celery.task
 def google_analytics_query_totals(report, start_date, end_date, token):
     api_client = build(serviceName='analyticsreporting', version='v4', http=auth_credentials(token), cache_discovery=False)
     response = api_client.reports().batchGet(
@@ -239,9 +180,12 @@ def google_analytics_query_totals(report, start_date, end_date, token):
             'reportRequests': report
         }).execute()
 
+    user = User.get(token=token)
     if response.get('reports')[0].get('data').get('rows'):
         parsed_response = GoogleUtils.GoogleTotalsReportsParser(response).parse()
-        parsed_response.pop('ga_dates')
+        dates = parsed_response.pop('ga_dates')
+        user.metrics.initial_insert(parsed_response, dates, 'google_analytics', table_type='totals')
+
     else:
         l = len(create_list_of_dates(start_date, end_date))
         metrics = ['ga:sessions', 'ga:users', 'ga:pageviews',
@@ -249,8 +193,7 @@ def google_analytics_query_totals(report, start_date, end_date, token):
                      'ga:percentNewSessions', 'ga:pageviews', 'ga:timeOnPage', 'ga:pageLoadTime',
                      'ga:avgPageLoadTime', 'ga:transactionsPerSession', 'ga:transactionRevenue']
         parsed_response = {k: [0] * l for k in metrics}
-
-    return parsed_response
+        user.metrics.initial_insert(parsed_response, l, 'google_analytics', table_type='totals')
 
 
 @celery.task

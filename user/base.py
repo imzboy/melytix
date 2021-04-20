@@ -1,3 +1,5 @@
+from pymongo.collection import Collection
+from Utils.utils import NestedDict, all_dict_paths
 import os
 from pymongo import MongoClient
 from pymongo.results import InsertOneResult
@@ -14,6 +16,109 @@ uri = config.MONGODB_URI
 client = MongoClient(uri)
 
 db_name = config.DATABASE_NAME
+
+
+class MetricsUserManager(object):
+
+
+    def __init__(self, user_id : str) -> None:
+        self.user_id : ObjectId = ObjectId(user_id)
+
+
+    def db(self, system_name: str, **kwargs) -> Collection:
+        """
+        kwargs table type stands for totals or filtered
+        """
+
+        if kwargs.get('table_type'):
+            return client.__getattr__(db_name).__getattr__(f'{system_name}s_{kwargs["table_type"]}')
+
+        return client.__getattr__(db_name).__getattr__(f'{system_name}')
+
+
+    def initial_insert(self, metrics : dict, dates: list, system_name : str, **kwargs):
+        db = self.db(system_name, **kwargs)
+        paths = all_dict_paths(metrics)
+        ordered_values = zip(*[item[1] for item in paths])
+
+        result = NestedDict()
+        for values, date in zip(ordered_values, dates):
+            date = datetime.strptime(date, '%Y-%m-%d')
+            for path, _ in paths:
+                for value in values:
+                    exec(f'result{str(path).replace(", ", "][")}=value')
+
+            db.insert_one({'date': date, 'user_id': self.user_id, **result})
+
+
+    def daily_update(self, metrics: dict, date : str, system_name: str, **kwargs):
+        db = self.db(system_name, **kwargs)
+
+        all_paths = all_dict_paths(metrics)
+
+        result = NestedDict()
+        for i, path, value in enumerate(all_paths):
+            exec(f'result{str(path).replace(", ", "][")}=value[0]')
+
+        db.insert_one({'date': date, 'user_id': self.user_id, **result})
+
+
+    def get_by_range(self, system_name: str, start_date: str, end_date: str, **kwargs) -> dict:
+        db = self.db(system_name, **kwargs)
+        start_date = datetime.strptime(start_date, '%Y-%m-%d')
+        end_date = datetime.strptime(end_date, '%Y-%m-%d')
+        metrics = db.find({'user_id': self.user_id, 'date': {'$lt': end_date, '$gte': start_date}})
+
+        if not metrics:
+            return
+
+        dates = []
+        all_paths = []
+        for metric_slice in metrics:
+            dates.append(metric_slice.pop('date'))
+            metric_slice.pop('user_id')
+            all_paths.append(all_dict_paths(metric_slice))
+
+        paths, values = [], []
+
+        for dict_paths in all_paths:
+            for path, value in dict_paths:
+                if len(paths):
+                    if path in paths:
+                        i = paths.index(path)
+                        values[i].append(value)
+                    else:
+                        paths.append(path)
+                        values.append([value])
+
+                else:
+                    paths.append(path)
+                    values.append([value])
+
+        end_paths = zip(paths, values)
+
+        ret = NestedDict()
+
+        for path, value in end_paths:
+            exec(f'ret{str(path).replace(", ", "][")}=value')
+
+        ret['dates'] = dates
+
+        return ret
+
+
+    def today(self, system_name: str, **kwargs) -> dict:
+        db = self.db(system_name, **kwargs)
+        today = datetime.now().date()
+        metrics = db.find_one({'user_id': self.user_id, 'date': today})
+        return metrics
+
+
+    def week(self, system_name: str, **kwargs) -> dict:
+        today = datetime.now().date()
+        week_before = (today - timedelta(days=7)).isoformat()
+
+        return self.get_by_range(system_name, week_before, today.isoformat(), **kwargs)
 
 
 class MongoDocument(object):

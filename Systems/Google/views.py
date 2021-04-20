@@ -99,13 +99,9 @@ class ConnectSearchConsoleAPI(Resource):
         response = make_sc_request(request.token, site_url, start_date, end_date)
 
         data = GoogleUtils.prep_dash_metrics(sc_data=response)
+        dates = data.pop('sc_dates')
 
-        with open(f'users_metrics/{request.token}/metrics.json', 'r+') as f:
-            all_metrics = json.loads(f.read())
-            all_metrics['search_console'] = data
-            f.write(json.dumps(all_metrics))
-
-        # User.insert_data_in_db(request.token, 'search_console', data)
+        request.user.metrics.initial_insert(data, dates, 'search_console')
 
         User.connect_system(
             request.token, 'search_console',
