@@ -10,7 +10,7 @@ CLIENT_ID = '380470694344-0a4vb8rvio43bje2dmbs5hk7l8ecdglm.apps.googleuserconten
 CLIENT_SECRET = 'Z9rH11ECkJ_7ceMmij7JnTWM'
 
 
-def code_exchange(code: str, uri: str):
+def code_exchange(code: str, uri: str, token: str):
     data = {
         'code': code,
         'client_id': CLIENT_ID,
@@ -27,7 +27,7 @@ def code_exchange(code: str, uri: str):
         return access_token, refresh_token
 
     else:
-        user = User.get(tokens={'g_access_token':access_token})
+        user = User.get(auth_token=token)
         return user.tokens.get('g_access_token'), user.tokens.get('g_refresh_token')
 
 

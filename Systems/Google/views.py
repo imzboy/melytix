@@ -56,9 +56,9 @@ class GoogleAuthLoginApiViewMain(Resource):
         code = request.json['code']
         token = request.json['token']
 
-        uri = 'https://melytix.tk'
+        uri = 'https://system.melytix.com/'
 
-        access_token, refresh_token = GoogleAuth.code_exchange(code, uri)
+        access_token, refresh_token = GoogleAuth.code_exchange(code, uri, token)
 
         if not refresh_token:
             return {'error': 'No refresh token got. The user needs to revoke access'}, 404
