@@ -207,8 +207,8 @@ class GaUsersAnalyzer(MetricAnalyzer):
 
 class GaBouncesAnalyzer(MetricAnalyzer):
 
-    def __init__(self, metrics: dict):
-        self.metric = metrics.get('google_analytics', {}).get('ga_bounces')
+    def __init__(self, metrics: MetricsUserManager):
+        self.metric = self.__get_metric(metrics, 'ga_bounces', 'google_analytics')
         if not self.metric:
             raise MetricNotFoundException('ga_bounces not found')
 
@@ -273,8 +273,8 @@ class GaBouncesAnalyzer(MetricAnalyzer):
 
 class GaReturningUserAnalyzer(MetricAnalyzer):
 
-    def __init__(self, metrics: dict):
-        self.metric = metrics.get('google_analytics', {}).get('ga_returningUser')
+    def __init__(self, metrics: MetricsUserManager):
+        self.metric = self.__get_metric(metrics, 'ga_returningUser', 'google_analytics')
         if not self.metric:
             raise MetricNotFoundException('ga_ReturningUser not found')
 
@@ -368,8 +368,8 @@ class GaReturningUserAnalyzer(MetricAnalyzer):
 
 
 class GaNewUserAnalyzer(MetricAnalyzer):
-    def __init__(self, metrics: dict):
-        self.metric = metrics.get('google_analytics', {}).get('ga_newUser')
+    def __init__(self, metrics: MetricsUserManager):
+        self.metric = self.__get_metric(metrics, 'ga_newUser', 'google_analytics')
         if not self.metric:
             raise MetricNotFoundException('ga_NewUser not found')
 
@@ -406,8 +406,8 @@ class GaNewUserAnalyzer(MetricAnalyzer):
                                 'показателей ранжирования сайта и новой уникальной конверсии.')
 
 class GaPageViewsPerSessionAnalyzer(MetricAnalyzer):
-    def __init__(self, metrics: dict):
-        self.metric = metrics.get('google_analytics', {}).get('ga_pageviewsPerSession')
+    def __init__(self, metrics: MetricsUserManager):
+        self.metric = self.__get_metric(metrics, 'ga_pageviewsPerSession', 'google_analytics')
         if not self.metric:
             raise MetricNotFoundException('ga_pageviewsPerSession not found')
 
@@ -438,8 +438,8 @@ class GaPageViewsPerSessionAnalyzer(MetricAnalyzer):
 
 
 class GaAvgSessionDurationAnalyzer(MetricAnalyzer):
-    def __init__(self, metrics: dict):
-        self.metric = metrics.get('google_analytics', {}).get('ga_avgSessionDuration')
+    def __init__(self, metrics: MetricsUserManager):
+        self.metric = self.__get_metric(metrics, 'ga_avgSessionDuration', 'google_analytics')
         if not self.metric:
             raise MetricNotFoundException('ga_avgSessionDuration not found')
 
@@ -501,8 +501,8 @@ class GaAvgSessionDurationAnalyzer(MetricAnalyzer):
 
 
 class GaAvgPageLoadTimeAnalyzer(MetricAnalyzer):
-    def __init__(self, metrics: dict):
-        self.metric = metrics.get('google_analytics', {}).get('ga_avgPageLoadTime')
+    def __init__(self, metrics: MetricsUserManager):
+        self.metric = self.__get_metric(metrics, 'ga_avgPageLoadTime', 'google_analytics')
         if not self.metric:
             raise MetricNotFoundException('ga_avgPageLoadTime not found')
 
@@ -551,8 +551,8 @@ class GaAvgPageLoadTimeAnalyzer(MetricAnalyzer):
 
 
 class GaTimeOnPageAnalyzer(MetricAnalyzer):
-    def __init__(self, metrics: dict):
-        self.metric = metrics.get('google_analytics', {}).get('ga_timeOnPage')
+    def __init__(self, metrics: MetricsUserManager):
+        self.metric = self.__get_metric(metrics, 'ga_timeOnPage', 'google_analytics')
         if not self.metric:
             raise MetricNotFoundException('ga_timeOnPage not found')
 
