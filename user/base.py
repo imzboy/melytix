@@ -226,7 +226,7 @@ class MongoDocument(object):
 
 
     def __getattribute__(self, name: str):
-        if name in ['data', 'is_active', 'is_authenticated', 'is_anonymous', 'get_id']:  #TODO: rework
+        if name in ['data', 'is_active', 'is_authenticated', 'is_anonymous', 'get_id', 'metrics']:  #TODO: rework
             return object.__getattribute__(self, name)
 
         attr = self.data.get(name, {}) #TODO: bad...
