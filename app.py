@@ -95,29 +95,41 @@ def create_app():
             if request.user.connected_systems:
                 main_dict = request.user.connected_systems
                 main_dict['g_scopes'] = []
-                with open(f'users_metrics/{request.token}/metrics.json', 'r') as f:
-                    metrics = json.loads(f.read())
+
+
                 if main_dict.get('facebook_insights'):
-                    main_dict['facebook_insights']['campaigns'] = list(metrics.get('facebook_insights',{}).keys())
+                    metrics_today = request.user.metrics.last_date('facebook_insights')
+                    main_dict['facebook_insights']['campaigns'] = list(metrics_today.keys())
 
                 if main_dict.get('google_ads'):
+                    metrics_today = request.user.metrics.last_date('google_ads')
                     main_dict['g_scopes'].extend(main_dict.get('google_ads').get('scopes'))
-                    main_dict['google_ads']['campaigns'] = list(metrics.get('google_ads',{}).keys())
+                    main_dict.get('google_ads').pop('scopes')
+                    main_dict['google_ads']['campaigns'] = list(metrics_today.keys())
 
                 if main_dict.get('google_analytics'):
                     try:  # TODO: for now coz it can return a list
+                        metrics_today = request.user.metrics.last_date('google_analytics', table_type='totals')
                         main_dict['g_scopes'].extend(main_dict.get('google_analytics').get('scopes'))
-                        main_dict['google_analytics']['metrics'] = list(metrics.get('google_analytics').keys())
+                        main_dict.get('google_analytics').pop('scopes')
+                        main_dict['google_analytics']['metrics'] = list(metrics_today.keys())
                         main_dict['google_analytics']['metrics'].pop('ga_dates')
 
-                        main_dict['google_analytics']['filters'] = list(metrics.get('google_analytics').get('ga_sessions').keys())
-                        main_dict['google_analytics']['filters'].pop('ga_dates')
+                        metrics_today = request.user.metrics.last_date('google_analytics', table_type='filtered')
+                        main_dict['google_analytics']['filters'] = list(metrics_today.get('ga_sessions').keys())
+
+                        i = main_dict['google_analytics']['filters'].index('dates')
+                        main_dict['google_analytics']['filters'].pop(i)
                     except:
                         print('nope')
                 if main_dict.get('search_console'):
+                    metrics_today = request.user.metrics.last_date('search_console')
                     main_dict['g_scopes'].extend(main_dict.get('search_console').get('scopes'))
-                    main_dict['search_console']['metrics'] = list(metrics.get('search_console').keys())
-                    main_dict['search_console']['metrics'].pop('sc_dates')
+                    main_dict.get('search_console').pop('scopes')
+                    main_dict['search_console']['metrics'] = list(metrics_today.keys())
+
+                    i = main_dict['search_console']['metrics'].index('dates')
+                    main_dict['search_console']['metrics'].pop(i)
 
             main_dict['language'] = request.user.language
             main_dict['email'] = request.user.email
@@ -155,5 +167,5 @@ def create_app():
     return app
 
 
-# app=create_app()
-# app.run(host='0.0.0.0', debug=True)
+app=create_app()
+app.run(host='0.0.0.0', debug=True)

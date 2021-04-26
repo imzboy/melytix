@@ -54,6 +54,7 @@ class MetricsUserManager(object):
     def daily_update(self, metrics: dict, date : str, system_name: str, **kwargs):
         db = self.db(system_name, **kwargs)
 
+        date = datetime.strptime(date, '%Y-%m-%d')
         all_paths = all_dict_paths(metrics)
 
         result = NestedDict()
@@ -108,10 +109,19 @@ class MetricsUserManager(object):
         return ret
 
 
-    def today(self, system_name: str, **kwargs) -> dict:
+    def last_date(self, system_name: str, **kwargs) -> dict:
+        '''searches trough the db to find the entry with closest date to today'''
+
         db = self.db(system_name, **kwargs)
-        today = datetime.now().date()
-        metrics = db.find_one({'user_id': self.user_id, 'date': today})
+
+        metrics : dict = db.find({'user_id': self.user_id}).sort('date', -1).limit(1)[0]
+
+        metrics['dates'] = str(metrics['date'].date())
+
+        metrics.pop('date')
+        metrics.pop('user_id')
+        metrics.pop('_id')
+
         return metrics
 
 
