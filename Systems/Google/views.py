@@ -118,20 +118,14 @@ def search_console_metrics(request):
     start_date = request.json.get('start_date')
     end_date = request.json.get('end_date')
 
-    with open(f'users_metrics/{request.token}/metrics.json', 'r') as f:
-        all_metrics = json.loads(f.read())
-        sc_dict_data = all_metrics.get('search_console')
+    sc_dict_data = request.user.metrics.get_by_range('search_console', start_date, end_date)
 
     metric_name = request.json.get('metric')
     metric = sc_dict_data.get(metric_name)
-    dates = sc_dict_data.get('sc_dates')
-
-    start_date = request.json.get('start_date')
-    end_date = request.json.get('end_date')
-    start_date, end_date = GoogleUtils.find_start_and_end_date(dates, start_date, end_date)
+    dates = sc_dict_data.get('dates')
 
     if metric and dates:
-        return {'metric': metric[start_date:end_date], 'dates': dates[start_date:end_date]}, 200
+        return {'metric': metric, 'dates': dates}, 200
 
 
 class GetViewIdDropDown(Resource):
@@ -181,21 +175,22 @@ def google_analytics_metrics(request):
     start_date = request.json.get('start_date')
     end_date = request.json.get('end_date')
 
-    filter = request.json['filter']
+    filter = request.json.get('filter')
 
-    with open(f'users_metrics/{request.token}/metrics.json', 'r') as f:
-        metrics = json.loads(f.read())
+    if filter:
+        metrics = request.user.metrics.get_by_range('google_analytics', start_date, end_date, table_type='totals')
+    else:
+        metrics = request.user.metrics.get_by_range('google_analytics', start_date, end_date, table_type='filtered')
 
-    if metrics.get('google_analytics', {}).get('ga_dates'):
+    if metrics.get('dates'):
 
-        ga_data = metrics.get('google_analytics')
+        metrics = metrics.get(metric)
+        if filter:
+            metrics = metrics.get(filter)
 
-        metrics = ga_data.get(metric)
-        metric = metrics.get(filter)
-        dates = ga_data.get('ga_dates')
-        start_date, end_date = GoogleUtils.find_start_and_end_date(dates, start_date, end_date)
+        dates = metrics.get('dates')
         if metric and dates:
-            return {'metric': metric[start_date:end_date], 'dates': dates[start_date:end_date]}, 200
+            return {'metric': metrics, 'dates': dates}, 200
 
     return {'message': f'the metric "{metric}" was not found'}, 404
 
