@@ -69,11 +69,16 @@ class Tip:
 class MetricAnalyzer(object):
 
     def __get_metric(self, metrics: MetricsUserManager, name: str, system_name: str):
-        filtered = metrics.week(system_name, table_type='filtered')
-        metric = filtered.get(name)
-        if metric:
-            total = metrics.week(system_name, table_type='total')
-            metric['total'] = total.get(name)
+        if system_name == 'google_analytics':
+            filtered = metrics.week(system_name, table_type='filtered')
+            if filtered:
+                metric = filtered.get(name)
+                total = metrics.week(system_name, table_type='totals')
+                metric['total'] = total.get(name)
+        else:
+            metric = metrics.week(system_name)
+            if metric:
+                metric = metric.get('name')
 
         return metric
 
