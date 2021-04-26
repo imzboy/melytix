@@ -75,7 +75,8 @@ class MetricsUserManager(object):
         dates = []
         all_paths = []
         for metric_slice in metrics:
-            dates.append(metric_slice.pop('date'))
+            metric_slice.pop('_id')
+            dates.append(str(metric_slice.pop('date').date()))
             metric_slice.pop('user_id')
             all_paths.append(all_dict_paths(metric_slice))
 

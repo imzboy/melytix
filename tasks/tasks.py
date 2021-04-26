@@ -147,6 +147,7 @@ def google_analytics_query_all(token, view_id, start_date, end_date):
 
             dimensions=['ga:date', dimension])
         res = google_analytics_query(report, start_date, end_date, token)
+        res.pop('ga_dates')
         for metric_name, value in res.items():
             result[metric_name].update(**value)
 
