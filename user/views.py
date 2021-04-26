@@ -125,20 +125,19 @@ class EmailForAdminRequest(Resource):
 
     def post(self):
         email = request.json.get("email")
-        email_category = request.json.get("email_category") # 'individual_email' or 'restore_email'
         try:
             validate_email(email)
         except EmailNotValidError as e:
             return {"Message": str(e)}, 400
         else:
             if emails := User.db().find_one(filter={"type": "email_storage"}):
-                emails = emails.get(f'{email_category}', [])
+                emails = emails.get('individual_email', [])
             else:
                 User.db().insert_one({"type": "email_storage"})
                 emails = []
             if emails.count(email) > 0:
                 return {'Message': 'Request with this email already exists'}, 302
-            if User.db().update_one({"type": "email_storage"}, {"$push": {f'{email_category}': email}}, upsert=True):
+            if User.db().update_one({"type": "email_storage"}, {"$push": {'individual_email': email}}, upsert=True):
                 return {'Message': 'success'}, 200
 
 # 1O8vBH7dcWqQfaIpwdlsA+Bx4KaKDKI0K9r/JlD+kAw=
