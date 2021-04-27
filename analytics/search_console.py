@@ -1,10 +1,11 @@
 from analytics.base import MetricAnalyzer, MetricNotFoundException, Tip, Alert
+from user.base import MetricsUserManager
 
 
 class ScCtrAnalyzer(MetricAnalyzer):
 
-    def __init__(self, metrics:dict):
-        self.metric = metrics.get('search_console', {}).get('sc_ctr')
+    def __init__(self, metrics: MetricsUserManager):
+        self.metric = self.__get_metric(metrics, 'sc_ctr', 'search_console')
         if not self.metric:
             raise MetricNotFoundException('sc_ctr not found')
 
