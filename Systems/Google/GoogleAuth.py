@@ -6,8 +6,8 @@ from datetime import datetime, timedelta
 
 import requests
 
-CLIENT_ID = '380470694344-0a4vb8rvio43bje2dmbs5hk7l8ecdglm.apps.googleusercontent.com'
-CLIENT_SECRET = 'Z9rH11ECkJ_7ceMmij7JnTWM'
+CLIENT_ID = '162578043311-g74698iu4vvqsep6tfeomosktr8foa38.apps.googleusercontent.com'
+CLIENT_SECRET = 'gXO7kZqeYYLvROACEfmuTyX7'
 
 
 def code_exchange(code: str, uri: str, token: str):
