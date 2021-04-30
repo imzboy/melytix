@@ -84,15 +84,6 @@ class ChangeCreds(Resource):
     @user_auth
     def post(self):
 
-        if email := request.json.get('email'):
-            try:
-                validate_email(email)
-            except EmailNotValidError as e:
-                return {"Message": str(e)}, 400
-            if email == request.user.email:
-                return {'Message': 'Error, this email is already the same as the old one'}, 400
-            User.update_one(filter={'auth_token': request.token}, update={'email': email})
-
         if language := request.json.get('lang'):
             User.update_one(filter={'auth_token': request.token}, update={'language': language})
 
@@ -102,17 +93,29 @@ class ChangeCreds(Resource):
             old_pass = pbkdf2_hmac('sha256', old_pass.encode('utf-8'), salt, 100000)
 
             if old_pass == base_pass:
-                new_pass = request.json.get('new_pass')
 
-                if len(new_pass) >= 8:
-                    new_pass = pbkdf2_hmac('sha256', new_pass.encode('utf-8'), salt, 100000)
-                    if new_pass == base_pass:
-                        return {'Message': 'Error, this password is already the same as the old one'}, 400
-                    User.update_one(filter={'auth_token': request.token}, update={'password': new_pass})
-                else:
-                    return {'Message': 'Password length is less than 8'}, 400
+                if email := request.json.get('email'):
+                    try:
+                        validate_email(email)
+                    except EmailNotValidError as e:
+                        return {"Message": str(e)}, 400
+                    if email == request.user.email:
+                        return {'Message': 'Error, this email is already the same as the old one'}, 400
+                    User.update_one(filter={'auth_token': request.token}, update={'email': email})
+
+                if new_pass := request.json.get('new_pass'):
+
+                    if len(new_pass) >= 8:
+                        new_pass = pbkdf2_hmac('sha256', new_pass.encode('utf-8'), salt, 100000)
+                        if new_pass == base_pass:
+                            return {'Message': 'Error, this password is already the same as the old one'}, 400
+                        User.update_one(filter={'auth_token': request.token}, update={'password': new_pass})
+                    else:
+                        return {'Message': 'Password length is less than 8'}, 400
             else:
                 return {'Message': 'Error, invalid password'}, 400
+        else:
+            return {'Message': 'Error, old_pass do not exist'}
 
         return {'Message': 'success'}, 200
 
