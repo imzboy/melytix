@@ -1,5 +1,3 @@
-from user.models import User
-from Systems.SiteParser.parser import SiteParser
 from flask import request, Blueprint
 from flask_restful import Resource, Api
 
