@@ -27,7 +27,9 @@ def menu():
     f'<br><a href="https://admin.melytix.tk/">Tips and Alerts Admin</a>' \
     f'<br><a href="{url_for("admin.logout")}">logout</a>' \
     f'<br><a href="/refresh">refresh metrics</a>' \
-    f'<br><a href="{url_for("admin.delete_users")}">delete users</a>'
+    f'<br><a href="{url_for("admin.delete_users")}">delete users</a>' \
+    f'<br><a href="{url_for("admin.individual_users")}">individual users</a>' \
+    f'<br><a href="{url_for("admin.restore_emails")}">restore password</a>'
 
 
 @admin.route('/admin/login', methods=['GET', 'POST'])
@@ -78,6 +80,50 @@ def delete_users():
         for email in form:
             User.delete(email=email)
         return redirect(url_for('admin.delete_users'))
+
+
+@admin.route('/admin/individual-emails', methods=["GET", "POST"])
+@login_required
+def individual_users():
+
+    if request.method == 'GET':
+        if emails := User.db().find_one(filter={"type": "email_storage"}):
+            result = emails.get('individual_email')
+        return render_template('admin/delete_users/delete_users.html', users=result, url='/admin/individual-emails')
+    elif request.method == 'POST':
+        form = request.form.getlist('email')
+        emails = User.db().find_one({'type': 'email_storage'}).get('individual_email', [])
+        for email in form:
+            if emails.count(email):
+                emails.remove(email)
+        User.db().find_one_and_update(
+            {'type': 'email_storage'},
+            {'$set': {'individual_email': emails}},
+            upsert=True
+        )
+        return redirect(url_for('admin.individual_users'))
+
+
+@admin.route('/admin/restore-emails', methods=["GET", "POST"])
+@login_required
+def restore_emails():
+
+    if request.method == 'GET':
+        if emails := User.db().find_one(filter={"type": "email_storage"}):
+            result = emails.get('restore_email')
+        return render_template('admin/delete_users/delete_users.html', users=result, url='/admin/restore-emails')
+    elif request.method == 'POST':
+        form = request.form.getlist('email')
+        emails = User.db().find_one({'type': 'email_storage'}).get('restore_email', [])
+        for email in form:
+            if emails.count(email):
+                emails.remove(email)
+        User.db().find_one_and_update(
+            {'type': 'email_storage'},
+            {'$set': {'restore_email': emails}},
+            upsert=True
+        )
+        return redirect(url_for('admin.restore_emails'))
 
 
 class MainManualAnalyzeView(Resource):
