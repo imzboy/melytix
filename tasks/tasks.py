@@ -1,5 +1,4 @@
 from requests.api import request
-from Systems.SiteParser.views import SiteParserView
 import json
 import os
 from Systems.Google.views import search_console_metrics
