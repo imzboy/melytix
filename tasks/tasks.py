@@ -1,3 +1,5 @@
+from requests.api import request
+from Systems.SiteParser.views import SiteParserView
 import json
 import os
 from Systems.Google.views import search_console_metrics
@@ -5,8 +7,10 @@ from Systems.Google.SearchConsole import make_sc_request
 import celery
 from Utils import GoogleUtils
 from analytics.base import MetricAnalyzer, MetricNotFoundException
+from Systems.SiteParser.parser import MainSiteParser, SiteUrls
 from Utils.utils import inheritors
 import datetime
+from bson import ObjectId
 
 from analytics.google_analytics import *
 from analytics.search_console import *
@@ -205,3 +209,37 @@ def check_accounts_for_delete():
             today = datetime.datetime.today().date().isoformat()
             if delete_date == today:
                 mongo_user.delete(email=mongo_user.get('email'))
+
+
+@celery.task
+def parse_main_site(user_id: str, url: str):
+
+    result = MainSiteParser(url).parse()
+
+    user = User.get(_id=ObjectId(user_id))
+    db = user.metrics.db('site_parser')
+    db.insert_one({
+        'user_id': ObjectId(user_id),
+        'date': datetime.datetime.today()
+        **result
+    })
+
+    for site in result.get('meta_links'):
+        parse_sub_site.delay(user_id, site)
+
+
+@celery.task
+def parse_sub_site(user_id: str, site: str):
+    result = SiteUrls(site).parse()
+
+    user = User.get(_id=ObjectId(user_id))
+    db = user.metrics.db('site_parser')
+    domain = result.pop('domain')
+
+    db.update_one(
+            {'user_id': ObjectId(user_id)},
+            {'$set': {
+                f'sub_sites.{domain}': result
+            }}
+        )
+

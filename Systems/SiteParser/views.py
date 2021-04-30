@@ -1,3 +1,4 @@
+from user.models import User
 from Systems.SiteParser.parser import SiteParser
 from flask import request, Blueprint
 from flask_restful import Resource, Api
@@ -6,6 +7,8 @@ from Utils.decorators import user_auth
 
 parser_bp = Blueprint('parser_api', __name__)
 api = Api(parser_bp)
+
+from tasks.tasks import parse_main_site
 
 class SiteParserView(Resource):
 
@@ -18,8 +21,17 @@ class SiteParserView(Resource):
         '''parser logic'''
         url = request.json['site_url']
 
-        result = SiteParser(url).parse()
+        if request.user.connected_systems.get('site_parser'):
+            return {'Error': 'user already connected his site'}
 
-        return {'result': result},200
+        parse_main_site.delay(str(request.user._id), url)
 
-api.add_resource(SiteParserView, '/url', methods=['OPTIONS', 'POST'])
+        request.user.connect_system(
+            token=request.token,
+            system='site_parser',
+            data={'domain': url}
+        )
+
+        return {'Message': 'Success'}, 200
+
+api.add_resource(SiteParserView, '/connect-site-parser', methods=['OPTIONS', 'POST'])
