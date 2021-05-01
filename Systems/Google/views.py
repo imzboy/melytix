@@ -228,10 +228,10 @@ class FirstRequestGoogleAnalyticsMetrics(Resource):
             User.connect_system(
                 token, 'google_analytics',
                 {'view_id': viewid,
-                    'account': request.json['account'],
-                    'account_name': request.json['account_name'],
-                    'web_property': request.json['web_property'],
-                    'web_property_name': request.json['web_property_name']})
+                'account': request.json['account'],
+                'account_name': request.json['account_name'],
+                'web_property': request.json['web_property'],
+                'web_property_name': request.json['web_property_name']})
             return {'Message': 'success'}, 200
         return {'Message': 'could not fetch viewid'}
 
