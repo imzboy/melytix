@@ -132,7 +132,16 @@ class MainManualAnalyzeView(Resource):
         return {}, 200
 
     def get(self):
-        all_users = User.filter_only(fields={'_id':False, 'email':True, 'Tips':True, 'Alerts':True, 'auth_token':True})
+        all_users = User.filter_only(fields={'_id':True, 'email':True, 'Tips':True, 'Alerts':True, 'auth_token':True})
+        for user in all_users:
+            metrics = User.get(_id=user.get('_id')).metrics
+            sc = metrics.week('search_console')
+            ga_f = metrics.week('google_analytics', table_type='filtered')
+
+            user['metrics'] = {
+                'search_console': sc,
+                'google_analytics': ga_f
+            }
 
         return {'users': all_users}, 200
 
