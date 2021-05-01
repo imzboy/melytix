@@ -12,6 +12,7 @@ env/
 .vscode/
 .wenv/
 users_metrics/
+dump.rdb
 
 # Elastic Beanstalk Files
 .elasticbeanstalk/*
