@@ -114,7 +114,7 @@ class MetricsUserManager(object):
 
         db = self.db(system_name, **kwargs)
 
-        metrics : dict = db.find({'user_id': self.user_id}).sort('date', -1).limit(1)
+        metrics : list = list(db.find({'user_id': self.user_id}).sort('date', -1).limit(1))
         if metrics:
             metrics = metrics[0]
 
