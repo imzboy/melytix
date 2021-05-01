@@ -154,7 +154,7 @@ def google_analytics_query_all(token, view_id, start_date, end_date):
         for metric_name, value in res.items():
             result[metric_name].update(**value)
 
-    user = User.get(token=token)
+    user = User.get(auth_token=token)
     if len(dates) > 1:
         user.metrics.initial_insert(result, dates, 'google_analytics', table_type='filtered')
     else:
@@ -184,7 +184,7 @@ def google_analytics_query_totals(report, start_date, end_date, token):
             'reportRequests': report
         }).execute()
 
-    user = User.get(token=token)
+    user = User.get(auth_token=token)
     if response.get('reports')[0].get('data').get('rows'):
         parsed_response = GoogleUtils.GoogleTotalsReportsParser(response).parse()
         dates = parsed_response.pop('ga_dates')

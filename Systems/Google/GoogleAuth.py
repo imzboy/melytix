@@ -20,7 +20,6 @@ def code_exchange(code: str, uri: str, token: str):
         }
 
     r = requests.post('https://oauth2.googleapis.com/token', data=data)
-    print(r.json())
 
     access_token, refresh_token = r.json().get('access_token'), r.json().get('refresh_token')
 

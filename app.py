@@ -68,7 +68,6 @@ def create_app():
     def google_redirect():
         code = request.args.get('code')
         token, service = request.args.get('state').split(',')
-        print(f'code - {code}')
 
         uri = 'https://melyback.tk/google-redirect'
 
