@@ -64,7 +64,7 @@ def create_app():
         return 'Hello, World!'
 
 
-    @app.route('/google_redirect')
+    @app.route('/google-redirect')
     def google_redirect():
         code = request.args.get('code')
         token = request.args.get('state')
