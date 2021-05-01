@@ -178,17 +178,22 @@ def google_analytics_metrics(request):
     filter = request.json.get('filter')
 
     if filter:
-        metrics = request.user.metrics.get_by_range('google_analytics', start_date, end_date, table_type='totals')
-    else:
         metrics = request.user.metrics.get_by_range('google_analytics', start_date, end_date, table_type='filtered')
+    else:
+        metrics = request.user.metrics.get_by_range('google_analytics', start_date, end_date, table_type='totals')
+
+    print(metrics)
 
     if metrics.get('dates'):
+        dates = metrics.get('dates')
+        print(dates)
 
         metrics = metrics.get(metric)
+        print(metrics)
         if filter:
             metrics = metrics.get(filter)
+            print(metrics)
 
-        dates = metrics.get('dates')
         if metric and dates:
             return {'metric': metrics, 'dates': dates}, 200
 
