@@ -142,6 +142,7 @@ class MainManualAnalyzeView(Resource):
                 'search_console': sc,
                 'google_analytics': ga_f
             }
+            user.pop('_id')
 
         return {'users': all_users}, 200
 
