@@ -114,15 +114,18 @@ class MetricsUserManager(object):
 
         db = self.db(system_name, **kwargs)
 
-        metrics : dict = db.find({'user_id': self.user_id}).sort('date', -1).limit(1)[0]
+        metrics : dict = db.find({'user_id': self.user_id}).sort('date', -1).limit(1)
+        if metrics:
+            metrics = metrics[0]
 
-        metrics['dates'] = str(metrics['date'].date())
+            metrics['dates'] = str(metrics['date'].date())
 
-        metrics.pop('date')
-        metrics.pop('user_id')
-        metrics.pop('_id')
+            metrics.pop('date')
+            metrics.pop('user_id')
+            metrics.pop('_id')
 
-        return metrics
+            return metrics
+        return None
 
 
     def week(self, system_name: str, **kwargs) -> dict:
