@@ -118,7 +118,7 @@ class GoogleReportsParser:
         for row in report.get('data').get('rows'):
             current_dimension = row.get('dimensions')[1]
             if current_dimension != prev_dimension:
-                # result.update({'total': [0] * len(self.time_range), current_dimension: [0] * len(self.time_range)})
+                result.update({current_dimension: [0] * len(self.time_range)})
                 prev_dimension = current_dimension
 
         return result

@@ -31,7 +31,7 @@ class MetricsUserManager(object):
         """
 
         if kwargs.get('table_type'):
-            return client.__getattr__(db_name).__getattr__(f'{system_name}s_{kwargs["table_type"]}')
+            return client.__getattr__(db_name).__getattr__(f'{system_name}_{kwargs["table_type"]}')
 
         return client.__getattr__(db_name).__getattr__(f'{system_name}')
 
