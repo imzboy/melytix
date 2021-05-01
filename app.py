@@ -133,11 +133,11 @@ def create_app():
 
                     main_dict['google_analytics']['metrics'] = list(metrics_today.keys())
 
+                    i = main_dict['google_analytics']['metrics'].index('dates')
+                    main_dict['google_analytics']['metrics'].pop(i)
+
                     metrics_today = request.user.metrics.last_date('google_analytics', table_type='filtered')
                     main_dict['google_analytics']['filters'] = list(metrics_today.get('ga_sessions').keys())
-
-                    i = main_dict['google_analytics']['filters'].index('dates')
-                    main_dict['google_analytics']['filters'].pop(i)
 
                 if main_dict.get('search_console'):
                     metrics_today = request.user.metrics.last_date('search_console')
