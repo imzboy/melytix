@@ -205,6 +205,10 @@ class FirstRequestGoogleAnalyticsMetrics(Resource):
         """
         This view is responsible for connecting Google Analytics to user
         """
+
+        scopes = ['https://www.googleapis.com/auth/analytics.readonly']
+
+
         if not request.user.tokens.get('g_access_token'):
             return {'Error': 'user did not gave access to google yet'}, 404
 
@@ -231,7 +235,8 @@ class FirstRequestGoogleAnalyticsMetrics(Resource):
                 'account': request.json['account'],
                 'account_name': request.json['account_name'],
                 'web_property': request.json['web_property'],
-                'web_property_name': request.json['web_property_name']})
+                'web_property_name': request.json['web_property_name'],
+                'scopes': scopes})
             return {'Message': 'success'}, 200
         return {'Message': 'could not fetch viewid'}
 

@@ -126,20 +126,19 @@ def create_app():
                     main_dict['google_ads']['campaigns'] = list(metrics_today.keys())
 
                 if main_dict.get('google_analytics'):
-                    try:  # TODO: for now coz it can return a list
-                        metrics_today = request.user.metrics.last_date('google_analytics', table_type='totals')
-                        main_dict['g_scopes'].extend(main_dict.get('google_analytics').get('scopes'))
-                        main_dict.get('google_analytics').pop('scopes')
-                        main_dict['google_analytics']['metrics'] = list(metrics_today.keys())
-                        main_dict['google_analytics']['metrics'].pop('ga_dates')
+                    metrics_today = request.user.metrics.last_date('google_analytics', table_type='totals')
 
-                        metrics_today = request.user.metrics.last_date('google_analytics', table_type='filtered')
-                        main_dict['google_analytics']['filters'] = list(metrics_today.get('ga_sessions').keys())
+                    main_dict['g_scopes'].extend(main_dict.get('google_analytics').get('scopes'))
+                    main_dict.get('google_analytics').pop('scopes')
 
-                        i = main_dict['google_analytics']['filters'].index('dates')
-                        main_dict['google_analytics']['filters'].pop(i)
-                    except:
-                        print('nope')
+                    main_dict['google_analytics']['metrics'] = list(metrics_today.keys())
+
+                    metrics_today = request.user.metrics.last_date('google_analytics', table_type='filtered')
+                    main_dict['google_analytics']['filters'] = list(metrics_today.get('ga_sessions').keys())
+
+                    i = main_dict['google_analytics']['filters'].index('dates')
+                    main_dict['google_analytics']['filters'].pop(i)
+
                 if main_dict.get('search_console'):
                     metrics_today = request.user.metrics.last_date('search_console')
                     main_dict['g_scopes'].extend(main_dict.get('search_console').get('scopes'))
