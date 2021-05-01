@@ -14,7 +14,9 @@ from Systems.Facebook.views import facebook_insights_metrics
 
 from Systems.GoogleAds.views import google_ads_metrics
 
-from flask import Flask, request
+from Systems.Google.GoogleAuth import CLIENT_ID, code_exchange
+
+from flask import Flask, request, redirect
 
 from user.models import User, Admin
 from bson import ObjectId
@@ -60,6 +62,22 @@ def create_app():
     @app.route('/')
     def hello_world():
         return 'Hello, World!'
+
+
+    @app.route('/google_redirect')
+    def google_redirect():
+        code = request.args.get('code')
+        token = request.args.get('state')
+
+        uri = 'https://melyback.tk/google_redirect'
+
+        access, refresh = code_exchange(code, uri, token)
+
+        User.insert_tokens(token, access, refresh)
+
+        return redirect('https://system.melytix.com/Support/')
+
+
 
     class CacheDashboardSettings(Resource):
         def options(self):
