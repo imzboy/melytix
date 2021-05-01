@@ -88,7 +88,7 @@ class MetricAnalyzer(object):
             If user`s plan is premium or enterprice - insert all alerts and tips to db, else - insert 1 alert and 1 tip
             :param user_id : user`s _id in db
         """
-        function_names = [attr for attr in dir(self) if not attr.startswith('__') and callable(getattr(self, attr))]
+        function_names = [attr for attr in dir(self) if not attr.startswith('__') and callable(getattr(self, attr)) and not attr.startswith('_')]
         all_alerts = []
         all_tips = []
         for name in function_names:
