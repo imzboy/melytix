@@ -67,7 +67,7 @@ def create_app():
     @app.route('/google-redirect')
     def google_redirect():
         code = request.args.get('code')
-        token = request.args.get('state')
+        token, service = request.args.get('state').split(',')
 
         uri = 'https://melyback.tk/google_redirect'
 
@@ -75,7 +75,7 @@ def create_app():
 
         User.insert_tokens(token, access, refresh)
 
-        return redirect('https://system.melytix.com/Support/')
+        return redirect(f'https://system.melytix.com/Support/?q={service}')
 
 
 
