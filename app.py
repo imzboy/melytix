@@ -70,7 +70,7 @@ def create_app():
         token, service = request.args.get('state').split(',')
         print(f'code - {code}')
 
-        uri = 'https://melyback.tk/google_redirect'
+        uri = 'https://melyback.tk/google-redirect'
 
         access, refresh = code_exchange(code, uri, token)
 
