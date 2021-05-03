@@ -170,7 +170,7 @@ def google_analytics_query(report: list, start_date, end_date, token):
     dates = create_list_of_dates(start_date, end_date)
 
     if response.get('reports')[0].get('data').get('rows'):
-        return  GoogleUtils.GoogleReportsParser(response, dates).parse()
+        return GoogleUtils.GoogleReportsParser(response, dates).parse()
 
     return GoogleUtils.fill_all_with_zeros(response, dates)
 
