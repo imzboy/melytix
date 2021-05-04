@@ -18,20 +18,22 @@ class SiteParserView(Resource):
     def post(self):
 
         '''parser logic'''
-        url = request.json['site_url']
+        url = request.json.get('site_url')
+        if url:
 
-        if request.user.connected_systems.get('site_parser'):
-            return {'Error': 'user already connected his site'}
+            if request.user.connected_systems.get('site_parser'):
+                return {'Error': 'user already connected his site'}
 
-        # parse_main_site.delay(str(request.user._id), url)
+            # parse_main_site.delay(str(request.user._id), url)
 
-        User.connect_system(
-            token=request.token,
-            system='site_parser',
-            data={'domain': url}
-        )
+            User.connect_system(
+                token=request.token,
+                system='site_parser',
+                data={'domain': url}
+            )
 
-        return {'Message': 'Success'}, 200
+            return {'Message': 'Success'}, 200
+        return {'Error': 'site_url was not provided'}
 
 
 class SiteParserUrls(Resource):
