@@ -25,7 +25,7 @@ class SiteParserView(Resource):
 
         # parse_main_site.delay(str(request.user._id), url)
 
-        request.user.connect_system(
+        User.connect_system(
             token=request.token,
             system='site_parser',
             data={'domain': url}
@@ -52,4 +52,4 @@ class SiteParserUrls(Resource):
 
 
 api.add_resource(SiteParserView, '/connect-site-parser', methods=['OPTIONS', 'POST'])
-api.add_resource(SiteParserUrls, '/site-parser-urls', methods=['OPTIONS', 'POST'])
+api.add_resource(SiteParserUrls, '/site-parser-urls', methods=['OPTIONS', 'GET'])
