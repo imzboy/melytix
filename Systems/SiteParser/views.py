@@ -41,7 +41,7 @@ class SiteParserUrls(Resource):
 
 
     def get(self):
-        users = User.filter({})
+        users = User.filter()
         sites = []
         for user in users:
             if user.connected_systems.get('site_parser'):
