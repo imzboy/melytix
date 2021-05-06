@@ -143,7 +143,6 @@ class EmailForAdminRequest(Resource):
             if User.db().update_one({"type": "email_storage"}, {"$push": {'individual_email': email}}, upsert=True):
                 return {'Message': 'success'}, 200
 
-# 1O8vBH7dcWqQfaIpwdlsA+Bx4KaKDKI0K9r/JlD+kAw=
 
 #Login end points
 api.add_resource(RegistrationView, '/registration', methods=['POST', 'OPTIONS'])
