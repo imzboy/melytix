@@ -15,13 +15,11 @@ class MainSiteParser(object):
 
     def parse(self) -> dict:
         attributes = [attr for attr in dir(self) if attr != 'parse' and not attr.startswith('__') and not attr.startswith('_')]
-        print(attributes)
         return {property: getattr(self, property, '') for property in attributes}
 
     # Получаем домен главного сайта
     @property
     def domain(self):
-        print(self.__site_url.split('/'))
         return self.__site_url.split('/')[2]
 
     # Получаем все мета подключения на главном сайте

@@ -210,7 +210,7 @@ def check_accounts_for_delete():
 
 
 @celery.task
-def parse_main_site(user_id: str, url: str):
+def parse_main_site(user_id: str, url: str, token: str):
 
     result = MainSiteParser(url).parse()
 
@@ -218,9 +218,15 @@ def parse_main_site(user_id: str, url: str):
     db = user.metrics.db('site_parser')
     db.insert_one({
         'user_id': ObjectId(user_id),
-        'date': datetime.datetime.today()
+        'date': datetime.datetime.today(),
         **result
     })
+
+    User.connect_system(
+        token=request.token,
+        system='site_parser',
+        data={'domain': url}
+    )
 
     for site in result.get('meta_links'):
         parse_sub_site.delay(user_id, site)
