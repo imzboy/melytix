@@ -24,7 +24,7 @@ class SiteParserView(Resource):
             if request.user.connected_systems.get('site_parser'):
                 return {'Error': 'user already connected his site'}
 
-            # parse_main_site.delay(str(request.user._id), url)
+            parse_main_site.delay(str(request.user._id), url)
 
             User.connect_system(
                 token=request.token,
@@ -51,7 +51,26 @@ class SiteParserUrls(Resource):
 
         return {'sites':sites}, 200
 
+class SiteParserData(Resource):
+
+    def options(self):
+        return {}, 200
+
+    def get(self):
+        users = User.filter()
+
+        data = []
+        for user in users:
+            parser_data = user.metrics.last_date('system_parser')
+            parser_data.pop('_id')
+            parser_data.pop('user_id')
+
+            parser_data['email'] = user.email
+            data.append(parser_data)
+
+        return {'data' : data}
 
 
 api.add_resource(SiteParserView, '/connect-site-parser', methods=['OPTIONS', 'POST'])
 api.add_resource(SiteParserUrls, '/site-parser-urls', methods=['OPTIONS', 'GET'])
+api.add_resource(SiteParserData, '/site-parser-data', methods=['OPTIONS', 'POST'])

@@ -29,7 +29,7 @@ from Systems.Google.views import google_bp
 from Systems.Facebook.views import facebook_insg_bp
 from Systems.SiteParser.views import parser_bp
 from Systems.GoogleAds.views import google_ads_bp
-from Systems.PayPal.views import paypal_bp
+from payments.views import paypal_bp
 
 def create_app():
     app = Flask(__name__)
