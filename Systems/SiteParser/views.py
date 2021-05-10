@@ -61,16 +61,16 @@ class SiteParserData(Resource):
 
         data = []
         for user in users:
-            parser_data = user.metrics.last_date('system_parser')
-            parser_data.pop('_id')
-            parser_data.pop('user_id')
+            if (parser_data := user.metrics.last_date('system_parser')):
+                parser_data.pop('_id')
+                parser_data.pop('user_id')
 
-            parser_data['email'] = user.email
-            data.append(parser_data)
+                parser_data['email'] = user.email
+                data.append(parser_data)
 
         return {'data' : data}
 
 
 api.add_resource(SiteParserView, '/connect-site-parser', methods=['OPTIONS', 'POST'])
 api.add_resource(SiteParserUrls, '/site-parser-urls', methods=['OPTIONS', 'GET'])
-api.add_resource(SiteParserData, '/site-parser-data', methods=['OPTIONS', 'POST'])
+api.add_resource(SiteParserData, '/site-parser-data', methods=['OPTIONS', 'GET'])
