@@ -203,9 +203,8 @@ def fill_all_with_zeros(responce, dates):
                 {'name':metric.get('name').replace(':', '_'),
                 'type': types.get(metric.get('type'))})
 
-    responce = {
-        'ga_dates': dates
-    }
+    responce = {}
+
     for metric in metric_entries:
         responce[metric['name']] = {
             'total' : [metric['type'](0)] * len(dates)

@@ -159,6 +159,7 @@ def google_analytics_query_all(token, view_id, start_date, end_date):
     else:
         user.metrics.daily_update(result)
 
+
 def google_analytics_query(report: list, start_date, end_date, token):
     # Google Analytics v4 api setup to make a request to google analytics
     api_client = build(serviceName='analyticsreporting', version='v4', http=auth_credentials(token), cache_discovery=False)
@@ -170,7 +171,9 @@ def google_analytics_query(report: list, start_date, end_date, token):
     dates = create_list_of_dates(start_date, end_date)
 
     if response.get('reports')[0].get('data').get('rows'):
-        return GoogleUtils.GoogleReportsParser(response, dates).parse()
+        result = GoogleUtils.GoogleReportsParser(response, dates).parse()
+        result.pop('ga_dates')
+        return result
 
     return GoogleUtils.fill_all_with_zeros(response, dates)
 
