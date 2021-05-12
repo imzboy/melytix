@@ -161,8 +161,8 @@ class PutViewId(Resource):
                 'account': request.json['account'],
                 'account_name': request.json['account_name'],
                 'web_property': request.json['web_property'],
-                'web_property_name': request.json['web_property_name',
-                'scopes': scopes]})
+                'web_property_name': request.json['web_property_name'],
+                'scopes': scopes})
 
         return {'Message': 'Success'}, 200
 

@@ -34,11 +34,12 @@ class DevConfig(BaseConfig):
     CELERY_BROKER='redis://127.0.0.1:6379'
     result_backend='redis://127.0.0.1:6379'
 
-    MONGODB_URI='mongodb://127.0.0.1:27017'
-    DATABASE_NAME='test_db'
+    #MONGODB_URI='mongodb://127.0.0.1:27017'
+    #DATABASE_NAME='melytix_db_copy1'
 
     MONGODB_URI='mongodb+srv://MaxTeslya:7887334Mna@melytixdata.ryedw.mongodb.net/melytix_db?retryWrites=true&w=majority'
     DATABASE_NAME='melytix_db'
+
 
     timezone = 'Europe/Kiev'
     imports = ('tasks.tasks',)
@@ -54,8 +55,8 @@ class ProdConfig(BaseConfig):
     CELERY_BROKER='redis://127.0.0.1:6379'
     result_backend='redis://127.0.0.1:6379'
 
-    MONGODB_URI='mongodb+srv://MaxTeslya:7887334Mna@melytixdata.ryedw.mongodb.net/melytix_db?retryWrites=true&w=majority'
-    DATABASE_NAME='melytix_db'
+    #MONGODB_URI='mongodb+srv://MaxTeslya:7887334Mna@melytixdata.ryedw.mongodb.net/melytix_db?retryWrites=true&w=majority'
+    #DATABASE_NAME='melytix_db'
 
     #celery and beat configurations
     timezone = 'Europe/Kiev'
