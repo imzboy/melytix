@@ -24,7 +24,13 @@ class SiteParserView(Resource):
             if request.user.connected_systems.get('site_parser'):
                 return {'Error': 'user already connected his site'}
 
-            parse_main_site.delay(str(request.user._id), url, request.token)
+            # parse_main_site.delay(str(request.user._id), url, request.token)
+
+            User.connect_system(
+                token=request.token,
+                system='site_parser',
+                data={'domain': url}
+            )
 
             return {'Message': 'Success'}, 200
         return {'Error': 'site_url was not provided'}

@@ -225,11 +225,6 @@ def parse_main_site(user_id: str, url: str, token: str):
         **result
     })
 
-    User.connect_system(
-        token=request.token,
-        system='site_parser',
-        data={'domain': url}
-    )
 
     for site in result.get('meta_links'):
         parse_sub_site.delay(user_id, site)
