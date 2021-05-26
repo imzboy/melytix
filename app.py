@@ -18,6 +18,9 @@ from Systems.Google.GoogleAuth import CLIENT_ID, code_exchange
 
 from flask import Flask, request, redirect
 
+APP_ENV = os.environ.get('APP_ENV', 'Dev')
+config = getattr(settings, f'{APP_ENV}Config')
+
 from user.models import User, Admin
 from bson import ObjectId
 
@@ -77,7 +80,7 @@ def create_app():
 
         User.insert_tokens(token, access, refresh)
 
-        return redirect(f'https://system.melytix.com/Support/?q={service}')
+        return redirect(f'{config.FRONT_URL}/Support/?q={service}')
 
 
 
