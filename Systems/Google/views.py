@@ -8,7 +8,7 @@ from flask_restful import Resource, Api
 from user.models import User
 from Systems.Google import GoogleAuth, GoogleAnalytics
 from Systems.Google.SearchConsole import get_site_list, make_sc_request
-from Utils import GoogleUtils
+from Utils import FacebookUtils, GoogleUtils
 
 google_bp = Blueprint('google_api', __name__)
 api = Api(google_bp)
@@ -94,11 +94,13 @@ class ConnectSearchConsoleAPI(Resource):
         site_url = request.json['site_url']
 
         start_date = request.user.parse_from_date
-        end_date = datetime.datetime.now().date().isoformat()
+        end_date = (datetime.datetime.now() - datetime.timedelta(days=3)).date().isoformat()
         #TODO: log the time of the api exec
         response = make_sc_request(request.token, site_url, start_date, end_date)
 
-        data = GoogleUtils.prep_dash_metrics(sc_data=response)
+        num_of_dates = len(FacebookUtils.create_list_of_dates(start_date, end_date))
+
+        data = GoogleUtils.prep_dash_metrics(response, num_of_dates)
         dates = data.pop('sc_dates')
 
         request.user.metrics.initial_insert(data, dates, 'search_console')
