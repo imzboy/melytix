@@ -1,7 +1,6 @@
 from flask_login import LoginManager
 from config import settings
 import os
-import json
 from Utils.decorators import user_auth
 
 from flask_cors import CORS
@@ -14,7 +13,7 @@ from Systems.Facebook.views import facebook_insights_metrics
 
 from Systems.GoogleAds.views import google_ads_metrics
 
-from Systems.Google.GoogleAuth import CLIENT_ID, code_exchange
+from Systems.Google.GoogleAuth import code_exchange
 
 from flask import Flask, request, redirect
 
@@ -74,7 +73,7 @@ def create_app():
         code = request.args.get('code')
         token, service = request.args.get('state').split(',')
 
-        uri = 'https://melyback.tk/google-redirect'
+        uri = f'https://{config.DOMAIN}/google-redirect'
 
         access, refresh = code_exchange(code, uri, token)
 

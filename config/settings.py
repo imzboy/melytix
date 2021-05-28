@@ -39,6 +39,8 @@ class DevConfig(BaseConfig):
 
     FRONT_URL = 'https://systemdev.melytix.com'
 
+    DOMAIN = 'dev.melyback.tk'
+
     timezone = 'Europe/Kiev'
     imports = ('tasks.tasks',)
     task_serializer="json"
@@ -53,10 +55,12 @@ class ProdConfig(BaseConfig):
     CELERY_BROKER='redis://127.0.0.1:6379'
     result_backend='redis://127.0.0.1:6379'
 
-    MONGODB_URI='mongodb+srv://MaxTeslya:7887334Mna@melytixdata.ryedw.mongodb.net/melytix_db?retryWrites=true&w=majority'
+    MONGODB_URI='mongodb+srv://MaxTeslya:7887334Mna@melytixdata.ryedw.mongodb.net/melytix_prod_db?retryWrites=true&w=majority'
     DATABASE_NAME='melytix_prod_db'
 
     FRONT_URL = 'https://system.melytix.com'
+
+    DOMAIN = 'melyback.tk'
 
     #celery and beat configurations
     timezone = 'Europe/Kiev'
