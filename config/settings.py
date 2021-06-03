@@ -77,3 +77,11 @@ class TestConfig(BaseConfig):
    DEBUG = True
    # make celery execute tasks synchronously in the same process
    CELERY_ALWAYS_EAGER = True
+
+
+class JiraConfig:
+    LOGIN = 'nicknamebos0@gmail.com'
+    API_KEY = 'HNWRpbO8mvpCY2SahmTdD815'
+    BOARD_NAME = 'DEV board'
+    SPRINT_NAME = 'DEV Sprint 1'
+    TRANSITION_NAME = 'Task that has to be done'

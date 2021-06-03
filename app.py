@@ -2,6 +2,9 @@ from flask_login import LoginManager
 from config import settings
 import os
 from Utils.decorators import user_auth
+from Utils.ErrorHandlerUtils import (get_desc_and_sum, create_issue, issue_exist,
+                                     get_sprint_id, get_board_id, get_able_transition_for_issue,
+                                     set_transition_for_issue, move_issue_to_sprint)
 
 from flask_cors import CORS
 
@@ -65,6 +68,7 @@ def create_app():
 
     @app.route('/')
     def hello_world():
+        raise TypeError('One more test from system')
         return 'Hello, World!'
 
 
@@ -172,6 +176,27 @@ def create_app():
             '''
             system = request.json.get('system')
             return globals().get(f'{system}_metrics')(request)
+
+    @app.errorhandler(Exception)
+    def handle_exception(e):
+        description, summary = get_desc_and_sum()
+        if not issue_exist(summary):
+            issue_id = create_issue(description, summary)
+
+            # Set transition
+            able_transitions = get_able_transition_for_issue(issue_id)
+            for transition in able_transitions:
+                if transition.get('name') == settings.JiraConfig.TRANSITION_NAME:
+                    transition_id = transition.get('id')
+                    set_transition_for_issue(issue_id, transition_id)
+                    break
+
+            # Set sprint
+            board_id = get_board_id(settings.JiraConfig.BOARD_NAME)
+            sprint_id = get_sprint_id(settings.JiraConfig.SPRINT_NAME, board_id)
+            move_issue_to_sprint(issue_id, sprint_id)
+
+        return 'Something went wrong'
 
 
     #DashSettings post and get
