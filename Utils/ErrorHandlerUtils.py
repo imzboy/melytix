@@ -1,4 +1,3 @@
-import os
 import sys
 
 import requests
@@ -13,15 +12,14 @@ jira_options = {'server': 'https://melytix-ai.atlassian.net'}
 jira = JIRA(options=jira_options, basic_auth=AUTH)
 
 
-def get_desc_and_sum():
+def get_description():
     ex_info = sys.exc_info()
     ex = ex_info[2]
     description = ''
     while ex := ex.tb_next:
         description += f"File {ex.tb_frame.f_code.co_filename}, code {ex.tb_frame.f_code.co_name}," \
                        f" line {ex.tb_frame.f_code.co_firstlineno}\n"
-    summary = f"500 Error.System.{os.environ.get('APP_ENV')} " + str(ex_info[0]) + ' Message: ' + ex_info[1].args[0]
-    return description, summary
+    return description
 
 
 def create_issue(description: str, summary: str):
@@ -75,6 +73,24 @@ def create_issue(description: str, summary: str):
     issue = requests.post("https://melytix-ai.atlassian.net/rest/api/3/issue",
                           json=issue_data, auth=AUTH)
     return issue.json().get('id')
+
+
+def create_and_setup_issue(description: str, summary: str):
+    if not issue_exist(summary):
+        issue_id = create_issue(description, summary)
+
+        # Set transition
+        able_transitions = get_able_transition_for_issue(issue_id)
+        for transition in able_transitions:
+            if transition.get('name') == JiraConfig.TRANSITION_NAME:
+                transition_id = transition.get('id')
+                set_transition_for_issue(issue_id, transition_id)
+                break
+
+        # Set sprint
+        board_id = get_board_id(JiraConfig.BOARD_NAME)
+        sprint_id = get_sprint_id(JiraConfig.SPRINT_NAME, board_id)
+        move_issue_to_sprint(issue_id, sprint_id)
 
 
 def issue_exist(summary: str):
