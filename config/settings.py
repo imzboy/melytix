@@ -37,6 +37,8 @@ class DevConfig(BaseConfig):
     MONGODB_URI='mongodb+srv://MaxTeslya:7887334Mna@melytixdata.ryedw.mongodb.net/melytix_db?retryWrites=true&w=majority'
     DATABASE_NAME='melytix_db'
 
+    PROTOCOL = 'https'
+
     FRONT_URL = 'https://systemdev.melytix.com'
 
     DOMAIN = 'dev.melyback.tk'
@@ -58,6 +60,8 @@ class ProdConfig(BaseConfig):
     MONGODB_URI='mongodb+srv://MaxTeslya:7887334Mna@melytixdata.ryedw.mongodb.net/melytix_prod_db?retryWrites=true&w=majority'
     DATABASE_NAME='melytix_prod_db'
 
+    PROTOCOL = 'https'
+
     FRONT_URL = 'https://system.melytix.com'
 
     DOMAIN = 'melyback.tk'
@@ -72,8 +76,29 @@ class ProdConfig(BaseConfig):
 
 
 class TestConfig(BaseConfig):
-   ENV = 'development'
-   TESTING = True
-   DEBUG = True
-   # make celery execute tasks synchronously in the same process
-   CELERY_ALWAYS_EAGER = True
+    ENV = 'development'
+    TESTING = True
+    DEBUG = True
+    ENV = 'development'
+    DEBUG = True
+
+    PROTOCOL = 'http'
+
+    CELERY_BROKER='redis://127.0.0.1:6379'
+    result_backend='redis://127.0.0.1:6379'
+
+    MONGODB_URI='mongodb+srv://MaxTeslya:7887334Mna@melytixdata.ryedw.mongodb.net/melytix_db?retryWrites=true&w=majority'
+    DATABASE_NAME='melytix_db'
+
+    FRONT_URL = 'https://systemdev.melytix.com'
+
+    DOMAIN = '127.0.0.1:5000'
+
+    timezone = 'Europe/Kiev'
+    imports = ('tasks.tasks',)
+    task_serializer="json"
+    accept_content=["json"]
+    result_serializer="json"
+
+    # make celery execute tasks synchronously in the same process
+    CELERY_ALWAYS_EAGER = True

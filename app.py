@@ -33,6 +33,9 @@ from Systems.SiteParser.views import parser_bp
 from Systems.GoogleAds.views import google_ads_bp
 from payments.views import paypal_bp
 
+api = Api()
+cors = CORS()
+
 def create_app():
     app = Flask(__name__)
     app.secret_key = b"\x92K\x1a\x0e\x04\xcc\x05\xc8\x1c\xc4\x04\x98\xef'\x8e\x1bC\xd6\x18'}:\xc1\x14"
@@ -40,9 +43,8 @@ def create_app():
     config = getattr(settings, f'{APP_ENV}Config')
     app.config.update(config.as_dict())
 
-    api = Api(app)
-
-    cors = CORS(app, resources={r"*": {"origins": "*"}})
+    api.init_app(app)
+    cors.init_app(app, resources={r"*": {"origins": "*"}})
 
     login = LoginManager(app)
     login.login_view = '/admin/login'
@@ -61,7 +63,6 @@ def create_app():
     app.register_blueprint(parser_bp)
     app.register_blueprint(google_ads_bp)
     app.register_blueprint(paypal_bp)
-
 
     @app.route('/')
     def hello_world():
@@ -187,6 +188,3 @@ def create_app():
 
     return app
 
-
-# app=create_app()
-# app.run(host='0.0.0.0', debug=True)

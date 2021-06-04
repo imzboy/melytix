@@ -1,38 +1,29 @@
-import os
+from Admin.utils import build_url
+from flask_restful import Api, Resource
 from analytics.base import Alert, Tip
-import json
 from flask import request, render_template, url_for, redirect, Blueprint
 from flask_login import login_required, login_user, logout_user
 from user.models import Admin, User
 import uuid
+from Admin.base import UserChooserForm
 
-from flask_restful import Api, Resource
 
-admin = Blueprint('admin', __name__, template_folder='templates')
-
+admin = Blueprint('admin', __name__, template_folder='templates', url_prefix='/admin')
 api = Api(admin)
 
 
-@admin.route('/admin/logout', methods=['GET'])
+'''
+simple required endpoints: login, logout and menu
+'''
+
+@admin.route('/logout', methods=['GET'])
 @login_required
 def logout():
     logout_user()
     return redirect(url_for('admin.admin_login'))
 
 
-@admin.route('/admin/', methods=['GET', 'POST'])
-@login_required
-def menu():
-    return f'<a href="{url_for("admin.reg_a_user")}">register a new user</a>' \
-    f'<br><a href="https://admin.melytix.tk/">Tips and Alerts Admin</a>' \
-    f'<br><a href="{url_for("admin.logout")}">logout</a>' \
-    f'<br><a href="/refresh">refresh metrics</a>' \
-    f'<br><a href="{url_for("admin.delete_users")}">delete users</a>' \
-    f'<br><a href="{url_for("admin.individual_users")}">individual users</a>' \
-    f'<br><a href="{url_for("admin.restore_emails")}">restore password</a>'
-
-
-@admin.route('/admin/login', methods=['GET', 'POST'])
+@admin.route('/login', methods=['GET', 'POST'])
 def admin_login():
     if request.method == 'POST':
         form = request.form
@@ -50,7 +41,26 @@ def admin_login():
     return '?'
 
 
-@admin.route('/admin/reg-a-user', methods=["GET", "POST"])
+@admin.route('/', methods=['GET', 'POST'])
+@login_required
+def menu():
+
+    base_urls = '<a href="{url_for("admin.reg_a_user")}">register a new user</a>' \
+    f'<br><a href="https://admin.melytix.tk/">Tips and Alerts Admin</a>' \
+    f'<br><a href="{url_for("admin.logout")}">logout</a>' \
+    f'<br><a href="/refresh">refresh metrics</a>' \
+
+    user_chooser_urls = ''
+
+    for form in UserChooserForm.__subclasses__():
+        print(form)
+        user_chooser_urls += build_url(form.route)
+
+    return base_urls + user_chooser_urls
+
+
+
+@admin.route('/reg-a-user', methods=["GET", "POST"])
 @login_required
 def reg_a_user():
     if request.method == 'GET':
@@ -68,28 +78,24 @@ def reg_a_user():
     return '?'
 
 
-@admin.route('/admin/delete-users', methods=["GET", "POST"])
-@login_required
-def delete_users():
+class DeleteUserForm(UserChooserForm):
+    title = 'Delete Users'
+    user_query = User.db().find({}, {"_id": 0, 'email': 1})
+    route = 'delete-users'
 
-    if request.method == 'GET':
-        users = [item.get('email') for item in User.db().find({}, {"_id": 0, 'email': 1})]
-        return render_template('admin/delete_users/delete_users.html', users=users, url='/admin/delete-users')
-    elif request.method == 'POST':
-        form = request.form.getlist('email')
-        for email in form:
+    def action(emails: list):
+        for email in emails:
             User.delete(email=email)
-        return redirect(url_for('admin.delete_users'))
 
 
-@admin.route('/admin/individual-emails', methods=["GET", "POST"])
+@admin.route('/individual-emails', methods=["GET", "POST"])
 @login_required
 def individual_users():
 
     if request.method == 'GET':
         if emails := User.db().find_one(filter={"type": "email_storage"}):
             result = emails.get('individual_email')
-        return render_template('admin/delete_users/delete_users.html', users=result, url='/admin/individual-emails')
+        return render_template('admin/user_templates/user_chooser.html', users=result, url='/admin/individual-emails', title='individual emails')
     elif request.method == 'POST':
         form = request.form.getlist('email')
         emails = User.db().find_one({'type': 'email_storage'}).get('individual_email', [])
@@ -104,14 +110,13 @@ def individual_users():
         return redirect(url_for('admin.individual_users'))
 
 
-@admin.route('/admin/restore-emails', methods=["GET", "POST"])
+@admin.route('/restore-emails', methods=["GET", "POST"])
 @login_required
 def restore_emails():
-
     if request.method == 'GET':
         if emails := User.db().find_one(filter={"type": "email_storage"}):
             result = emails.get('restore_email')
-        return render_template('admin/delete_users/delete_users.html', users=result, url='/admin/restore-emails')
+        return render_template('admin/user_templates/user_chooser.html', users=result, url='/admin/restore-emails', title='restore emails')
     elif request.method == 'POST':
         form = request.form.getlist('email')
         emails = User.db().find_one({'type': 'email_storage'}).get('restore_email', [])
@@ -124,6 +129,21 @@ def restore_emails():
             upsert=True
         )
         return redirect(url_for('admin.restore_emails'))
+
+
+class ResetAccountForm(UserChooserForm):
+    route = 'reset-account'
+    title = 'Reset Users(dev)'
+
+    user_query = User.db().find({'connected_systems': {'$exists': True}}, {"_id": 0, 'email': 1})
+
+    def action(emails: list):
+        for email in emails:
+            User.db().find_one_and_update({'email': email}, {'$unset': {'connected_systems': ''}})
+
+            metrics = User.get(email=email).metrics
+
+            '''write metrics deletion'''
 
 
 class MainManualAnalyzeView(Resource):

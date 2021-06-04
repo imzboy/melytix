@@ -22,7 +22,7 @@ def inheritors(klass):
     work = [klass]
     while work:
         parent = work.pop()
-        for child in parent.subclasses():
+        for child in parent.__subclasses__():
             if child not in subclasses:
                 subclasses.add(child)
                 work.append(child)
