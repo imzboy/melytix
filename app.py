@@ -86,8 +86,6 @@ def create_app():
 
         return redirect(f'{config.FRONT_URL}/Support/?q={service}')
 
-
-
     class CacheDashboardSettings(Resource):
         def options(self):
             return {}, 200
@@ -163,7 +161,6 @@ def create_app():
             return {**main_dict}, 200
 
 
-
     class DashboardWidgetView(Resource):
 
         def options(self):
@@ -178,23 +175,25 @@ def create_app():
             system = request.json.get('system')
             return globals().get(f'{system}_metrics')(request)
 
-    @app.errorhandler(HTTPException)
-    def handle_exception(e):
-        summary = str(e)
-        description = get_description()
-        create_and_setup_issue(description, summary)
-        return {"Error": summary}, e.code
+    #don't use error handling on local machines
+    if not APP_ENV == 'Test':
+        @app.errorhandler(HTTPException)
+        def handle_exception(e):
+            summary = str(e)
+            description = get_description()
+            create_and_setup_issue(description, summary)
+            return {"Error": summary}, e.code
 
-    @app.errorhandler(Exception)
-    def handle_exception(e):
-        ex_info = sys.exc_info()
-        error_class = str(ex_info[0])
-        error_message = ex_info[1].args[0]
-        summary = f"500 Error.System.{os.environ.get('APP_ENV')} " + error_class\
-                  + ' Message: ' + error_message
-        description = get_description()
-        create_and_setup_issue(description, summary)
-        return {"Error": summary}, 500
+        @app.errorhandler(Exception)
+        def handle_exception(e):
+            ex_info = sys.exc_info()
+            error_class = str(ex_info[0])
+            error_message = ex_info[1].args[0]
+            summary = f"500 Error.System.{os.environ.get('APP_ENV')} " + error_class\
+                    + ' Message: ' + error_message
+            description = get_description()
+            create_and_setup_issue(description, summary)
+            return {"Error": summary}, 500
 
 
     #DashSettings post and get
