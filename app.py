@@ -1,7 +1,10 @@
+import sys
+
 from flask_login import LoginManager
 from config import settings
 import os
 from Utils.decorators import user_auth
+from Utils.ErrorHandlerUtils import get_description, create_and_setup_issue
 
 from flask_cors import CORS
 
@@ -16,6 +19,7 @@ from Systems.GoogleAds.views import google_ads_metrics
 from Systems.Google.GoogleAuth import code_exchange
 
 from flask import Flask, request, redirect
+from werkzeug.exceptions import HTTPException
 
 APP_ENV = os.environ.get('APP_ENV', 'Dev')
 config = getattr(settings, f'{APP_ENV}Config')
@@ -172,6 +176,24 @@ def create_app():
             '''
             system = request.json.get('system')
             return globals().get(f'{system}_metrics')(request)
+
+    @app.errorhandler(HTTPException)
+    def handle_exception(e):
+        summary = str(e)
+        description = get_description()
+        create_and_setup_issue(description, summary)
+        return {"Error": summary}, e.code
+
+    @app.errorhandler(Exception)
+    def handle_exception(e):
+        ex_info = sys.exc_info()
+        error_class = str(ex_info[0])
+        error_message = ex_info[1].args[0]
+        summary = f"500 Error.System.{os.environ.get('APP_ENV')} " + error_class\
+                  + ' Message: ' + error_message
+        description = get_description()
+        create_and_setup_issue(description, summary)
+        return {"Error": summary}, 500
 
 
     #DashSettings post and get
