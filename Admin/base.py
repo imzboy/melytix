@@ -8,7 +8,7 @@ class UserChooserForm(object):
     title = ''
     user_query = User.filter_only(fields={'_id': 1})
 
-    def action(emails: list):
+    def action(self, emails: list):
         return NotImplemented('The function "action" if not implemented.')
 
     def view(self):
@@ -20,6 +20,6 @@ class UserChooserForm(object):
 
             self.action(emails)
 
-            return redirect(url_for(f'admin.{self.route}'))
+            return redirect(url_for(f'admin.{self.route.replace("-", "_")}'))
 
         return '?'

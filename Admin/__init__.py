@@ -11,5 +11,6 @@ for form_class in UserChooserForm.__subclasses__():
     rule = f'/{form.route}'
     endpoint = form.route.replace('-', '_')
     view_func = login_required(form.view)
+    view_func.methods = ['GET', 'POST']
 
     admin.add_url_rule(rule, endpoint, view_func)

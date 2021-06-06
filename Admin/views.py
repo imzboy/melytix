@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 from Admin.utils import build_url
 from flask_restful import Api, Resource
 from analytics.base import Alert, Tip
@@ -83,7 +84,7 @@ class DeleteUserForm(UserChooserForm):
     user_query = User.db().find({}, {"_id": 0, 'email': 1})
     route = 'delete-users'
 
-    def action(emails: list):
+    def action(self, emails: list):
         for email in emails:
             User.delete(email=email)
 
@@ -137,13 +138,25 @@ class ResetAccountForm(UserChooserForm):
 
     user_query = User.db().find({'connected_systems': {'$exists': True}}, {"_id": 0, 'email': 1})
 
-    def action(emails: list):
+    def action(self, emails: list):
         for email in emails:
+            user = User.get(email=email)
+            metrics = user.metrics
+
+            if user.connected_systems:
+                connected_systems_names = list(user.connected_systems.keys())
+
+                # Delete all metrics
+                for system in connected_systems_names:
+                    if system == 'google_analytics':
+                        metrics.db(system, table_type='filtered').delete_many({'user_id': user._id})
+                        metrics.db(system, table_type='totals').delete_many({'user_id': user._id})
+                    if system == 'search_console':
+                        metrics.db(system).delete_many({'user_id': user._id})
+
+            # Unset connected systems
             User.db().find_one_and_update({'email': email}, {'$unset': {'connected_systems': ''}})
-
-            metrics = User.get(email=email).metrics
-
-            '''write metrics deletion'''
+            User.update_one({'email': email}, {'parse_from_date': (datetime.now() - timedelta(days=60)).date().isoformat()})
 
 
 class MainManualAnalyzeView(Resource):
