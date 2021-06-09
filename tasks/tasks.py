@@ -172,7 +172,7 @@ def google_analytics_query(report: list, start_date, end_date, token):
 
     if response.get('reports')[0].get('data').get('rows'):
         result = GoogleUtils.GoogleReportsParser(response, dates).parse()
-        result.pop('ga_dates')
+        result.pop('ga_dates', None)
         return result
 
     return GoogleUtils.fill_all_with_zeros(response, dates)
@@ -189,7 +189,7 @@ def google_analytics_query_totals(report, start_date, end_date, token):
     user = User.get(auth_token=token)
     if response.get('reports')[0].get('data').get('rows'):
         parsed_response = GoogleUtils.GoogleTotalsReportsParser(response).parse()
-        dates = parsed_response.pop('ga_dates')
+        dates = parsed_response.pop('ga_dates', None)
         user.metrics.initial_insert(parsed_response, dates, 'google_analytics', table_type='totals')
 
     else:
