@@ -37,8 +37,7 @@ from Systems.SiteParser.views import parser_bp
 from Systems.GoogleAds.views import google_ads_bp
 from payments.views import paypal_bp
 
-api = Api()
-cors = CORS()
+
 
 def create_app():
     app = Flask(__name__)
@@ -47,8 +46,8 @@ def create_app():
     config = getattr(settings, f'{APP_ENV}Config')
     app.config.update(config.as_dict())
 
-    api.init_app(app)
-    cors.init_app(app, resources={r"*": {"origins": "*"}})
+    api = Api(app)
+    cors = CORS(app, resources={r"*": {"origins": "*"}})
 
     login = LoginManager(app)
     login.login_view = '/admin/login'
