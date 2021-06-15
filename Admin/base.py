@@ -6,14 +6,15 @@ class UserChooserForm(object):
     html_template_route = 'admin/user_templates/user_chooser.html'
     route = ''
     title = ''
-    user_query = User.filter_only(fields={'_id': 1})
+    model = User
+    query = {}
 
     def action(self, emails: list):
         return NotImplemented('The function "action" if not implemented.')
 
     def view(self):
         if request.method == 'GET':
-            users = [item.get('email') for item in self.user_query]
+            users = [item.get('email') for item in self.model.db().find(*self.query)]
             return render_template(self.html_template_route, users=users, url=f'/admin/{self.route}', title=self.title)
         elif request.method == 'POST':
             emails = request.form.getlist('email')

@@ -3,13 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <title>{{title}}</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 </head>
 <body>
     <form action={{url}} method="post">
-    <p><input onclick="return confirm('Are you sure?');" type="submit" value="Confirm"></p>
-    {% for item in users %}
-      <p><input type="checkbox" name="email" value="{{item}}">{{item}}</p>
-    {% endfor %}
-    </form>
+    <div class="container">
+      <div class="row">
+        <div class="col-12">
+          <table class="table table-bordered">
+            <thead>
+              <tr>
+                <th scope="col"></th>
+                <th scope="col">user email</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for email in users %}
+              <tr>
+                <td>
+                  <div class="custom-control custom-checkbox">
+                    <input type="checkbox" name="email" value="{{email}}">
+                  </div>
+                </td>
+                <td>{{email}}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          <p><input onclick="return confirm('Are you sure?');" type="submit" value="Confirm"></p>
+        </div>
+      </div>
+    </div>
+  </form>
 </body>
 </html>

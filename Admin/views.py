@@ -42,22 +42,21 @@ def admin_login():
     return '?'
 
 
-@admin.route('/', methods=['GET', 'POST'])
+@admin.route('/', methods=['GET'])
 @login_required
 def menu():
-
-    base_urls = '<a href="{url_for("admin.reg_a_user")}">register a new user</a>' \
-    f'<br><a href="https://admin.melytix.tk/">Tips and Alerts Admin</a>' \
-    f'<br><a href="{url_for("admin.logout")}">logout</a>' \
-    f'<br><a href="/refresh">refresh metrics</a>' \
-
-    user_chooser_urls = ''
+    group = [
+        (url_for("admin.reg_a_user"), 'register a new user'),
+        ("https://admin.melytix.tk/", 'Tips and Alerts Admin'),
+        (url_for("admin.logout"), 'logout'),
+        ('/refresh', 'refresh metrics (DO NOT PRESS)'),
+    ]
 
     for form in UserChooserForm.__subclasses__():
-        print(form)
-        user_chooser_urls += build_url(form.route)
+        form_url = build_url(form.route)
+        group.append(form_url)
 
-    return base_urls + user_chooser_urls
+    return render_template('admin/list/vert_list.html', group=group)
 
 
 
@@ -81,7 +80,8 @@ def reg_a_user():
 
 class DeleteUserForm(UserChooserForm):
     title = 'Delete Users'
-    user_query = User.db().find({}, {"_id": 0, 'email': 1})
+    model = User
+    query = {}, {"_id": 0, 'email': 1}
     route = 'delete-users'
 
     def action(self, emails: list):
@@ -136,7 +136,8 @@ class ResetAccountForm(UserChooserForm):
     route = 'reset-account'
     title = 'Reset Users(dev)'
 
-    user_query = User.db().find({'connected_systems': {'$exists': True}}, {"_id": 0, 'email': 1})
+    model = User
+    query = {'connected_systems': {'$exists': True}}, {"_id": 0, 'email': 1}
 
     def action(self, emails: list):
         for email in emails:
